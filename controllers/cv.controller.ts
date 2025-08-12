@@ -29,7 +29,7 @@ type EducationType = {
   class12College?: string;
   class12Board?: string;
   class12Grade?: string;
-  class12CertUrl?:string,
+  class12CertUrl?:string;
   underGraduateCollege?: string;
   underGraduateDegree?: string;
   underGraduateGPA?: string;
@@ -193,8 +193,8 @@ export const createCv = async (req: Request, res: Response) => {
       projectsVerifications,
       profileSummaryVerification,
     } = req.body as RequestBodyType;
-
-    console.log("undergraduate duration",underGraduateDuration)
+    console.log("req body",req.body);
+    //console.log("undergraduate duration",underGraduateDuration)
     if (
       !loginMailId ||
       !nanoId ||
