@@ -30,6 +30,7 @@ export const verifyGoogleToken = async (req:Request, res:Response, next:any) => 
 
     const payload = ticket.getPayload();
     req.user = payload; // attach user info
+    //console.log("payload",req.user);
     console.log("authorised request");
     next();
   } catch (err) {

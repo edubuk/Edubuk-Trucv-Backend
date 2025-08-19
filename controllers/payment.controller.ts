@@ -1,7 +1,7 @@
 
 import crypto from "crypto";
 import Coupon from "../models/payment.model";
-import { Request,Response } from "express";
+import { Request, Response } from "express";
 import Razorpay from "razorpay";
 import { config } from "dotenv";
 import User from "../models/userCV.model";
@@ -19,112 +19,108 @@ const instance = new Razorpay({
   key_secret: keySecret,
 });
 
-export const checkout = async (req:Request,res:Response) => {
+export const checkout = async (req: Request, res: Response) => {
   try {
-  const options = {
-    "amount": Number(req.body.amount),
-    "currency": "INR",
-  };
-  
-  const order = await instance.orders.create(options);
+    const options = {
+      "amount": Number(req.body.amount),
+      "currency": "INR",
+    };
 
-  res.status(200).json({
-    success: true,
-    order,
-  });
-} catch (error) {
-  console.error("Error creating order:", error);
-  res.status(500).json({
-    success: false,
-    message: "Error creating order",
-    error,
-  });
-}
+    const order = await instance.orders.create(options);
+
+    res.status(200).json({
+      success: true,
+      order,
+    });
+  } catch (error) {
+    console.error("Error creating order:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error creating order",
+      error,
+    });
+  }
 };
 
 
-export const paymentVerification = async (req:Request, res:Response) => {
+export const paymentVerification = async (req: Request, res: Response) => {
   try {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature,couponCode, userMailId } =
-    req.body;
-  
-  const body = razorpay_order_id + "|" + razorpay_payment_id;
-  console.log("body",body);
-  const expectedSignature = crypto
-    .createHmac("sha256", keySecret)
-    .update(body.toString())
-    .digest("hex");
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, couponCode, userMailId } =
+      req.body;
 
-  const isAuthentic = expectedSignature === razorpay_signature;
-  console.log("Auth :",isAuthentic)
-  if (isAuthentic) {
-    console.log("payment verified");
-   //let coupon = await Coupon.findOne({code:couponCode})
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    console.log("body", body);
+    const expectedSignature = crypto
+      .createHmac("sha256", keySecret)
+      .update(body.toString())
+      .digest("hex");
+
+    const isAuthentic = expectedSignature === razorpay_signature;
+    console.log("Auth :", isAuthentic)
+    if (isAuthentic) {
+      console.log("payment verified");
+      //let coupon = await Coupon.findOne({code:couponCode})
       // coupon = new Coupon({ code: couponCode,transactions:[{logginedMailId:userMailId,paymentId:razorpay_payment_id,paymentStatus:true,cvSubmittedStatus:false}] });
       // await coupon.save();
-      const user = await User.findOne({email:userMailId});
-      if(user)
-      {
+      const user = await User.findOne({ email: userMailId });
+      if (user) {
         console.log("user found");
-      user.subscriptionPlan = "Pro";
-      user.paymentId = razorpay_payment_id;
-      user.couponCode = couponCode;
-      await user.save();
-      }
-      else{
-        console.log("user not found");
-        const user = new User({email:userMailId,subscriptionPlan:"Pro",paymentId:razorpay_payment_id,couponCode:couponCode,nanoIds:[]});
+        user.subscriptionPlan = "Pro";
+        user.paymentId = razorpay_payment_id;
+        user.couponCode = couponCode;
         await user.save();
-      } 
+      }
+      else {
+        console.log("user not found");
+        const user = new User({ email: userMailId, subscriptionPlan: "Pro", paymentId: razorpay_payment_id, couponCode: couponCode, nanoIds: [] });
+        await user.save();
+      }
     }
-  else{
-    return res.status(401).json({
-      success:false,
-      message:"payment verification failed"
-    })
-  }
+    else {
+      return res.status(401).json({
+        success: false,
+        message: "payment verification failed"
+      })
+    }
     res.status(200).json({
-      success:true,
-      paymentId:razorpay_payment_id,
+      success: true,
+      paymentId: razorpay_payment_id,
     });
-  }catch(error){
+  } catch (error) {
     res.status(500).json({
-      success:false,
-      message:"something went wrong",
-      error:error
+      success: false,
+      message: "something went wrong",
+      error: error
     })
   }
 };
 
 
-export const checkCvSubmittedStatus= async(req:Request,res:Response)=>{
+export const checkCvSubmittedStatus = async (req: Request, res: Response) => {
   try {
-    const {paymentId}=req.params;
+    const { paymentId } = req.params;
     const coupon = await Coupon.findOne(
       { 'transactions.paymentId': paymentId },
     );
-    if(!coupon)
-    {
+    if (!coupon) {
       return res.status(404).json({
         success: false,
         message: "invalid paymentId",
       });
     }
 
-    const transaction = coupon.transactions.find((tx)=>tx.paymentId===paymentId);
+    const transaction = coupon.transactions.find((tx) => tx.paymentId === paymentId);
 
-    if(transaction)
-    {
+    if (transaction) {
       res.status(200).json({
-        success:true,
-        value:transaction.cvSubmittedStatus
+        success: true,
+        value: transaction.cvSubmittedStatus
       })
     }
-    else
-    {
+    else {
       res.status(404).json({
-        success:false,
-        message:`No transaction found with paymentId:${paymentId}`
+        success: false,
+        message: `No transaction found with paymentId:${paymentId}`
       })
     }
   } catch (error) {
@@ -137,137 +133,192 @@ export const checkCvSubmittedStatus= async(req:Request,res:Response)=>{
 }
 
 
-export const updateCvSubmittedStatus = async(req:Request,res:Response)=>{
+export const updateCvSubmittedStatus = async (req: Request, res: Response) => {
   try {
-    const {paymentId} = req.body;
+    const { paymentId } = req.body;
     const updatedCVStatus = await Coupon.findOneAndUpdate(
       { "transactions.paymentId": paymentId },
       {
         $set: {
-          "transactions.$.cvSubmittedStatus":true,
+          "transactions.$.cvSubmittedStatus": true,
         },
       },
       { new: true }
     )
-    if(updatedCVStatus)
-    {
+    if (updatedCVStatus) {
       res.status(200).json({
-        success:true,
-        message:"cv submitted successfully",
+        success: true,
+        message: "cv submitted successfully",
       })
     }
-    else
-    {
+    else {
       res.status(404).json({
-        success:false,
-        message:"invalid paymentId",
+        success: false,
+        message: "invalid paymentId",
       })
     }
   } catch (error) {
     res.status(501).json({
-      success:false,
-      message:"something went wrong",
-      err:error
+      success: false,
+      message: "something went wrong",
+      err: error
     })
   }
 }
 
-export const couponVerification= async(req:Request,res:Response)=>{
+export const couponVerification = async (req: Request, res: Response) => {
   try {
-    const {couponCode,currType} = req.query;
-    if(!couponCode || !currType)
-    {
+    const { couponCode, currType, userMailId } = req.query;
+
+    //Validate required fields
+    if (!couponCode || !currType || !userMailId) {
       return res.status(400).json({
-        success:false,
-        message:"coupon code or currency type is missing"
-      })
+        success: false,
+        message: "Coupon code, currency type, or userMailId is missing",
+      });
     }
-    console.log("couponcode ",couponCode)
-    let currPrice=590;
-    if(currType!=="INR")
-    {
+
+    //Define Free Coupons
+    const freeCoupons = [
+      "INNOVARI100",
+      "INNOVARIFREE",
+      "INNOVARIZERO",
+      "INNOVARIGRATIS",
+      "INNOVARIFREEPASS",
+      "INNOVARICOMP",
+    ];
+
+    //Handle Free Coupons
+    if (freeCoupons.includes(couponCode as string)) {
+      const user = await User.findOne({ email: userMailId });
+
+      if (user) {
+        if (user.couponCode === couponCode) {
+          return res.status(200).json({
+            success: true,
+            applied: false,
+            value: 590,
+            message: "This coupon is already used",
+          });
+        }
+
+        // Update existing user with free Pro subscription
+        user.subscriptionPlan = "Pro";
+        user.paymentId = "FREE";
+        user.couponCode = couponCode as string;
+        await user.save();
+      } else {
+        // Create new user with Pro subscription
+        await new User({
+          email: userMailId,
+          subscriptionPlan: "Pro",
+          paymentId: "FREE",
+          couponCode,
+          nanoIds: [],
+        }).save();
+      }
+
       return res.status(200).json({
-        success:false,
-        value:currPrice,
-        message:"currency type is not INR"
-      })
+        success: true,
+        applied: true,
+        value:0,
+        message: "This one's on us! Enjoy your free access.",
+      });
     }
+
+    //Paid Coupons Logic
+    let currPrice = 590;
+
+    if (currType !== "INR") {
+      return res.status(200).json({
+        success: false,
+        applied:false,
+        value: currPrice,
+        message: "Currency type is not INR",
+      });
+    }
+
     switch (couponCode) {
       case "CVPRODIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "UPLOADITDIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "RESUMEDIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "CVCODIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "CVUPDIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "JOBSAVEDIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "PROCVDIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "UPLOADDIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "CARPRODIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "CVUPLOADDIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "RESUMEPRODIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "DISCOUNTCV":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "CAREERUPDIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "JOBSCVDIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "UPLOADCVDIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "RESPACKDIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "CAREERCVDIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "CVJOBDIS":
-        currPrice=236;
+        currPrice = 236;
         break;
       case "EDUBUKYESWIN":
-        currPrice=0;
+        currPrice = 0;
         break;
       default:
-      res.status(200).json({
-          success:false,
-          value:currPrice
-        })
+        return res.status(200).json({
+          success: false,
+          applied:false,
+          value: currPrice,
+          message: "Invalid coupon code",
+        });
     }
-    if(currPrice!==590)
-    res.status(200).json({
-      success:true,
-      value:currPrice
-    })
+
+    return res.status(200).json({
+      success: true,
+      applied:true,
+      value: currPrice,
+    });
   } catch (error) {
-    res.status(501).json({
-      success:false,
-      message:"error while coupon verification",
-      error
-    })
+    console.error("Error in couponVerification:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error while coupon verification",
+      error,
+    });
   }
-}
+};
+
 
 
