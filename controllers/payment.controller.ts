@@ -179,21 +179,13 @@ export const couponVerification = async (req: Request, res: Response) => {
     }
 
     //Define Free Coupons
-    const freeCoupons = [
-      "INNOVARI100",
-      "INNOVARIFREE",
-      "INNOVARIZERO",
-      "INNOVARIGRATIS",
-      "INNOVARIFREEPASS",
-      "INNOVARICOMP",
-    ];
+    const freeCoupons = ["INNOVARI100","INNOVARIFREE","INNOVARIZERO","INNOVARIGRATIS","INNOVARIFREEPASS","INNOVARICOMP","INNOVARIFREEPASS","INNOVARICOMP","EDUBUKFREE","EDUBUK100","EDUBUKTEST1","EDUBUKTEST2","EDUBUKTEST3"];
 
     //Handle Free Coupons
     if (freeCoupons.includes(couponCode as string)) {
-      const user = await User.findOne({ email: userMailId });
-
-      if (user) {
-        if (user.couponCode === couponCode) {
+      const couponUser = await User.findOne({ couponCode: couponCode });
+        console.log(couponCode);
+        if (couponUser?.couponCode) {
           return res.status(200).json({
             success: true,
             applied: false,
@@ -201,7 +193,9 @@ export const couponVerification = async (req: Request, res: Response) => {
             message: "This coupon is already used",
           });
         }
-
+      const user = await User.findOne({ email: userMailId });
+      //console.log("user",user);
+      if (user && user.email) {
         // Update existing user with free Pro subscription
         user.subscriptionPlan = "Pro";
         user.paymentId = "FREE";

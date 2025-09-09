@@ -2,12 +2,12 @@ import { Request, Response } from "express";
 import User from "../models/userCV.model";
 
 export const adminController = async (req:Request,res:Response) => {
-    const userData= req.user;
+    const userData = req.user;
     //console.log("userData",userData);
-    const ALLOWED_EMAIL = JSON.parse(process.env.ADMIN_EMAILS || "[]");
+    const ALLOWED_EMAILS:string[] = process.env.ADMIN_EMAILS?.split(",") || [];
     //console.log("ALLOWED_EMAIL",ALLOWED_EMAIL);
     try {
-        if(ALLOWED_EMAIL.includes(userData.email)){
+        if(userData?.email && ALLOWED_EMAILS.includes(userData?.email)){
             const getAllUser = await User.find();
             if(!getAllUser){
                 return res.status(404).json({message:"No User Found",success:false})
