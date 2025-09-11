@@ -294,28 +294,28 @@ export const createCv = async (req: Request, res: Response) => {
     addEducationFields("postGraduateCertUrl", postGraduateCertUrl);
     
 
-    if (Experience.length > 0) {
+    if (Experience?.length > 0) {
       dataToBeStored.experience = Experience;
     }
 
-    if (Skills.length > 0) {
+    if (Skills?.length > 0) {
       dataToBeStored.skills = Skills;
     }
 
-    if (Awards.length > 0) {
+    if (Awards?.length > 0) {
       dataToBeStored.achievements = {
         awards: Awards,
       };
     }
 
-    if (Courses.length > 0) {
+    if (Courses?.length > 0) {
       dataToBeStored.achievements = {
         ...dataToBeStored.achievements,
         courses: Courses,
       };
     }
 
-    if (Projects.length > 0) {
+    if (Projects?.length > 0) {
       dataToBeStored.achievements = {
         ...dataToBeStored.achievements,
         projects: Projects,
@@ -341,7 +341,7 @@ export const createCv = async (req: Request, res: Response) => {
     return res.json(cvData);
   } catch (error) {
     console.log("ERROR:IN CREATE-CV CONTROLLER", error);
-    res.status(500).json("ERROR:IN CREATE-CV CONTROLLER");
+    res.status(500).json({success:false,error:error,message:"ERROR:IN CREATE-CV CONTROLLER"});
   }
 };
 
@@ -367,7 +367,7 @@ export const getAllCvIds= async(req:Request,res:Response)=>{
     
   } catch (error) {
     console.log("ERROR:IN getAllCVIds", error);
-    res.status(500).json("ERROR:IN getAllCVIds CONTROLLER");
+    res.status(500).json({success:false,error:error,message:"ERROR:IN getAllCVIds"});
   }
 }
 
@@ -398,7 +398,7 @@ export const getCvByNanoId = async (req: Request, res: Response) => {
     return res.status(200).json(cv);
   } catch (error) {
     console.log("ERROR:GET_CV_BY_NANO_ID_CONTROLLER", error);
-    res.status(500).json("ERROR:GET_CV_BY_NANO_ID_CONTROLLER");
+    res.status(500).json({success:false,error:error,message:"ERROR:GET_CV_BY_NANO_ID_CONTROLLER"});
   }
 };
 
