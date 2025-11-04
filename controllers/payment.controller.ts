@@ -1,10 +1,10 @@
 
 import crypto from "crypto";
-import Coupon from "../models/payment.model";
 import { Request, Response } from "express";
 import Razorpay from "razorpay";
 import { config } from "dotenv";
-import User from "../models/userCV.model";
+import Subscription from "../models/subscription.model";
+import { IGetUserAuthInfoRequest } from "../types/definitionFile";
 config();
 
 const keyId = process.env.RZP_KEY_ID;
@@ -21,13 +21,27 @@ const instance = new Razorpay({
 
 export const checkout = async (req: Request, res: Response) => {
   try {
+    const typeReq = req as IGetUserAuthInfoRequest;
+    if (Number(req.body.amount) < 175) {
+      return res.status(400).json({
+        success: false,
+        message: "amount is less than subscription plan",
+      });
+    }
     const options = {
       "amount": Number(req.body.amount),
       "currency": "INR",
     };
 
     const order = await instance.orders.create(options);
-
+    console.log("order", order);
+    if (!order) {
+      return res.status(400).json({
+        success: false,
+        message: "Order not created"
+      })
+    }
+    await Subscription.findOneAndUpdate({ userId: typeReq.user._id }, { orderId: order.id }, { upsert: true });
     res.status(200).json({
       success: true,
       order,
@@ -45,7 +59,9 @@ export const checkout = async (req: Request, res: Response) => {
 
 export const paymentVerification = async (req: Request, res: Response) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, couponCode, userMailId } =
+    const typeReq = req as IGetUserAuthInfoRequest;
+
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, couponCode } =
       req.body;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
@@ -56,31 +72,23 @@ export const paymentVerification = async (req: Request, res: Response) => {
       .digest("hex");
 
     const isAuthentic = expectedSignature === razorpay_signature;
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 6);
     console.log("Auth :", isAuthentic)
-    if (isAuthentic) {
-      console.log("payment verified");
-      //let coupon = await Coupon.findOne({code:couponCode})
-      // coupon = new Coupon({ code: couponCode,transactions:[{logginedMailId:userMailId,paymentId:razorpay_payment_id,paymentStatus:true,cvSubmittedStatus:false}] });
-      // await coupon.save();
-      const user = await User.findOne({ email: userMailId });
-      if (user) {
-        console.log("user found");
-        user.subscriptionPlan = "Pro";
-        user.paymentId = razorpay_payment_id;
-        user.couponCode = couponCode;
-        await user.save();
-      }
-      else {
-        console.log("user not found");
-        const user = new User({ email: userMailId, subscriptionPlan: "Pro", paymentId: razorpay_payment_id, couponCode: couponCode, nanoIds: [] });
-        await user.save();
-      }
-    }
-    else {
+    if (!isAuthentic) {
       return res.status(401).json({
         success: false,
-        message: "payment verification failed"
+        message: "Payment verification failed"
       })
+    }
+    const subscription = await Subscription.findOne({ userId: typeReq.user._id });
+    if (subscription) {
+      console.log("user found");
+      subscription.subscriptionPlan = "pro";
+      subscription.paymentId = razorpay_payment_id;
+      subscription.couponCode = couponCode;
+      subscription.endDate = endDate;
+      await subscription.save();
     }
     res.status(200).json({
       success: true,
@@ -96,137 +104,70 @@ export const paymentVerification = async (req: Request, res: Response) => {
 };
 
 
-export const checkCvSubmittedStatus = async (req: Request, res: Response) => {
-  try {
-    const { paymentId } = req.params;
-    const coupon = await Coupon.findOne(
-      { 'transactions.paymentId': paymentId },
-    );
-    if (!coupon) {
-      return res.status(404).json({
-        success: false,
-        message: "invalid paymentId",
-      });
-    }
-
-    const transaction = coupon.transactions.find((tx) => tx.paymentId === paymentId);
-
-    if (transaction) {
-      res.status(200).json({
-        success: true,
-        value: transaction.cvSubmittedStatus
-      })
-    }
-    else {
-      res.status(404).json({
-        success: false,
-        message: `No transaction found with paymentId:${paymentId}`
-      })
-    }
-  } catch (error) {
-    console.error("Error fetching transaction status:", error);
-    res.status(500).json({
-      success: false,
-      message: "An error occurred while retrieving the transaction status",
-    });
-  }
-}
-
-
-export const updateCvSubmittedStatus = async (req: Request, res: Response) => {
-  try {
-    const { paymentId } = req.body;
-    const updatedCVStatus = await Coupon.findOneAndUpdate(
-      { "transactions.paymentId": paymentId },
-      {
-        $set: {
-          "transactions.$.cvSubmittedStatus": true,
-        },
-      },
-      { new: true }
-    )
-    if (updatedCVStatus) {
-      res.status(200).json({
-        success: true,
-        message: "cv submitted successfully",
-      })
-    }
-    else {
-      res.status(404).json({
-        success: false,
-        message: "invalid paymentId",
-      })
-    }
-  } catch (error) {
-    res.status(501).json({
-      success: false,
-      message: "something went wrong",
-      err: error
-    })
-  }
-}
 
 export const couponVerification = async (req: Request, res: Response) => {
   try {
-    const { couponCode, currType, userMailId } = req.query;
+    const typeReq = req as IGetUserAuthInfoRequest;
+    const { couponCode, currType } = req.query;
 
     //Validate required fields
-    if (!couponCode || !currType || !userMailId) {
+    if (!couponCode || !currType) {
       return res.status(400).json({
         success: false,
-        message: "Coupon code, currency type, or userMailId is missing",
+        message: "Coupon code, currency type is missing",
+      });
+    } 
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 6);
+    const couponUser = await Subscription.findOne({ couponCode: couponCode as string });
+    if (couponUser) {
+      return res.status(200).json({
+        success: true,
+        applied: false,
+        value: 590,
+        message: "This coupon is already used",
       });
     }
 
+
     //Define Free Coupons
-    const freeCoupons = ["INNOVARI100","INNOVARIFREE","INNOVARIZERO","INNOVARIGRATIS","INNOVARIFREEPASS","INNOVARICOMP","INNOVARIFREEPASS","INNOVARICOMP","EDUBUKFREE","EDUBUK100","EDUBUKTEST1","EDUBUKTEST2","EDUBUKTEST3"];
+    const freeCoupons = ["INNOVARI100", "INNOVARIFREE", "INNOVARIZERO", "INNOVARIGRATIS", "INNOVARIFREEPASS", "INNOVARICOMP", "INNOVARIFREEPASS", "INNOVARICOMP", "EDUBUKFREE", "EDUBUK100", "EDUBUKTEST1", "EDUBUKTEST2", "EDUBUKTEST3"];
 
     //Handle Free Coupons
     if (freeCoupons.includes(couponCode as string)) {
-      const couponUser = await User.findOne({ couponCode: couponCode });
-        console.log(couponCode);
-        if (couponUser?.couponCode) {
-          return res.status(200).json({
-            success: true,
-            applied: false,
-            value: 590,
-            message: "This coupon is already used",
-          });
-        }
-      const user = await User.findOne({ email: userMailId });
-      //console.log("user",user);
-      if (user && user.email) {
-        // Update existing user with free Pro subscription
-        user.subscriptionPlan = "Pro";
+      const user = await Subscription.findOne({ userId: typeReq.user._id });
+      if (user) {
+        user.subscriptionPlan = "pro";
         user.paymentId = "FREE";
         user.couponCode = couponCode as string;
+        user.endDate = endDate;
         await user.save();
-      } else {
+      }
+      else {
         // Create new user with Pro subscription
-        await new User({
-          email: userMailId,
-          subscriptionPlan: "Pro",
+        await new Subscription({
+          userId: typeReq.user._id,
+          subscriptionPlan: "pro",
           paymentId: "FREE",
-          couponCode,
-          nanoIds: [],
+          couponCode: couponCode,
+          endDate: endDate,
         }).save();
       }
-
       return res.status(200).json({
         success: true,
         applied: true,
-        value:0,
+        value: 0,
         message: "This one's on us! Enjoy your free access.",
       });
     }
 
     //Paid Coupons Logic
-    let currPrice = 590;
+    let currPrice = 175;
 
     if (currType !== "INR") {
       return res.status(200).json({
         success: false,
-        applied:false,
+        applied: false,
         value: currPrice,
         message: "Currency type is not INR",
       });
@@ -293,7 +234,7 @@ export const couponVerification = async (req: Request, res: Response) => {
       default:
         return res.status(200).json({
           success: false,
-          applied:false,
+          applied: false,
           value: currPrice,
           message: "Invalid coupon code",
         });
@@ -301,7 +242,7 @@ export const couponVerification = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      applied:true,
+      applied: true,
       value: currPrice,
     });
   } catch (error) {

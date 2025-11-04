@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 import {
   AwardVerificationType,
   CourseVerificationType,
@@ -87,6 +87,7 @@ export type SkillObjectType = {
 
 interface cvSchemaDataType extends Document {
   nanoId: string;
+  userId:Types.ObjectId;
   personalDetails: personalDetailsObjectType;
   education: EducationObjectType;
   experience: ExperienceObjectType[];
@@ -110,6 +111,7 @@ interface cvSchemaDataType extends Document {
 
 const CvSchema: Schema<cvSchemaDataType> = new Schema(
   {
+    userId:{type:Schema.Types.ObjectId,ref:"TruCvUser",required:true,index:true},
     nanoId: {
       type: String,
       required: true,

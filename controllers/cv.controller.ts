@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import axios from "axios";
-import User,{ IUser } from "../models/userCV.model";
+//import User,{ IUser } from "../models/userCV.model";
 //import * as cheerio from "cheerio";
-
+import { User } from "../models/user.model";
 import {
   AwardObjectType,
   CourseObjectType,
@@ -20,6 +20,9 @@ import {
   ProjectVerificationType,
   SkillsVerificationType,
 } from "../types/verifications.types";
+import { Types } from "mongoose";
+import { IGetUserAuthInfoRequest } from "../types/definitionFile";
+import Subscription from "../models/subscription.model";
 // Define the type for education object
 type EducationType = {
   class10School?: string;
@@ -72,6 +75,7 @@ type SkillObjectType = {
 // Main data type with personal details and education
 type DataToBeStoredType = {
   nanoId: string;
+  userId:Types.ObjectId;
   personalDetails: PersonalDetailsType;
   education: EducationType;
   experience: ExperienceObjectType[] | [];
@@ -195,6 +199,11 @@ export const createCv = async (req: Request, res: Response) => {
     } = req.body as RequestBodyType;
     console.log("req body",req.body);
     //console.log("undergraduate duration",underGraduateDuration)
+    const typeReq = req as IGetUserAuthInfoRequest;
+    const subscription = await Subscription.findOne({userId:typeReq.user._id});
+    if(subscription?.subscriptionPlan === "free"){
+        return res.status(404).json("please upgrade your plan to create cv");
+    }
     if (
       !loginMailId ||
       !nanoId ||
@@ -214,6 +223,7 @@ export const createCv = async (req: Request, res: Response) => {
     }
 
     let dataToBeStored: DataToBeStoredType = {
+      userId:typeReq.user._id,
       nanoId,
       personalDetails: {
         name,
@@ -252,22 +262,6 @@ export const createCv = async (req: Request, res: Response) => {
         dataToBeStored.education[field] = value;
       }
     };
-    // const addCourseFields = (
-    //   field: keyof EducationType,
-    //   value: string | undefined
-    // ) => {
-    //   if (value) {
-    //     dataToBeStored.education[field] = value;
-    //   }
-    // };
-    // const addPFields = (
-    //   field: keyof EducationType,
-    //   value: string | undefined
-    // ) => {
-    //   if (value) {
-    //     dataToBeStored.education[field] = value;
-    //   }
-    // };
 
     // class10fields;
     addEducationFields("class10School", class10SchoolName);
@@ -323,21 +317,6 @@ export const createCv = async (req: Request, res: Response) => {
     }
 
     const cvData = await CV.create(dataToBeStored);
-    if(cvData)
-    {
-    // await User.findOneAndUpdate(
-    //   { email:loginMailId },
-    //   { $push: { documentIds: cvData._id } },
-    //   { new: true, upsert: true }
-    // );
-    //mapping of all cv nanoIds with user email
-    //console.log("cvData",cvData);
-    await User.findOneAndUpdate(
-      {email:loginMailId},
-      { $push: { nanoIds: cvData.nanoId } },
-      { new: true, upsert: true }
-    );
-    }
     return res.json(cvData);
   } catch (error) {
     console.log("ERROR:IN CREATE-CV CONTROLLER", error);
@@ -345,31 +324,55 @@ export const createCv = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllCvIds= async(req:Request,res:Response)=>{
-  try {
-    const {email} = req.params;
-    // Find the user by email
-    const user: IUser | null = await User.findOne({ email });
-
-    if (!user) {
-      console.log("User not found");
-      return res.status(500).json({
-        success:false,
-        message:"No Cv Found"})
-
+export const getUserCVIds = async(req:Request,res:Response)=>{
+    try {
+        const typeReq = req as IGetUserAuthInfoRequest;
+        const userId = req.query.userId??typeReq.user._id;
+        const nanoIds = await CV.find({userId:userId}).select("nanoId");
+        if(nanoIds)
+        {
+          return res.status(200).json({
+            success:true,
+            data:nanoIds
+          })
+        }
+        return res.status(404).json({
+          success:false,
+          message:"CV not found"
+        })
+    } catch (error:any) {
+        return res.status(500).json({
+            success:false,
+            message:"Something went wrong",
+            error:error.message || error
+        })
     }
-
-    // Return the array of document IDs
-    const Ids= user.nanoIds.map((id:string) => id.toString());
-
-    //console.log("Ids",Ids);
-    return res.status(200).json({success:true,userData:user});
-    
-  } catch (error) {
-    console.log("ERROR:IN getAllCVIds", error);
-    res.status(500).json({success:false,error:error,message:"ERROR:IN getAllCVIds"});
-  }
 }
+// export const getAllCvIds= async(req:Request,res:Response)=>{
+//   try {
+//     const {email} = req.params;
+//     // Find the user by email
+//     const user: IUser | null = await User.findOne({ email });
+
+//     if (!user) {
+//       console.log("User not found");
+//       return res.status(500).json({
+//         success:false,
+//         message:"No Cv Found"})
+
+//     }
+
+//     // Return the array of document IDs
+//     const Ids= user.nanoIds.map((id:string) => id.toString());
+
+//     //console.log("Ids",Ids);
+//     return res.status(200).json({success:true,userData:user});
+    
+//   } catch (error) {
+//     console.log("ERROR:IN getAllCVIds", error);
+//     res.status(500).json({success:false,error:error,message:"ERROR:IN getAllCVIds"});
+//   }
+// }
 
 export const getCv = async (req: Request, res: Response) => {
   try {
