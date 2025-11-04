@@ -55,7 +55,6 @@ export const generateOtp = async (req: Request, res: Response) => {
             success: true,
             status:status,
             message: "Otp sent successfully",
-            otp
         })
     } catch (error) {
         res.status(500).json({
