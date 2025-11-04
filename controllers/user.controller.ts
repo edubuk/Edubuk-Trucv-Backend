@@ -12,6 +12,7 @@ import { Certificate } from "../models/userDoc.model";
 import Subscription from "../models/subscription.model";
 import { sendResetLinkEMail } from "../utils/sendResetEmail";
 config();
+
 const generateAccessRefreshToken = async (userId: string) => {
     try {
         const user = await User.findById(userId);
@@ -152,14 +153,20 @@ export const loginUser = async (req: Request, res: Response) => {
         console.log("refreshToken",refreshToken)
         const loggedInUser = await User.findById(user._id).select("-providers -password -refreshToken");
 
-        const options = {
-            httpOnly: true,
-            secure: process.env.NODE_ENV==="production"
-        }
         return res
             .status(200)
-            .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", refreshToken, options)
+            .cookie("accessToken", accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",     
+                maxAge: 1000 * 60 * 60 * 24 * 7,
+            })
+            .cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",     
+                maxAge: 1000 * 60 * 60 * 24 * 7,
+            })
             .json({
                 success: true,
                 message: "Logged In successfully",
@@ -189,10 +196,22 @@ export const logoutUser = async(req:Request,res:Response)=>{
 
         const options={
             httpOnly:true,
-            secure:process.env.NODE_ENV==="production"
+            secure:process.env.NODE_ENV==="production",
+            sameSite: "lax",     
+            maxAge: 1000 * 60 * 60 * 24 * 7,
         }
 
-        res.status(200).clearCookie("accessToken",options).clearCookie("refreshToken",options).json({
+        res.status(200).clearCookie("accessToken",{
+            httpOnly:true,
+            secure:process.env.NODE_ENV==="production",
+            sameSite: "lax",     
+            maxAge: 1000 * 60 * 60 * 24 * 7,
+        }).clearCookie("refreshToken",{
+            httpOnly:true,
+            secure:process.env.NODE_ENV==="production",
+            sameSite: "lax",     
+            maxAge: 1000 * 60 * 60 * 24 * 7,
+        }).json({
             success:true,
             message:"Logged out successfully"
         })
@@ -231,15 +250,21 @@ export const refreshAccessToken = async(req:Request,res:Response)=>{
             })
         }
         const {accessToken,refreshToken} = await generateAccessRefreshToken(user._id as string);
-        //const loggedInUser = await User.findById(user._id).select("-providers -password -refreshToken");
-        const options = {
-            httpOnly:true,
-            secure:process.env.NODE_ENV==="production"
-        }
-        return res
+
+            return res
             .status(200)
-            .cookie("accessToken",accessToken,options)
-            .cookie("refreshToken",refreshToken,options)
+            .cookie("accessToken",accessToken,{
+            httpOnly:true,
+            secure:process.env.NODE_ENV==="production",
+            sameSite: "lax",     
+            maxAge: 1000 * 60 * 60 * 24 * 7,
+            })
+            .cookie("refreshToken",refreshToken,{
+            httpOnly:true,
+            secure:process.env.NODE_ENV==="production",
+            sameSite: "lax",     
+            maxAge: 1000 * 60 * 60 * 24 * 7,
+        })
             .json({
                 success:true,
                 message:"access token refreshed",
