@@ -47,7 +47,7 @@ export const generateOtp = async (req: Request, res: Response) => {
         for (let i = 0; i < 6; i++) {
             otp += digits[bytes[i] % 10];
         }
-        console.log("otp", otp);
+        //console.log("otp", otp);
         const otpHash = await bcrypt.hash(otp, 10);
         const otpObj = new Otp({ email, otpHash, expiresAt: Date.now() + 300000, used: false });
         await otpObj.save();
@@ -158,13 +158,13 @@ export const loginUser = async (req: Request, res: Response) => {
             .cookie("accessToken", accessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
-                sameSite: "lax",     
+                sameSite: "none",     
                 maxAge: 1000 * 60 * 60 * 24 * 7,
             })
             .cookie("refreshToken", refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
-                sameSite: "lax",     
+                sameSite: "none",     
                 maxAge: 1000 * 60 * 60 * 24 * 7,
             })
             .json({
@@ -197,19 +197,19 @@ export const logoutUser = async(req:Request,res:Response)=>{
         const options={
             httpOnly:true,
             secure:process.env.NODE_ENV==="production",
-            sameSite: "lax",     
+            sameSite: "none",     
             maxAge: 1000 * 60 * 60 * 24 * 7,
         }
 
         res.status(200).clearCookie("accessToken",{
             httpOnly:true,
             secure:process.env.NODE_ENV==="production",
-            sameSite: "lax",     
+            sameSite: "none",     
             maxAge: 1000 * 60 * 60 * 24 * 7,
         }).clearCookie("refreshToken",{
             httpOnly:true,
             secure:process.env.NODE_ENV==="production",
-            sameSite: "lax",     
+            sameSite: "none",     
             maxAge: 1000 * 60 * 60 * 24 * 7,
         }).json({
             success:true,
@@ -256,13 +256,13 @@ export const refreshAccessToken = async(req:Request,res:Response)=>{
             .cookie("accessToken",accessToken,{
             httpOnly:true,
             secure:process.env.NODE_ENV==="production",
-            sameSite: "lax",     
+            sameSite: "none",     
             maxAge: 1000 * 60 * 60 * 24 * 7,
             })
             .cookie("refreshToken",refreshToken,{
             httpOnly:true,
             secure:process.env.NODE_ENV==="production",
-            sameSite: "lax",     
+            sameSite: "none",     
             maxAge: 1000 * 60 * 60 * 24 * 7,
         })
             .json({

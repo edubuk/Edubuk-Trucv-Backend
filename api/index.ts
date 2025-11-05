@@ -21,7 +21,7 @@ app.use(cookieParser());
 app.use(cors(
   {
     methods: ["GET", "POST", "PUT", "DELETE","PATCH"],
-    origin:["http://localhost:5173","http://localhost:5174","http://edubuktrucv.com","https://www.edubuktrucv.com"],
+    origin:["http://localhost:5173","http://localhost:5174","https://edubuktrucv.com","https://www.edubuktrucv.com"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials:true
   }

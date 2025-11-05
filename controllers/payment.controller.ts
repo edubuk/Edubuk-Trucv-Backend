@@ -121,10 +121,10 @@ export const couponVerification = async (req: Request, res: Response) => {
     endDate.setMonth(endDate.getMonth() + 6);
     const couponUser = await Subscription.findOne({ couponCode: couponCode as string });
     if (couponUser) {
-      return res.status(200).json({
-        success: true,
+      return res.status(400).json({
+        success: false,
         applied: false,
-        value: 590,
+        value: 175,
         message: "This coupon is already used",
       });
     }
@@ -147,6 +147,7 @@ export const couponVerification = async (req: Request, res: Response) => {
         // Create new user with Pro subscription
         await new Subscription({
           userId: typeReq.user._id,
+          orderId:"none",
           subscriptionPlan: "pro",
           paymentId: "FREE",
           couponCode: couponCode,
