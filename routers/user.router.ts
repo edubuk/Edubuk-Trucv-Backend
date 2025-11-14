@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { generateOtp, getUser, loginUser, logoutUser, refreshAccessToken, registerUser, sendResetLink, updatePassword, userDocs, userSubscription } from "../controllers/user.controller";
+import { deleteUserData, generateOtp, getUser, loginUser, logoutUser, refreshAccessToken, registerUser, sendResetLink, updatePassword, updateUserInfo, userDocs, userSubscription } from "../controllers/user.controller";
 import { jwtTokenVerification } from "../middleware/tokenauth";
 //import { getUserCVIds } from "../controllers/cv.controller";
 
@@ -107,7 +107,7 @@ router.post("/login", loginUser);
  */
 router.put("/logout", jwtTokenVerification, logoutUser)
 
-router.post("/reshresh-token", refreshAccessToken)
+router.post("/refresh-token", refreshAccessToken)
 
 /**
  * @swagger
@@ -216,5 +216,8 @@ router.post("/password-reset-link", sendResetLink);
  */
 router.post("/update-password", updatePassword);
 
+router.delete("/delete-userData",jwtTokenVerification,deleteUserData)
+
+router.put("/update-userInfo",jwtTokenVerification,updateUserInfo)
 
 export default router;

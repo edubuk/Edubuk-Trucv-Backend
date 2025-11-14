@@ -29,3 +29,4 @@ const certificateSchema = new Schema({
 }, { timestamps: true });
 
 export const Certificate = model("Certificate", certificateSchema);
+

@@ -4,25 +4,25 @@ import Subscription from "../models/subscription.model";
 
 
 export const adminController = async (req:Request,res:Response) => {
-    const userData = req.user;
-    console.log("userData",userData);
-    const ALLOWED_EMAILS:string[] = process.env.ADMIN_EMAILS?.split(",") || [];
-    // console.log("ALLOWED_EMAIL",ALLOWED_EMAILS[5].trim()===userData?.email.toString());
-    // console.log("ALLOWED_EMAIL",ALLOWED_EMAILS.includes(userData?.email));
+    // const userData = req.user;
+    // console.log("userData",userData);
+    // const ALLOWED_EMAILS:string[] = process.env.ADMIN_EMAILS?.split(",") || [];
+    // // console.log("ALLOWED_EMAIL",ALLOWED_EMAILS[5].trim()===userData?.email.toString());
+    // // console.log("ALLOWED_EMAIL",ALLOWED_EMAILS.includes(userData?.email));
     
-    try {
-        if(userData?.email && ALLOWED_EMAILS.includes(userData?.email)){
-            const getAllUser = await User.find();
-            if(!getAllUser){
-                return res.status(404).json({message:"No User Found",success:false})
-            }
-            return res.status(200).json({message:"User Found",data:getAllUser,success:true})
-        }
-        return res.status(401).json({message:"Unauthorized",success:false})
-    } catch (error) {
-        console.log("ERROR:ADMIN_CONTROLLER",error)
-        return res.status(500).json({message:"Something went wrong",error:error,success:false})
-    }
+    // try {
+    //     if(userData?.email && ALLOWED_EMAILS.includes(userData?.email)){
+    //         const getAllUser = await User.find();
+    //         if(!getAllUser){
+    //             return res.status(404).json({message:"No User Found",success:false})
+    //         }
+    //         return res.status(200).json({message:"User Found",data:getAllUser,success:true})
+    //     }
+    //     return res.status(401).json({message:"Unauthorized",success:false})
+    // } catch (error) {
+    //     console.log("ERROR:ADMIN_CONTROLLER",error)
+    //     return res.status(500).json({message:"Something went wrong",error:error,success:false})
+    // }
 }
 
 export const getUsers = async(req:Request,res:Response)=>{
@@ -65,7 +65,7 @@ export const getUsers = async(req:Request,res:Response)=>{
           })
         }
 
-        const total = users.length;
+        const total = await User.countDocuments();
         const totalPages = Math.max(Math.ceil(total/limit),1);
         return res.status(200).json({
           success:true,
@@ -117,4 +117,7 @@ export const updateSubscriptionPlan = async (req:Request,res:Response) => {
         return res.status(500).json({message:"Something went wrong",error:error,success:false})
     }
 }
+
+
+
 

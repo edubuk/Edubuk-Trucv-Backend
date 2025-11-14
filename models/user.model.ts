@@ -23,10 +23,15 @@ export interface IUser extends Document {
     password?: string,
     refreshToken?: string,
     uuid: string,
-    subscriptionPlan: string,
+    githubUrl?:string,
+    linkedInUrl?:string,
+    profession?:string,
+    yearOfExp?:string,
+    subscriptionPlan?: string,
     createdAt: Date,
     updatedAt: Date,
     lastLoginAt: Date,
+    selfAttested:boolean,
     resetPasswordToken:string|undefined,
     resetPasswordExpires:Date|undefined,
     passwordChangedAt:Date,
@@ -72,12 +77,8 @@ const userSchema = new Schema<IUser>({
         index: true,
         unique: true
     },
-    userImageUrl: {
-        type: String,
-    },
     phoneNumber: {
         type: String,
-        required: true,
     },
     address: {
         type: String,
@@ -88,12 +89,28 @@ const userSchema = new Schema<IUser>({
         enum: ["user", "admin", "hr", "university"],
         default: "user"
     },
+    userImageUrl: {
+        type: String,
+    },
+    profession:{
+        type:String,
+        required:true,
+    },
+    yearOfExp:{
+        type:String,
+        required:true,
+    },
+    selfAttested:{
+        type:Boolean
+    },
     resetPasswordToken: String,      // hashed token
     resetPasswordExpires: Date,      // expiry time
     passwordChangedAt: Date,
     refreshToken: {
         type: String,
     },
+    linkedInUrl:{type:String},
+    githubUrl:{type:String},
     providers: {
         type: [ProviderSchema],
         default: []
@@ -135,7 +152,7 @@ userSchema.methods.generateAccessToken = function (
         email: this.email,
         phoneNumber: this.phoneNumber,
         uuid: this.uuid,
-        roles: this.roles
+        roles: this.roles,
     };
 
     const secret = process.env.ACCESS_TOKEN_SECRET;

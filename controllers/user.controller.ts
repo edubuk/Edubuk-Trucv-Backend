@@ -11,6 +11,8 @@ import jwt from "jsonwebtoken";
 import { Certificate } from "../models/userDoc.model";
 import Subscription from "../models/subscription.model";
 import { sendResetLinkEMail } from "../utils/sendResetEmail";
+import { CV } from "../models/cv.model";
+
 config();
 
 const generateAccessRefreshToken = async (userId: string) => {
@@ -284,10 +286,17 @@ export const refreshAccessToken = async(req:Request,res:Response)=>{
 export const getUser = async(req:Request,res:Response)=>{
     try {
         const reqType = req as IGetUserAuthInfoRequest;
+        const user = await User.findById(reqType.user._id).select("-providers -password -refreshToken");
+        if(!user){
+            res.status(400).json({
+                success:false,
+                message:"User not found"
+            })
+        }
         res.status(200).json({
             success:true,
             message:"User fetched successfully",
-            user:reqType.user
+            user:user
         })
     } catch (error:any) {
         res.status(500).json({
@@ -344,11 +353,16 @@ export const updateUserInfo = async(req:Request,res:Response)=>{
                 message:"User not found"
             })
         }
-        const {name,phoneNumber,address,userImageUrl} = req.body;
+        const {name,phoneNumber,address,userImageUrl,linkedInUrl,githubUrl,selfAttested,yearOfExp,profession} = req.body;
         user.name = name;
         user.phoneNumber = phoneNumber;
         user.address = address;
         user.userImageUrl = userImageUrl || "";
+        user.linkedInUrl=linkedInUrl;
+        user.githubUrl=githubUrl;
+        user.selfAttested=selfAttested;
+        user.yearOfExp=yearOfExp;
+        user.profession=profession;
         await user.save();
         return res.status(200).json({
             success:true,
@@ -451,3 +465,43 @@ export const updatePassword = async(req:Request,res:Response)=>{
         })
     }
 }
+
+export const deleteUserData = async(req:Request,res:Response)=>{
+    try {
+        const typeReq = req as IGetUserAuthInfoRequest;
+        const userId = typeReq.user._id;
+        const user = await User.findById(userId);
+        if(!user)
+        {
+            return res.status(401).json({
+                success:false,
+                message:"User not found"
+            })
+        }
+        await Promise.all([
+            Subscription.deleteMany({userId:userId}),
+            Certificate.deleteMany({userId:userId}),
+            CV.deleteMany({userId:userId})
+        ]);
+
+        const result = await User.deleteOne({_id:userId});
+        if (result.deletedCount === 0) {
+            return res.status(401).json({
+                success:false,
+                message:"User not found or already deleted"
+            })
+        }
+        return res.status(200).json({
+            success:true,
+            message:"User deleted successfully",
+            deletedId : userId
+        })
+    } catch (error:any) {
+        res.status(500).json({
+            success:false,
+            message:"internal server error",
+            error:error | error.message
+        })
+    }
+} 
+

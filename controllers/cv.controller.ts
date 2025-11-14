@@ -348,6 +348,9 @@ export const getUserCVIds = async(req:Request,res:Response)=>{
         })
     }
 }
+
+
+
 // export const getAllCvIds= async(req:Request,res:Response)=>{
 //   try {
 //     const {email} = req.params;

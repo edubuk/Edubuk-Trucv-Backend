@@ -7,10 +7,14 @@ import qrRoute from "../routers/qr.router";
 import userRouter from "../routers/user.router";
 import adminRouter from "../routers/admin.router";
 import bodyParser from "body-parser";
+import digilockerRouter from "../routers/digilocker.router";
 import cors from "cors";
+import cron from "node-cron";
+import docRouter from "../routers/education.router";
 import {swaggerSpec,swaggerUiSetup} from "../swagger";
 import cookieParser from "cookie-parser"
-
+import IssuerData from "../states/state";
+import { fetchIssuer } from "../controllers/digilocker.controller";
 // Initialize dotenv and Express app
 config();
 const app = express();
@@ -27,23 +31,34 @@ app.use(cors(
   }
 ));
 
+
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api-docs",swaggerUiSetup.serve,swaggerUiSetup.setup(swaggerSpec));
+app.use("/doc",docRouter);
 app.use("/cv", cvRouter);
 app.use("/user",userRouter);
 app.use("/file",uploadRouter);
 app.use("/qr", qrRoute);
 app.use("/admin", adminRouter);
+app.use("/api/dl",digilockerRouter)
 app.get("/", (req: Request, res: Response) => {
   return res.json({
     message: "Health is ok !",
   });
 });
 
-
+cron.schedule("0 0 * * *", () => {
+  (async()=>{
+    const issuers = await fetchIssuer();
+    IssuerData.data = issuers.issuers;
+    IssuerData.lastFetched = Date.now();
+    //console.log("issuers",issuers);
+    //console.log("IssuerData",IssuerData);
+  })();
+},{timezone:"Asia/Kolkata"})
 
 app.listen(process.env.PORT || 5000, () => {
   MongoConnection();
