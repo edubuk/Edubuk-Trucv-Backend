@@ -12,11 +12,8 @@ import cors from "cors";
 import { swaggerSpec, swaggerUiSetup } from "../swagger";
 import trujobsRouter from "../routers/trujobs.route";
 import cookieParser from "cookie-parser";
-
 import cron from "node-cron";
 import docRouter from "../routers/education.router";
-import {swaggerSpec,swaggerUiSetup} from "../swagger";
-import cookieParser from "cookie-parser"
 import IssuerData from "../states/state";
 import { fetchIssuer } from "../controllers/digilocker.controller";
 import session from "express-session";
@@ -44,9 +41,6 @@ app.use(
     credentials: true,
   })
 );
-    credentials:true
-  }
-));
 
 
 app.use(express.json());
@@ -83,7 +77,6 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-app.listen(5000, () => {
 cron.schedule("*/5 * * * *", () => {
   (async()=>{
     const issuers = await fetchIssuer();
