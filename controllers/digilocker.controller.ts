@@ -82,7 +82,7 @@ export const digilockerCallback = async (req: Request, res: Response) => {
             httpOnly: true,
             secure: process.env.NODE_ENV==="production"
         }
-      res.status(200).cookie("dl_token",data.access_token,options).redirect("http://localhost:5173/create-cv"); // redirect to frontend after login
+      res.status(200).cookie("dl_token",data.access_token,options).redirect(`${process.env.CLIENT_URL}/create-cv`); // redirect to frontend after login
     } else {
       res.status(400).json(data);
     }
@@ -236,39 +236,29 @@ export const fetchXCert = async (req: Request, res: Response) => {
         //const token = dlSession(req).dl_token;
         const token = req.cookies.dl_token;
         const typeClass = req.query.typeClass;
+        const orgId = req.query.orgId;
         console.log({typeClass})
         if(!token){
           return res.status(401).json({ ok: false, error: "Not logged in" });
         }
         const body = qs.stringify({
-          orgid:"000027",
+          orgid:orgId as string,
           doctype:"HSCER",
           consent:"Y",
-          rollno: "23267711",
-          year: "2022"
         });
         console.log("body", body);
         const headers = {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Authorization': `Bearer ${token}`
         };
-        // const response = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/pulldocument`, 
-        //   body,
-        //   {
-        //   headers: headers,
-        //   timeout: 15000
-        // }); 
-        if(typeClass==="class10"){
-          return res.json({ ok: true, uri:"bafybeid64bqhdeja7cc7wmtg6r6ugvlffgeetvz6hrrywfqfbexaenhsqa" });
-        }
-        if(typeClass==="class12"){
-          return res.json({ ok: true, uri:"bafybeihrj2gavmeg6ixrrnt3cgssoqtblq5xkwpdl2t3e7pbsvfxljt4km" });
-        }
-        if(typeClass==="undergraduation"){
-          return res.json({ ok: true, uri:"bafybeihv3snlvs4sl3pgquj54awd6wgqfopwh6lo7izagfsy2rb4b7qs54" });
-        }
+        const response = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/pulldocument`, 
+          body,
+          {
+          headers: headers,
+          timeout: 15000
+        }); 
         
-        return res.status(401).json({ok:false,message:"document not found"});
+        return res.status(200).json({ok:true,message:"document found",response});
       } catch (err:any) {
         console.error('Digilocker pull doc error', err.response?.data || err.message || err);
         res.status(500).json({ ok: false, error: err.response?.data || err.message });

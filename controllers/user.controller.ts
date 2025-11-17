@@ -353,7 +353,7 @@ export const updateUserInfo = async(req:Request,res:Response)=>{
                 message:"User not found"
             })
         }
-        const {name,phoneNumber,address,userImageUrl,linkedInUrl,githubUrl,selfAttested,yearOfExp,profession} = req.body;
+        const {name,phoneNumber,address,userImageUrl,linkedInUrl,githubUrl,selfAttested,yearOfExp,profession,profileSummary} = req.body;
         user.name = name;
         user.phoneNumber = phoneNumber;
         user.address = address;
@@ -363,6 +363,7 @@ export const updateUserInfo = async(req:Request,res:Response)=>{
         user.selfAttested=selfAttested;
         user.yearOfExp=yearOfExp;
         user.profession=profession;
+        user.profileSummary=profileSummary;
         await user.save();
         return res.status(200).json({
             success:true,

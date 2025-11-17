@@ -28,6 +28,7 @@ export interface IUser extends Document {
     profession?:string,
     yearOfExp?:string,
     subscriptionPlan?: string,
+    profileSummary?:string,
     createdAt: Date,
     updatedAt: Date,
     lastLoginAt: Date,
@@ -111,6 +112,7 @@ const userSchema = new Schema<IUser>({
     },
     linkedInUrl:{type:String},
     githubUrl:{type:String},
+    profileSummary:{type:String},
     providers: {
         type: [ProviderSchema],
         default: []

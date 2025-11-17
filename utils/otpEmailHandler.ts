@@ -1,4 +1,3 @@
-
 import { EmailClient } from "@azure/communication-email";
 import { configDotenv } from "dotenv";
 configDotenv();
@@ -6,14 +5,14 @@ configDotenv();
 const connectionString = process.env.ACS_CONNECTION_STRING as string; // from Azure portal
 const client = new EmailClient(connectionString);
 //console.log({client})
-export const otpEmailHandler = async(emailId:string,otp:string)=>{
-    try {
+export const otpEmailHandler = async (emailId: string, otp: string) => {
+  try {
     const message = {
-    senderAddress: "noreply@edubukeseal.org",
-    content: {
-      subject: "Your Edubuk Verification Code",
-      plainText: "This is a test email sent from ACS Email SDK (Node.js).",
-      html: `<div style="max-width:600px;margin:auto;font-family:Arial,Helvetica,sans-serif;background:#ffffff;border:1px solid #e5eaf0;border-radius:10px;">
+      senderAddress: "noreply@edubukeseal.org",
+      content: {
+        subject: "Your Edubuk Verification Code",
+        plainText: "This is a test email sent from ACS Email SDK (Node.js).",
+        html: `<div style="max-width:600px;margin:auto;font-family:Arial,Helvetica,sans-serif;background:#ffffff;border:1px solid #e5eaf0;border-radius:10px;">
     
     <!-- Header -->
     <div style="text-align:center;padding:25px 20px 10px;">
@@ -61,26 +60,32 @@ export const otpEmailHandler = async(emailId:string,otp:string)=>{
       <p style="margin-top:8px;font-size:11px;opacity:0.8;">© 2025 Edubuk. All rights reserved.</p>
     </div>
 
-  </div>`
-    },
-    recipients: {
-      to: [{ address: emailId, displayName: "Recipient" }]
-    }
-  };
+  </div>`,
+      },
+      recipients: {
+        to: [{ address: emailId, displayName: "Recipient" }],
+      },
+    };
 
-  const poller = await client.beginSend(message);
-  const result = await poller.pollUntilDone();
-  return result.status;
-    } catch (error) {
-      console.log("error",error)
-    }
-}
+    const poller = await client.beginSend(message);
+    const result = await poller.pollUntilDone();
+    return result.status;
+  } catch (error) {
+    console.log("error", error);
+  }
+};
 
-
-export const docVerificationEmailHandler = async(emailId:string,documentName:string,applicantName:string,documentViewUrl:string,documentType:string)=>{
+export const docVerificationEmailHandler = async (
+  emailId: string,
+  documentName: string,
+  applicantName: string,
+  documentViewUrl: string,
+  documentType: string,
+  skills?: string | undefined,
+) => {
   try {
     const currentDate = new Date();
-    const html  = `<!DOCTYPE html>
+    const html = `<!DOCTYPE html>
 <html lang="en" style="font-family: Arial, sans-serif;">
   <head>
     <meta charset="UTF-8" />
@@ -127,10 +132,22 @@ export const docVerificationEmailHandler = async(emailId:string,documentName:str
               <td style="font-weight: bold;">Applicant Name:</td>
               <td>${applicantName}</td>
             </tr>
+            
+            ${skills
+                    ? `
+            <tr>
+              <td style="font-weight: bold;">Used Skills:</td>
+              <td>${skills}</td>
+            </tr>
+            `
+                    : ""
+                  }
+            
             <tr>
               <td style="font-weight: bold;">Submitted On:</td>
               <td>${currentDate}</td>
             </tr>
+
           </table>
 
           <p style="margin-bottom: 20px;">
@@ -183,24 +200,24 @@ export const docVerificationEmailHandler = async(emailId:string,documentName:str
       </tr>
     </table>
   </body>
-</html>`
-    
-  const message = {
-    senderAddress: "noreply@edubukeseal.org",
-    content: {
-      subject: "Your Edubuk Verification Code",
-      plainText: "This is a test email sent from ACS Email SDK (Node.js).",
-      html: html
-    },
-    recipients: {
-      to: [{ address: emailId, displayName: "Recipient" }]
-    }
-  };
+</html>`;
 
-  const poller = await client.beginSend(message);
-  const result = await poller.pollUntilDone();
-  return result.status;
-    } catch (error) {
-      console.log("error",error)
-    }
-}
+    const message = {
+      senderAddress: "noreply@edubukeseal.org",
+      content: {
+        subject: "Your Edubuk Verification Code",
+        plainText: "This is a test email sent from ACS Email SDK (Node.js).",
+        html: html,
+      },
+      recipients: {
+        to: [{ address: emailId, displayName: "Recipient" }],
+      },
+    };
+
+    const poller = await client.beginSend(message);
+    const result = await poller.pollUntilDone();
+    return result.status;
+  } catch (error) {
+    console.log("error", error);
+  }
+};

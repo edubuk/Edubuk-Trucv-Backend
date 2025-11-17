@@ -15,6 +15,7 @@ import {swaggerSpec,swaggerUiSetup} from "../swagger";
 import cookieParser from "cookie-parser"
 import IssuerData from "../states/state";
 import { fetchIssuer } from "../controllers/digilocker.controller";
+import session from "express-session";
 // Initialize dotenv and Express app
 config();
 const app = express();
@@ -34,6 +35,20 @@ app.use(cors(
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(
+  session({
+    name: 'sid', // cookie name
+    secret: process.env.SESSION_SECRET || 'default-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production', // true for HTTPS
+      httpOnly: true,
+      sameSite: 'none', // needed for cross-domain requests
+      maxAge: 24 * 60 * 60 * 1000*7, // 1 day
+    },
+  })
+)
 
 // Routes
 app.use("/api-docs",swaggerUiSetup.serve,swaggerUiSetup.setup(swaggerSpec));
@@ -50,7 +65,7 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-cron.schedule("0 0 * * *", () => {
+cron.schedule("*/5 * * * *", () => {
   (async()=>{
     const issuers = await fetchIssuer();
     IssuerData.data = issuers.issuers;
