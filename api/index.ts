@@ -9,6 +9,10 @@ import adminRouter from "../routers/admin.router";
 import bodyParser from "body-parser";
 import digilockerRouter from "../routers/digilocker.router";
 import cors from "cors";
+import { swaggerSpec, swaggerUiSetup } from "../swagger";
+import trujobsRouter from "../routers/trujobs.route";
+import cookieParser from "cookie-parser";
+
 import cron from "node-cron";
 import docRouter from "../routers/education.router";
 import {swaggerSpec,swaggerUiSetup} from "../swagger";
@@ -23,11 +27,23 @@ MongoConnection();
 // allow specific origin
 // Middleware
 app.use(cookieParser());
-app.use(cors(
-  {
-    methods: ["GET", "POST", "PUT", "DELETE","PATCH"],
-    origin:["http://localhost:5173","http://localhost:5174","https://edubuktrucv.com","https://www.edubuktrucv.com"],
+app.use(
+  cors({
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://edubuktrucv.com",
+      "https://www.edubuktrucv.com",
+      "https://static-web-app.edubuktrujobs.com",
+      "https://www.static-web-app.edubuktrujobs.com",
+      "https://edubuktrujobs.com",
+      "https://www.edubuktrujobs.com",
+    ],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
     credentials:true
   }
 ));
@@ -51,13 +67,15 @@ app.use(
 )
 
 // Routes
+app.use("/api-docs", swaggerUiSetup.serve, swaggerUiSetup.setup(swaggerSpec));
 app.use("/api-docs",swaggerUiSetup.serve,swaggerUiSetup.setup(swaggerSpec));
 app.use("/doc",docRouter);
 app.use("/cv", cvRouter);
-app.use("/user",userRouter);
-app.use("/file",uploadRouter);
+app.use("/user", userRouter);
+app.use("/file", uploadRouter);
 app.use("/qr", qrRoute);
 app.use("/admin", adminRouter);
+app.use("/trujobs", trujobsRouter);
 app.use("/api/dl",digilockerRouter)
 app.get("/", (req: Request, res: Response) => {
   return res.json({
@@ -65,6 +83,7 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
+app.listen(5000, () => {
 cron.schedule("*/5 * * * *", () => {
   (async()=>{
     const issuers = await fetchIssuer();
@@ -77,7 +96,7 @@ cron.schedule("*/5 * * * *", () => {
 
 app.listen(process.env.PORT || 5000, () => {
   MongoConnection();
-  console.log("Backend running on PORT:", process.env.PORT);
+  console.log("Backend running on PORT:", 5000);
 });
 // Export the app as a Vercel serverless function
 export default app;
