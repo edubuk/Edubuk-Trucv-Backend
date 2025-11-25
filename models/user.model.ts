@@ -94,12 +94,10 @@ const userSchema = new Schema<IUser>({
         type: String,
     },
     profession:{
-        type:String,
-        required:true,
+        type:String
     },
     yearOfExp:{
-        type:String,
-        required:true,
+        type:String
     },
     selfAttested:{
         type:Boolean

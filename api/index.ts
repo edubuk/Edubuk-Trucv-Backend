@@ -1,28 +1,31 @@
 import express, { Request, Response } from "express";
 import { config } from "dotenv";
 import { MongoConnection } from "../database/mongo.connection";
+import bodyParser from "body-parser";
+import digilockerRouter from "../routers/digilocker.router";
+import cors from "cors";
+import { swaggerSpec, swaggerUiSetup } from "../swagger";
+import cookieParser from "cookie-parser";
+import cron from "node-cron";
+
+import docRouter from "../routers/education.router";
 import cvRouter from "../routers/cv.router";
 import uploadRouter from "../routers/upload.router";
 import qrRoute from "../routers/qr.router";
 import userRouter from "../routers/user.router";
 import adminRouter from "../routers/admin.router";
-import bodyParser from "body-parser";
-import digilockerRouter from "../routers/digilocker.router";
-import cors from "cors";
-import { swaggerSpec, swaggerUiSetup } from "../swagger";
 import trujobsRouter from "../routers/trujobs.route";
-import cookieParser from "cookie-parser";
-import cron from "node-cron";
-import docRouter from "../routers/education.router";
+import approvalRouter from "../routers/approval.router"
 import IssuerData from "../states/state";
 import { fetchIssuer } from "../controllers/digilocker.controller";
-import session from "express-session";
+
 // Initialize dotenv and Express app
 config();
 const app = express();
 MongoConnection();
 // allow specific origin
 // Middleware
+app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
@@ -42,23 +45,23 @@ app.use(
   })
 );
 
-
-app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(
-  session({
-    name: 'sid', // cookie name
-    secret: process.env.SESSION_SECRET || 'default-secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === 'production', // true for HTTPS
-      httpOnly: true,
-      sameSite: 'none', // needed for cross-domain requests
-      maxAge: 24 * 60 * 60 * 1000*7, // 1 day
-    },
-  })
-)
+// app.use(
+//   session({
+//     name: process.env.SESSION_NAME || "sid",
+//     secret: process.env.SESSION_SECRET || "default-secret", // MUST be set in production
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//       secure: process.env.NODE_ENV === "production",  // requires HTTPS
+//       httpOnly: true,                                // prevents XSS cookie access
+//       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+//       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+//     },
+
+//     proxy: process.env.NODE_ENV === "production", // trust reverse proxy (NGINX/Cloudflare)
+//   })
+// );
 
 // Routes
 app.use("/api-docs", swaggerUiSetup.serve, swaggerUiSetup.setup(swaggerSpec));
@@ -70,14 +73,15 @@ app.use("/file", uploadRouter);
 app.use("/qr", qrRoute);
 app.use("/admin", adminRouter);
 app.use("/trujobs", trujobsRouter);
-app.use("/api/dl",digilockerRouter)
+app.use("/api/dl",digilockerRouter);
+app.use("/issuer",approvalRouter)
 app.get("/", (req: Request, res: Response) => {
   return res.json({
     message: "Health is ok !",
   });
 });
 
-cron.schedule("*/5 * * * *", () => {
+cron.schedule("0 2 * * *", () => {
   (async()=>{
     const issuers = await fetchIssuer();
     IssuerData.data = issuers.issuers;

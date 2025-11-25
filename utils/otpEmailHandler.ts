@@ -1,10 +1,28 @@
 import { EmailClient } from "@azure/communication-email";
 import { configDotenv } from "dotenv";
+import mongoose from "mongoose";
+import { Request,Response } from "express";
+import { SkillVerificationReq } from "../models/skillVerificationRequest.model";
+import { IGetUserAuthInfoRequest } from "../types/definitionFile";
 configDotenv();
 //console.log(process.env["ACS_CONNECTION_STRING"]);
 const connectionString = process.env.ACS_CONNECTION_STRING as string; // from Azure portal
 const client = new EmailClient(connectionString);
 //console.log({client})
+export interface IDocEmail {
+    emailId: string;
+    level?: string;
+    boardNameOrDegree?: string;
+    institutionName?: string;
+    documentViewUrl?: string;
+    skills?: string | undefined;
+    organisation?:string,
+    companyName?:string,
+    duration?:{from?:string,to?:string},
+    position?:string,
+    id?:mongoose.ObjectId,
+    docType:string
+}
 export const otpEmailHandler = async (emailId: string, otp: string) => {
   try {
     const message = {
@@ -76,12 +94,18 @@ export const otpEmailHandler = async (emailId: string, otp: string) => {
 };
 
 export const docVerificationEmailHandler = async (
-  emailId: string,
-  documentName: string,
-  applicantName: string,
-  documentViewUrl: string,
-  documentType: string,
-  skills?: string | undefined,
+  {emailId,
+  level,
+  boardNameOrDegree,
+  institutionName,
+  documentViewUrl,
+  skills,
+  organisation,
+  companyName,
+  duration,
+  position,
+  id,
+  docType}:IDocEmail
 ) => {
   try {
     const currentDate = new Date();
@@ -102,7 +126,7 @@ export const docVerificationEmailHandler = async (
     >
       <tr>
         <td style="padding: 20px 30px; text-align: center; background: #03257e; border-radius: 10px 10px 0 0;">
-          <h2 style="color: #ffffff; margin: 0;">EduBukeSeal Verification Portal</h2>
+          <h2 style="color: #ffffff; margin: 0;">Edubuk Verification Portal</h2>
         </td>
       </tr>
 
@@ -120,18 +144,31 @@ export const docVerificationEmailHandler = async (
             cellspacing="0"
             style="background-color: #f4f6fa; border-radius: 8px; margin: 20px 0;"
           >
-            <tr>
-              <td style="width: 40%; font-weight: bold;">Document Name:</td>
-              <td>${documentName}</td>
-            </tr>
-            <tr>
-              <td style="font-weight: bold;">Document Type:</td>
-              <td>${documentType}</td>
-            </tr>
-            <tr>
-              <td style="font-weight: bold;">Applicant Name:</td>
-              <td>${applicantName}</td>
-            </tr>
+            ${level? `<tr>
+              <td style="width: 40%; font-weight: bold;">Document Type:</td>
+              <td>${level}</td>
+            </tr>`:""}
+            ${boardNameOrDegree? `<tr>
+              <td style="font-weight: bold;">Board Name/Degree:</td>
+              <td>${boardNameOrDegree}</td>
+            </tr>`:""}
+
+            ${institutionName? `<tr>
+              <td style="font-weight: bold;">Institution Name:</td>
+              <td>${institutionName}</td>
+            </tr>`:""}
+            ${companyName? `<tr>
+              <td style="font-weight: bold;">Organisation Name:</td>
+              <td>${companyName}</td>
+            </tr>`:""}
+            ${position? `<tr>
+              <td style="font-weight: bold;">Position:</td>
+              <td>${position}</td>
+            </tr>`:""}
+            ${organisation? `<tr>
+              <td style="font-weight: bold;">Organisation Name:</td>
+              <td>${organisation}</td>
+            </tr>`:""}
             
             ${skills
                     ? `
@@ -144,6 +181,10 @@ export const docVerificationEmailHandler = async (
                   }
             
             <tr>
+            ${duration? `<tr>
+              <td style="font-weight: bold;">Duration:</td>
+              <td>${duration?.from}-${duration?.to}</td>
+            </tr>`:""}
               <td style="font-weight: bold;">Submitted On:</td>
               <td>${currentDate}</td>
             </tr>
@@ -172,13 +213,16 @@ export const docVerificationEmailHandler = async (
 
           <div style="text-align: center; margin-bottom: 20px;">
             <a
-              href="{{approveUrl}}"
+              href="https://trucv.org/issuer/approve/${id}?emailId=${emailId}&docType=${docType}"
+              target="_blank"
+              
               style="display: inline-block; padding: 10px 20px; margin-right: 10px; background: #28a745; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;"
             >
               ✔ Approve
             </a>
             <a
-              href="{{rejectUrl}}"
+              href="https://trucv.org/issuer/reject/${id}?emailId=${emailId}&docType=${docType}"
+              target="_blank"
               style="display: inline-block; padding: 10px 20px; background: #f14419; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;"
             >
               ✗ Reject
@@ -203,9 +247,9 @@ export const docVerificationEmailHandler = async (
 </html>`;
 
     const message = {
-      senderAddress: "noreply@edubukeseal.org",
+      senderAddress: "support@edubukeseal.org",
       content: {
-        subject: "Your Edubuk Verification Code",
+        subject: "Candidate Documents Verification",
         plainText: "This is a test email sent from ACS Email SDK (Node.js).",
         html: html,
       },
@@ -221,3 +265,91 @@ export const docVerificationEmailHandler = async (
     console.log("error", error);
   }
 };
+
+
+export const skillVerificationEmailHandler = async(emailId:string,userName:string,token:string)=>{
+  try {
+    const html = `<!DOCTYPE html>
+    <html lang="en" style="font-family: Arial, sans-serif;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skills Verification Request</title>
+  </head>
+  <body style="background-color: #f8f9fa; padding: 20px; color: #333;">
+    <table
+      align="center"
+      cellpadding="0"
+      cellspacing="0"
+      width="100%"
+      style="max-width: 600px; background: #ffffff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+    >
+      <tr>
+        <td style="padding: 20px 30px; text-align: center; background: #03257e; border-radius: 10px 10px 0 0;">
+          <h2 style="color: #ffffff; margin: 0;">Edubuk Verification Portal</h2>
+        </td>
+      </tr>
+
+      <tr>
+        <td style="padding: 25px 30px;">
+          <p style="font-size: 16px; margin-bottom: 15px;">Dear <strong>Issuer</strong>,</p>
+          <p style="font-size: 15px; line-height: 1.6;">
+            ${userName} has been requested for verification. Please review the details below and take an appropriate action.
+          </p>
+
+          <!-- Document Metadata -->
+
+          <p style="margin-bottom: 20px;">
+            You can review the skill and also can change the level securely using the link below:
+          </p>
+
+
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 25px 0;" />
+
+          <div style="text-align: center; margin-bottom: 20px;">
+            <a
+              href="https://edubuktrucv.com/verify-skill/${token}"
+              target="_blank"
+              
+              style="display: inline-block; padding: 10px 20px; margin-right: 10px; background: #28a745; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;"
+            >
+              Proceed to Endorse the Skills ↗
+            </a>
+          </div>
+
+          <p style="font-size: 14px; color: #555; line-height: 1.5;">
+            <strong>Note:</strong> If this document does not belong to your organization or was submitted mistakenly, please
+            report it immediately at
+            <a href="mailto:support@edubuk.com" style="color: #03257e; text-decoration: none;">
+              support@edubuk.com
+            </a>.
+          </p>
+
+          <p style="margin-top: 25px; font-size: 13px; color: #888; text-align: center;">
+            This email was sent automatically by EduBukeSeal Verification System. Please do not reply.
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+
+    const message = {
+      senderAddress: "support@edubukeseal.org",
+      content: {
+        subject: "Candidate Skill Verification",
+        plainText: "This is a test email sent from ACS Email SDK (Node.js).",
+        html: html,
+      },
+      recipients: {
+        to: [{ address: emailId, displayName: "Recipient" }],
+      },
+    };
+
+    const poller = await client.beginSend(message);
+    const result = await poller.pollUntilDone();
+    return result.status;
+  } catch (error) {
+    console.log("error", error);
+  }
+}

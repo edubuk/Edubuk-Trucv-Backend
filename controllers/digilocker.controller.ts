@@ -12,42 +12,31 @@ configDotenv();
 
 
 function currentIstSeconds() {
-    const IST_OFFSET_MS = 0;
-    return Math.floor((Date.now() + IST_OFFSET_MS) / 1000).toString();
+  const IST_OFFSET_MS = 0;
+  return Math.floor((Date.now() + IST_OFFSET_MS) / 1000).toString();
 }
 
 
-// Narrow session type locally to ensure TS recognizes our custom fields in this module.
-function dlSession(req: Request) {
-  return req.session as Session & {
-    pkce_verifier?: string;
-    dl_token?: string;
-  };
-}
-
-
-function digilockerHmacConcat(clientId: string, clientSecret: string,ts: string,docType?: string,orgid?: string) {
-  if(orgid && docType)
-  {
-    console.log({orgid,docType});
+function digilockerHmacConcat(clientId: string, clientSecret: string, ts: string, docType?: string, orgid?: string) {
+  if (orgid && docType) {
+    console.log({ orgid, docType });
     const raw = clientSecret + clientId + orgid + docType + ts; // concat in this order
     const digest = crypto.createHash('sha256').update(raw).digest('hex'); // hex value
     return digest;
   }
-  else if(docType)
-  {
-    console.log({docType});
+  else if (docType) {
+    console.log({ docType });
     const raw = clientSecret + clientId + docType + ts; // concat in this order
     const digest = crypto.createHash('sha256').update(raw).digest('hex'); // hex value
     return digest;
   }
-  
-    const raw = clientSecret + clientId + ts; // concat in this order
-    const digest = crypto.createHash('sha256').update(raw).digest('hex'); // hex value
-    return digest;
-  
+
+  const raw = clientSecret + clientId + ts; // concat in this order
+  const digest = crypto.createHash('sha256').update(raw).digest('hex'); // hex value
+  return digest;
+
 }
- // OAuth2 Callback → exchange code + verifier for tokens
+// OAuth2 Callback → exchange code + verifier for tokens
 export const digilockerCallback = async (req: Request, res: Response) => {
   const code = req.query.code;
   console.log("req.query", req.query);
@@ -77,12 +66,13 @@ export const digilockerCallback = async (req: Request, res: Response) => {
     console.log("Token response:", data);
 
     if (data.access_token) {
-      //dlSession(req).dl_token = data.access_token;
-      const options = {
-            httpOnly: true,
-            secure: process.env.NODE_ENV==="production"
-        }
-      res.status(200).cookie("dl_token",data.access_token,options).redirect(`${process.env.CLIENT_URL}/create-cv`); // redirect to frontend after login
+      res.status(200).cookie("dl_token", data.access_token, {
+        domain:"edubuktrucv.com",
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+      }).redirect(`${process.env.CLIENT_URL}/create-cv`);
     } else {
       res.status(400).json(data);
     }
@@ -98,15 +88,16 @@ export const saveVerifier = (req: Request, res: Response) => {
   const { verifier } = req.body;
   console.log("verifier", verifier);
   if (typeof verifier !== "string") return res.status(400).json({ ok: false, error: "Invalid verifier" });
-  dlSession(req).pkce_verifier = verifier;
-  req.session.save();
+
+  res.status(200).cookie("pkce_verifier", verifier, {
+    domain:"edubuktrucv.com",
+    httpOnly: true,
+    secure:true,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  })
+  .json({ ok: true });
   
-  console.log(req.session);
-  const options = {
-            httpOnly: true,
-            secure: process.env.NODE_ENV==="production"
-        }
-  res.status(200).cookie("pkce_verifier",verifier,options).json({ ok: true });
 };
 
 
@@ -171,30 +162,30 @@ export const fetchDocuments = async (req: Request, res: Response) => {
 // fetch issuer
 
 export const fetchIssuer = async () => {
-    try {
-        const clientId = process.env.DIGILOCKER_CLIENT_ID as string;
-        const clientSecret = process.env.DIGILOCKER_CLIENT_SECRET as string;
-        const ts = currentIstSeconds().toString();
-        const hmac = digilockerHmacConcat(clientId, clientSecret,ts);
-        
-          // DigiLocker expects application/x-www-form-urlencoded POST parameters
-          const body = qs.stringify({
-            clientid: clientId,
-            hmac: hmac,
-            ts: ts,
-          });
-        
-          const headers = {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          };
-          console.log("body", body);
-          // POST to /pull/issuers (production URL in docs)
-          const resp = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/issuers`, body, { headers, timeout: 15000 });
-          return resp.data;
-    } catch (error:any) {
-        console.error('Digilocker issuers error', error.response?.data || error.message || error);
-        return error.response?.data || error.message;
-    }
+  try {
+    const clientId = process.env.DIGILOCKER_CLIENT_ID as string;
+    const clientSecret = process.env.DIGILOCKER_CLIENT_SECRET as string;
+    const ts = currentIstSeconds().toString();
+    const hmac = digilockerHmacConcat(clientId, clientSecret, ts);
+
+    // DigiLocker expects application/x-www-form-urlencoded POST parameters
+    const body = qs.stringify({
+      clientid: clientId,
+      hmac: hmac,
+      ts: ts,
+    });
+
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    };
+    console.log("body", body);
+    // POST to /pull/issuers (production URL in docs)
+    const resp = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/issuers`, body, { headers, timeout: 15000 });
+    return resp.data;
+  } catch (error: any) {
+    console.error('Digilocker issuers error', error.response?.data || error.message || error);
+    return error.response?.data || error.message;
+  }
 }
 
 
@@ -203,129 +194,129 @@ export const fetchDocType = async (req: Request, res: Response) => {
   console.log("hiting");
   const orgid = req.query.orgid;
   console.log("orgid", orgid);
-  try {   
+  try {
     const clientId = process.env.DIGILOCKER_CLIENT_ID as string;
     const clientSecret = process.env.DIGILOCKER_CLIENT_SECRET as string;
     const ts = currentIstSeconds().toString();
-    const hmac = digilockerHmacConcat(clientId, clientSecret,ts,orgid as string);
-        const body = qs.stringify({
-          clientid:clientId,
-          orgid: orgid as string,
-          ts: ts,
-          hmac:hmac,
-        });
-        console.log("body", body);
-        const headers = {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        };
-        const doctype = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/doctype`,
-          body,
-          {
-          headers: headers,
-          timeout: 15000
-        });
-        res.json({ ok: true, doctype: doctype.data });
-    } catch (err:any) {
+    const hmac = digilockerHmacConcat(clientId, clientSecret, ts, orgid as string);
+    const body = qs.stringify({
+      clientid: clientId,
+      orgid: orgid as string,
+      ts: ts,
+      hmac: hmac,
+    });
+    console.log("body", body);
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    };
+    const doctype = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/doctype`,
+      body,
+      {
+        headers: headers,
+        timeout: 15000
+      });
+    res.json({ ok: true, doctype: doctype.data });
+  } catch (err: any) {
     console.error('Digilocker doctype error', err.response?.data || err.message || err);
     res.status(500).json({ ok: false, error: err.response?.data || err.message });
   }
 }
 
 export const fetchXCert = async (req: Request, res: Response) => {
-     try {  
-        //const token = dlSession(req).dl_token;
-        const token = req.cookies.dl_token;
-        const typeClass = req.query.typeClass;
-        const orgId = req.query.orgId;
-        console.log({typeClass})
-        if(!token){
-          return res.status(401).json({ ok: false, error: "Not logged in" });
-        }
-        const body = qs.stringify({
-          orgid:orgId as string,
-          doctype:"HSCER",
-          consent:"Y",
-        });
-        console.log("body", body);
-        const headers = {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Bearer ${token}`
-        };
-        const response = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/pulldocument`, 
-          body,
-          {
-          headers: headers,
-          timeout: 15000
-        }); 
-        
-        return res.status(200).json({ok:true,message:"document found",response});
-      } catch (err:any) {
-        console.error('Digilocker pull doc error', err.response?.data || err.message || err);
-        res.status(500).json({ ok: false, error: err.response?.data || err.message });
-      }
+  try {
+    //const token = dlSession(req).dl_token;
+    const token = req.cookies.dl_token;
+    const typeClass = req.query.typeClass;
+    const orgId = req.query.orgId;
+    console.log({ typeClass })
+    if (!token) {
+      return res.status(401).json({ ok: false, error: "Not logged in" });
+    }
+    const body = qs.stringify({
+      orgid:"001925",
+      doctype: "HSCER",
+      consent: "Y",
+    });
+    console.log("body", body);
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': `Bearer ${token}`
+    };
+    const response = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/pulldocument`,
+      body,
+      {
+        headers: headers,
+        timeout: 15000
+      });
+
+    return res.status(200).json({ ok: true, message: "document found", response });
+  } catch (err: any) {
+    console.error('Digilocker pull doc error', err.response?.data || err.message || err);
+    res.status(500).json({ ok: false, error: err.response?.data || err.message });
+  }
 }
 
 // normalize.js
 export function normalizeIssuers(rawIssuers = []) {
-    console.log("rawIssuers",rawIssuers);
-    return rawIssuers.map((item:any) => {
-      const shortName = (item.name || "").replace(/\s+/g, " ").trim();
-      const orgId = item.orgid || item.orgId || item.org_id || item.org; // tolerant mapping
-  
-      return {
-        ...item,
-        shortName,
-        _nameLower: shortName.toLowerCase(),
-        _clientView: {
-          orgId,
-          name: shortName
-        }
-      };
-    });
+  console.log("rawIssuers", rawIssuers);
+  return rawIssuers.map((item: any) => {
+    const shortName = (item.name || "").replace(/\s+/g, " ").trim();
+    const orgId = item.orgid || item.orgId || item.org_id || item.org; // tolerant mapping
+
+    return {
+      ...item,
+      shortName,
+      _nameLower: shortName.toLowerCase(),
+      _clientView: {
+        orgId,
+        name: shortName
+      }
+    };
+  });
+}
+
+
+const cache = new LRUCache({ max: 1000, ttl: 1000 * 60 * 60 })
+console.log("IssuerData", IssuerData.data);
+let issuers = normalizeIssuers(IssuerData.data);
+console.log("issuers", issuers);
+
+
+export const getIssuer = async (req: Request, res: Response) => {
+  try {
+    let issuers = normalizeIssuers(IssuerData.data);
+    //console.log("issuers",issuers);
+    const q = (req.query.q as string || "").trim().toLowerCase();
+    const limit = Math.min(Number(req.query.limit) || 50, 200);
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const offset = (page - 1) * limit;
+    const cacheKey = `${q}|${limit}|${page}`;
+
+    let matched;
+    if (!q) {
+      matched = issuers;
+    } else {
+      const prefix = [];
+      const contains = [];
+      for (const it of issuers) {
+        if (it._nameLower.startsWith(q)) prefix.push(it);
+        else if (it._nameLower.includes(q)) contains.push(it);
+        if (prefix.length + contains.length >= (offset + limit) + 200) break;
+      }
+      matched = prefix.concat(contains);
+    }
+
+    const pageItems = matched.slice(offset, offset + limit).map(r => r._clientView);
+
+    const payload = { items: pageItems, page, limit };
+    cache.set(cacheKey, payload);
+    res.json(payload);
+  } catch (error) {
+
   }
 
-  
-  const cache = new LRUCache({max:1000,ttl:1000*60*60})
-  console.log("IssuerData",IssuerData.data);
-  let issuers = normalizeIssuers(IssuerData.data);
-  console.log("issuers",issuers);
-  
-
-export const getIssuer = async(req: Request, res: Response) => {
-    try {
-        let issuers = normalizeIssuers(IssuerData.data);
-          //console.log("issuers",issuers);
-          const q = (req.query.q as string || "").trim().toLowerCase();
-          const limit = Math.min(Number(req.query.limit) || 50, 200);
-          const page = Math.max(Number(req.query.page) || 1, 1);
-          const offset = (page-1)*limit;
-          const cacheKey = `${q}|${limit}|${page}`;
-        
-          let matched;
-          if (!q) {
-            matched = issuers;
-          } else {
-            const prefix = [];
-            const contains = [];
-            for (const it of issuers) {
-              if (it._nameLower.startsWith(q)) prefix.push(it);
-              else if (it._nameLower.includes(q)) contains.push(it);
-              if (prefix.length + contains.length >= (offset + limit) + 200) break;
-            }
-            matched = prefix.concat(contains);
-          }
-        
-          const pageItems = matched.slice(offset, offset + limit).map(r => r._clientView);
-        
-          const payload = { items: pageItems, page, limit };
-          cache.set(cacheKey, payload);
-          res.json(payload);
-    } catch (error) {
-        
-    }
-  
 }
-  
+
 
 
 

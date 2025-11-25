@@ -16,8 +16,10 @@ export interface IExperience{
     status?:string,
     verifiedThrough?:string,
     docUri?:string,
+    docHash?:string,
     createdAt:Date,
-    updatedAt:Date,
+    updatedAt:Date, 
+    updateCount:Number
 }
 
 const experienceSchema:Schema<IExperience> = new Schema({
@@ -32,11 +34,13 @@ const experienceSchema:Schema<IExperience> = new Schema({
     isEmailSend:{type:Boolean},
     issuerEmailId:{type:String},
     verified:{type:Boolean},
+    docHash:{type:String},
     status:{type:String,enum:["pending","verified","rejected","inProgress"],default:"pending"},
     verifiedThrough:{type:String},
     docUri:{type:String},
     createdAt:{type:Date,default:Date.now},
     updatedAt:{type:Date,default:Date.now},
+    updateCount:{type:Number,default:0}
 })
 
 export const ExperienceDoc = mongoose.model("ExperienceDoc",experienceSchema);

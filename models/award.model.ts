@@ -12,13 +12,15 @@ interface IAward{
     description:string,
     selfAttested:boolean,
     isEmailSend?:boolean,
-    issuerEmail?:string,
+    issuerEmailId?:string,
     docUri?:string,
     verified?:boolean,
     status?:string,
+    docHash?:string,
     verifiedThrough?:string,
     createdAt:Date,
-    updatedAt:Date
+    updatedAt:Date,
+    updateCount:Number,
 }
 
 const awardSchema:Schema<IAward> = new Schema({
@@ -37,13 +39,15 @@ const awardSchema:Schema<IAward> = new Schema({
     description:{type:String,required:true},
     selfAttested:{type:Boolean,required:true},
     isEmailSend:{type:Boolean},
-    issuerEmail:{type:String},
+    issuerEmailId:{type:String},
     docUri:{type:String},
     verified:{type:Boolean,required:true},
     status:{type:String,required:true},
+    docHash:{type:String},
     verifiedThrough:{type:String},
     createdAt:{type:Date,default:Date.now},
     updatedAt:{type:Date,default:Date.now},
+    updateCount:{type:Number,default:0}
 })
 
 export const AwardDocs = mongoose.model("AwardDocs",awardSchema);

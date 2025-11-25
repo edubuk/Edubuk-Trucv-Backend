@@ -15,8 +15,10 @@ export interface IEducationDoc extends Document {
   status?:string,
   verifiedThrough?:string,
   docUri?:string,
+  docHash?:string,
   createdAt:Date,
-  updatedAt:Date,
+  updatedAt:Date,   
+  updateCount:Number,
 }
 
 const educationSchema:Schema<IEducationDoc> = new Schema({
@@ -31,11 +33,13 @@ const educationSchema:Schema<IEducationDoc> = new Schema({
     isEmailSend:{type:Boolean},
     issuerEmailId:{type:String},
     verified:{type:Boolean},
+    docHash:{type:String},
     status:{type:String,enum:["pending","verified","rejected","inProgress"],default:"pending"},
     verifiedThrough:{type:String},
     docUri:{type:String},
     createdAt:{type:Date,default:Date.now},
     updatedAt:{type:Date,default:Date.now},
+    updateCount:{type:Number,default:0}
 }, { timestamps: true })
 
 export const EducationDoc = mongoose.model("EducationDoc",educationSchema);
