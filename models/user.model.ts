@@ -158,7 +158,7 @@ userSchema.methods.generateAccessToken = function (
     const secret = process.env.ACCESS_TOKEN_SECRET;
     if (!secret) throw new Error("ACCESS_TOKEN_SECRET is not defined");
 
-    const envExpiry = process.env.ACCESS_TOKEN_EXPIRY ?? "1h";
+    const envExpiry = process.env.ACCESS_TOKEN_EXPIRY ?? "3m";
     const expiresIn: SignOptions["expiresIn"] = /^(\d+)$/.test(envExpiry)
         ? Number(envExpiry)
         : (envExpiry as unknown as SignOptions["expiresIn"]);
@@ -172,7 +172,7 @@ userSchema.methods.generateRefreshToken = function () {
     const secret = process.env.REFRESH_TOKEN_SECRET;
     if (!secret) throw new Error("REFRESH_TOKEN_SECRET is not defined");
 
-    const envExpiry = process.env.REFRESH_TOKEN_EXPIRY ?? "10d";
+    const envExpiry = process.env.REFRESH_TOKEN_EXPIRY ?? "5m";
     const expiresIn: SignOptions["expiresIn"] = /^(\d+)$/.test(envExpiry)
         ? Number(envExpiry)
         : (envExpiry as unknown as SignOptions["expiresIn"]);

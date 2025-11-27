@@ -161,7 +161,7 @@ export const loginUser = async (req: Request, res: Response) => {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: "none",     
-                maxAge: 1000 * 60 * 60 * 24 * 7,
+                maxAge: 1000 * 60 * 60 * 15,
             })
             .cookie("refreshToken", refreshToken, {
                 httpOnly: true,
@@ -200,14 +200,14 @@ export const logoutUser = async(req:Request,res:Response)=>{
             httpOnly:true,
             secure:process.env.NODE_ENV==="production",
             sameSite: "none",     
-            maxAge: 1000 * 60 * 60 * 24 * 7,
+            maxAge: 1000 * 60 * 60 * 15,
         }
 
         res.status(200).clearCookie("accessToken",{
             httpOnly:true,
             secure:process.env.NODE_ENV==="production",
             sameSite: "none",     
-            maxAge: 1000 * 60 * 60 * 24 * 7,
+            maxAge: 1000 * 60 * 60 * 15,
         }).clearCookie("refreshToken",{
             httpOnly:true,
             secure:process.env.NODE_ENV==="production",
@@ -227,61 +227,75 @@ export const logoutUser = async(req:Request,res:Response)=>{
 }
 
 
-export const refreshAccessToken = async(req:Request,res:Response)=>{
-    try {
-        const incommingRefreshToken = req.cookies.refreshToken;
-        if(!incommingRefreshToken){
-            return res.status(401).json({
-                success:false,
-                message:"Unauthorized"
-            })
-        }
-
-        const decodedToken:any = jwt.verify(incommingRefreshToken,process.env.REFRESH_TOKEN_SECRET as string);
-        if(!decodedToken){
-            return res.status(401).json({
-                success:false,
-                message:"Unauthorized"
-            })
-        }
-        const user = await User.findById(decodedToken._id)
-        if(!user){
-            return res.status(401).json({
-                success:false,
-                message:"Unauthorized"
-            })
-        }
-        const {accessToken,refreshToken} = await generateAccessRefreshToken(user._id as string);
-
-            return res
-            .status(200)
-            .cookie("accessToken",accessToken,{
-            httpOnly:true,
-            secure:process.env.NODE_ENV==="production",
-            sameSite: "none",     
-            maxAge: 1000 * 60 * 60 * 24 * 7,
-            })
-            .cookie("refreshToken",refreshToken,{
-            httpOnly:true,
-            secure:process.env.NODE_ENV==="production",
-            sameSite: "none",     
-            maxAge: 1000 * 60 * 60 * 24 * 7,
-        })
-            .json({
-                success:true,
-                message:"access token refreshed",
-                accessToken,
-                refreshToken
-
-            })
-    } catch (error:any) {
-        res.status(500).json({
-            success:false,
-            message:"Something went wrong",
-            error:error.message || error
-        })
+export const refreshAccessToken = async (req: Request, res: Response) => {
+  try {
+    const incomingRefreshToken = req.cookies.refreshToken;
+    if (!incomingRefreshToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
-}
+
+    // verify token and handle errors correctly
+    let decodedToken: any;
+    try {
+      decodedToken = jwt.verify(
+        incomingRefreshToken,
+        process.env.REFRESH_TOKEN_SECRET as string
+      );
+      console.log("refresh token verified",decodedToken)
+    } catch (err: any) {
+      return res.status(401).json({
+        success: false,
+        message:
+          err.name === "TokenExpiredError"
+            ? "Refresh token expired"
+            : "Invalid refresh token",
+      });
+    }
+
+    const user = await User.findById(decodedToken._id);
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const { accessToken, refreshToken } = await generateAccessRefreshToken(
+      user._id as string
+    );
+
+    const isProd = process.env.NODE_ENV === "production";
+
+    return res
+      .cookie("accessToken", accessToken, {
+        httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax" as const,
+       maxAge: 1000 * 60 * 15,
+      })
+      .cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax" as const,
+       maxAge: 1000 * 60 * 60 * 24 * 7,
+      })
+      .status(200)
+      .json({
+        success: true,
+        message: "Access token refreshed",
+      });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message || error,
+    });
+  }
+};
+
 
 export const getUser = async(req:Request,res:Response)=>{
     try {

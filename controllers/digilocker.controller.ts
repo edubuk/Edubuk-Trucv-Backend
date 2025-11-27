@@ -67,7 +67,6 @@ export const digilockerCallback = async (req: Request, res: Response) => {
 
     if (data.access_token) {
       res.status(200).cookie("dl_token", data.access_token, {
-        domain:"edubuktrucv.com",
         httpOnly: true,
         secure: true,
         sameSite: "none",
@@ -90,7 +89,6 @@ export const saveVerifier = (req: Request, res: Response) => {
   if (typeof verifier !== "string") return res.status(400).json({ ok: false, error: "Invalid verifier" });
 
   res.status(200).cookie("pkce_verifier", verifier, {
-    domain:"edubuktrucv.com",
     httpOnly: true,
     secure:true,
     sameSite: "none",

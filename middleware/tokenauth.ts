@@ -28,7 +28,21 @@ export const jwtTokenVerification:RequestHandler = async(req:Request,res:Respons
             })
         }
 
-        const decodedToken:any = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET)
+        let decodedToken:any;
+        try {
+          decodedToken = jwt.verify(
+            token,
+            process.env.ACCESS_TOKEN_SECRET as string
+          );
+        } catch (err: any) {
+          return res.status(401).json({
+            success: false,
+                message:
+                  err.name === "TokenExpiredError"
+                    ? "Access token expired"
+                    : "Invalid access token",
+              });
+            }
         
         const user = await User.findById(decodedToken._id as string).select("-password -refreshToken -providers");
         if(!user){
