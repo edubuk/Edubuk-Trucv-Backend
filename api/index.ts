@@ -88,7 +88,7 @@ app.use("/api/dl",digilockerRouter);
 app.use("/issuer",approvalRouter)
 app.get("/", (req: Request, res: Response) => {
   return res.json({
-    message: "Health is ok !",
+    message: "Health is ok and ci/cd is implemented !",
   });
 });
 
