@@ -234,7 +234,7 @@ export const pullParams = async (req: Request, res: Response) => {
       return res.status(500).json({ ok: false, error: "Digilocker client credentials not configured" });
     }
 
-    const docType = "HSCER";
+    const docType = "DGCER";
     const ts = currentIstSeconds().toString();
     const hmac = digilockerHmacConcat(clientId, clientSecret, ts, docType, orgid);
 
@@ -286,6 +286,7 @@ export const fetchDocUri = async (req: Request, res: Response) => {
     console.log("token", token);
     const orgid = req.query.orgid;
     const doctype = req.query.doctype;
+    const regno = req.query.regno;
     const {rollno,year}=req.body;
     console.log("rollno", rollno);
     console.log("year", year);
@@ -293,26 +294,40 @@ export const fetchDocUri = async (req: Request, res: Response) => {
     if (!token) {
       return res.status(401).json({ ok: false, error: "Not logged in" });
     }
-    const body = qs.stringify({
-      orgid:orgid,
-      doctype:doctype,
-      consent: "Y",
-      rollno:rollno,
-      year:year
+    let body = null;
+    if(doctype === "DGCER"){
+      body = qs.stringify({
+        orgid:orgid,
+        doctype:doctype,
+        consent: "Y",
+        RROLL:rollno,
+        REGNO:regno,
+        YEAR:year
+      });
+    }
+    else{
+      body = qs.stringify({
+        orgid:orgid,
+        doctype:doctype,
+        consent: "Y",
+        rollno:rollno,
+        year:year
     });
+  }
     console.log("body", body);
     const headers = {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Authorization': `Bearer ${token}`
     };
-    const response = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/pulldocument`,
+     const response = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/pulldocument`,
       body,
       {
         headers: headers,
         timeout: 15000
       });
-    console.log("res",response.data)
-    return res.status(200).json({ ok: true, message: "document found", response });
+    
+    const {data,status} = response;
+    return res.status(status).json({ ok: true, message: "document found", data });
   } catch (err: any) {
     console.error('Digilocker pull doc error', err.response?.data || err.message || err);
     res.status(500).json({ ok: false, error: err.response?.data || err.message });
