@@ -220,20 +220,85 @@ export const fetchDocType = async (req: Request, res: Response) => {
   }
 }
 
-export const fetchXCert = async (req: Request, res: Response) => {
+export const pullParams = async (req: Request, res: Response) => {
+  console.log("hitting pullParams");
+  const orgid = req.query.orgid as string | undefined;
+  if (!orgid) {
+    return res.status(400).json({ ok: false, error: "Missing required query param: orgid" });
+  }
+
+  try {
+    const clientId = process.env.DIGILOCKER_CLIENT_ID as string;
+    const clientSecret = process.env.DIGILOCKER_CLIENT_SECRET as string;
+    if (!clientId || !clientSecret) {
+      return res.status(500).json({ ok: false, error: "Digilocker client credentials not configured" });
+    }
+
+    const docType = "HSCER";
+    const ts = currentIstSeconds().toString();
+    const hmac = digilockerHmacConcat(clientId, clientSecret, ts, docType, orgid);
+
+    const body = qs.stringify({
+      clientid: clientId,
+      orgid: orgid,
+      doctype: docType,
+      ts: ts,
+      hmac: hmac,
+    });
+
+
+    const response = await axios.post(
+      `${process.env.DIGILOCKER_API_BASE}/1/pull/parameters`,
+      body,
+      {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        timeout: 15000,
+      }
+    );
+
+    // Return only serializable parts:
+    return res.json({
+      ok: true,
+      status: response.status,
+      data: response.data,         // the useful payload
+      headers: response.headers,   // optional
+    });
+  } catch (err: any) {
+    // Safe logging: avoid JSON.stringify on error object containing circular refs
+    if (err?.response) {
+      // Axios error with response from server
+      return res.status(err.response.status ?? 500).json({
+        ok: false,
+        error: err.response.data ?? err.message ?? "Unknown error",
+      });
+    }
+
+    // Generic error
+    return res.status(500).json({ ok: false, error: err?.message ?? "Internal server error" });
+  }
+};
+
+
+export const fetchDocUri = async (req: Request, res: Response) => {
   try {
     //const token = dlSession(req).dl_token;
     const token = req.cookies.dl_token;
-    const typeClass = req.query.typeClass;
-    const orgId = req.query.orgId;
-    console.log({ typeClass })
+    console.log("token", token);
+    const orgid = req.query.orgid;
+    const doctype = req.query.doctype;
+    const {rollno,year}=req.body;
+    console.log("rollno", rollno);
+    console.log("year", year);
+
     if (!token) {
       return res.status(401).json({ ok: false, error: "Not logged in" });
     }
     const body = qs.stringify({
-      orgid:"001925",
-      doctype: "HSCER",
+      orgid:orgid,
+      doctype:doctype,
       consent: "Y",
+      rollno:rollno,
+      year:year
     });
     console.log("body", body);
     const headers = {
@@ -246,8 +311,32 @@ export const fetchXCert = async (req: Request, res: Response) => {
         headers: headers,
         timeout: 15000
       });
-
+    console.log("res",response.data)
     return res.status(200).json({ ok: true, message: "document found", response });
+  } catch (err: any) {
+    console.error('Digilocker pull doc error', err.response?.data || err.message || err);
+    res.status(500).json({ ok: false, error: err.response?.data || err.message });
+  }
+}
+export const viewDoc = async (req: Request, res: Response) => {
+  try {
+    //const token = dlSession(req).dl_token;
+    const token = req.cookies.dl_token;
+    const docUri = req.query.docUri;
+    if (!token) {
+      return res.status(401).json({ ok: false, error: "Not logged in" });
+    }
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': `Bearer ${token}`
+    };
+    const response = await axios.get(`${process.env.DIGILOCKER_API_BASE}/1/file/${docUri}`,
+      {
+        headers: headers,
+        timeout: 15000
+      });
+    console.log("res",response.data)
+    return res.status(200).json({ ok: true, response });
   } catch (err: any) {
     console.error('Digilocker pull doc error', err.response?.data || err.message || err);
     res.status(500).json({ ok: false, error: err.response?.data || err.message });

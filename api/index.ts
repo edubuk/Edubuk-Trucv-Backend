@@ -7,7 +7,7 @@ import cors from "cors";
 import { swaggerSpec, swaggerUiSetup } from "../swagger";
 import cookieParser from "cookie-parser";
 import cron from "node-cron";
-import rateLimit from "express-rate-limit";
+// import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import docRouter from "../routers/education.router";
 import cvRouter from "../routers/cv.router";
@@ -48,12 +48,12 @@ app.use(
 
 app.use(helmet());
 
-app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100, // limit each IP to 100 requests per 15 minutes
-  })
-);
+// app.use(
+//   rateLimit({
+//     windowMs: 10 * 60 * 1000,
+//     max: 200, // limit each IP to 200 requests per 10 minutes
+//   })
+// );
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -92,7 +92,7 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-cron.schedule("0 2 * * *", () => {
+cron.schedule("*/5 * * * *", () => {
   (async()=>{
     const issuers = await fetchIssuer();
     IssuerData.data = issuers.issuers;

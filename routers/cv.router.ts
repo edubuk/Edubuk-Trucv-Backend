@@ -2,7 +2,7 @@ import { Router } from "express";
 import { createCv, getUserCVIds, getCv,getCvByNanoId,verifyDoc } from "../controllers/cv.controller";
 import { checkout, couponVerification, paymentVerification } from "../controllers/payment.controller";
 import { jwtTokenVerification } from "../middleware/tokenauth";
-import { createUserCV, userCvs } from "../controllers/newCv.controller";
+import { createUserCV, fetchCvData, userCvs } from "../controllers/newCv.controller";
 
 const router = Router();
 
@@ -17,5 +17,6 @@ router.get("/coupon_verify",jwtTokenVerification,couponVerification);
 router.post("/checkout",jwtTokenVerification,checkout);
 router.post("/payment_verification",jwtTokenVerification,paymentVerification);
 router.post("/create-cv",jwtTokenVerification,createUserCV);
-router.get("/user-cvs",jwtTokenVerification,userCvs)
+router.get("/user-cvs",jwtTokenVerification,userCvs);
+router.get("/user-cv/:id",fetchCvData);
 export default router;

@@ -84,6 +84,7 @@ export interface IAward {
 
 export interface ICv extends Document {
   userId:mongoose.ObjectId;
+  title:string;
   personal: IPersonal;
   educations: IEducation[];
   experiences: IExperience[];
@@ -211,6 +212,7 @@ const AwardSchema = new Schema<IAward>(
 const CvSchema = new Schema<ICv>(
   {
     userId:{type:Schema.Types.ObjectId,ref:"TruCvUser",required:true,index:true},
+    title:{type:String,required:true},
     personal: { type: PersonalSchema, required: true },
     educations: { type: [EducationSchema], default: [] },
     experiences: { type: [ExperienceSchema], default: [] },
