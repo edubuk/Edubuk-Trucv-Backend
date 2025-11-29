@@ -8,7 +8,7 @@ const router = Router();
 router.get("/callback",jwtTokenVerification, digilockerCallback);
 router.post("/save-verifier", saveVerifier);
 router.get("/me", fetchProfile);
-router.get("/issuers", fetchIssuer);
+router.post("/issuers", fetchIssuer);
 router.get("/doctype", fetchDocType);
 router.get("/issued", fetchDocuments);
 router.get("/getIssuer", getIssuer);
