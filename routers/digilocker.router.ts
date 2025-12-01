@@ -16,6 +16,4 @@ router.post("/pullParams", pullParams);
 router.post("/fetchDocUri", fetchDocUri);
 router.get("/view-doc", viewDoc);
 
-
-
 export default router;

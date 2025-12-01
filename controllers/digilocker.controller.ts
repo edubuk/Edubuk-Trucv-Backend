@@ -339,8 +339,8 @@ export const viewDoc = async (req: Request, res: Response) => {
         headers: headers,
         timeout: 15000
       });
-    console.log("res",response.data)
-    return res.status(200).json({ ok: true, response });
+    const {data,status} = response;
+    return res.status(status).json({ ok: true, message: "document found", data });
   } catch (err: any) {
     console.error('Digilocker pull doc error', err.response?.data || err.message || err);
     res.status(500).json({ ok: false, error: err.response?.data || err.message });
@@ -368,9 +368,9 @@ export function normalizeIssuers(rawIssuers = []) {
 
 
 const cache = new LRUCache({ max: 1000, ttl: 1000 * 60 * 60 })
-console.log("IssuerData", IssuerData.data);
-let issuers = normalizeIssuers(IssuerData.data);
-console.log("issuers", issuers);
+//console.log("IssuerData", IssuerData.data);
+//let issuers = normalizeIssuers(IssuerData.data);
+//console.log("issuers", issuers);
 
 
 export const getIssuer = async (req: Request, res: Response) => {
