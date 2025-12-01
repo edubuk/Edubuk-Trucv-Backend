@@ -297,45 +297,26 @@ export const fetchDocUri = async (req: Request, res: Response) => {
       return res.status(401).json({ ok: false, error: "Not logged in" });
     }
     let body = null;
-    if(doctype === "DGCER"){
-      body = qs.stringify({
-        orgid:orgid,
-        doctype:doctype,
-        consent: "Y",
-        RROLL:rollno,
-        REGNO:regno,
-        YEAR:year
-      });
-    }
-    else{
       body = qs.stringify({
         orgid:orgid,
         doctype:doctype,
         consent: "Y",
         ...dlBody
     });
-  }
     console.log("body", body);
     const headers = {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Authorization': `Bearer ${token}`
     };
-    //  const response = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/pulldocument`,
-    //   body,
-    //   {
-    //     headers: headers,
-    //     timeout: 15000
-    //   });
+     const response = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/pulldocument`,
+      body,
+      {
+        headers: headers,
+        timeout: 15000
+      });
     
-    // const {data,status} = response;
-    const data={
-    "ok": true,
-    "message": "document found",
-    "data": {
-        "uri": "in.edu.upmsp-SSCER-12092102020"
-    }
-}
-    return res.status(200).json({ ok: true, message: "document found", data });
+    const {data,status} = response;
+    return res.status(status).json({ ok: true, message: "document found", data });
   } catch (err: any) {
     console.error('Digilocker pull doc error', err.response?.data || err.message || err);
     res.status(500).json({ ok: false, error: err.response?.data || err.message });
