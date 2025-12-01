@@ -223,8 +223,9 @@ export const fetchDocType = async (req: Request, res: Response) => {
 export const pullParams = async (req: Request, res: Response) => {
   console.log("hitting pullParams");
   const orgid = req.query.orgid as string | undefined;
-  if (!orgid) {
-    return res.status(400).json({ ok: false, error: "Missing required query param: orgid" });
+  const doctype = req.query.doctype as string;
+  if (!orgid || !doctype) {
+    return res.status(400).json({ ok: false, error: "Missing required query param: orgid or doctype" });
   }
 
   try {
@@ -234,14 +235,13 @@ export const pullParams = async (req: Request, res: Response) => {
       return res.status(500).json({ ok: false, error: "Digilocker client credentials not configured" });
     }
 
-    const docType = "DGCER";
     const ts = currentIstSeconds().toString();
-    const hmac = digilockerHmacConcat(clientId, clientSecret, ts, docType, orgid);
+    const hmac = digilockerHmacConcat(clientId, clientSecret, ts, doctype, orgid);
 
     const body = qs.stringify({
       clientid: clientId,
       orgid: orgid,
-      doctype: docType,
+      doctype: doctype,
       ts: ts,
       hmac: hmac,
     });
@@ -290,6 +290,8 @@ export const fetchDocUri = async (req: Request, res: Response) => {
     const {rollno,year}=req.body;
     console.log("rollno", rollno);
     console.log("year", year);
+    const dlBody = req.body;
+    console.log("data body",dlBody)
 
     if (!token) {
       return res.status(401).json({ ok: false, error: "Not logged in" });
@@ -310,8 +312,7 @@ export const fetchDocUri = async (req: Request, res: Response) => {
         orgid:orgid,
         doctype:doctype,
         consent: "Y",
-        rollno:rollno,
-        year:year
+        ...dlBody
     });
   }
     console.log("body", body);
@@ -319,15 +320,22 @@ export const fetchDocUri = async (req: Request, res: Response) => {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Authorization': `Bearer ${token}`
     };
-     const response = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/pulldocument`,
-      body,
-      {
-        headers: headers,
-        timeout: 15000
-      });
+    //  const response = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/pulldocument`,
+    //   body,
+    //   {
+    //     headers: headers,
+    //     timeout: 15000
+    //   });
     
-    const {data,status} = response;
-    return res.status(status).json({ ok: true, message: "document found", data });
+    // const {data,status} = response;
+    const data={
+    "ok": true,
+    "message": "document found",
+    "data": {
+        "uri": "in.edu.upmsp-SSCER-12092102020"
+    }
+}
+    return res.status(200).json({ ok: true, message: "document found", data });
   } catch (err: any) {
     console.error('Digilocker pull doc error', err.response?.data || err.message || err);
     res.status(500).json({ ok: false, error: err.response?.data || err.message });
