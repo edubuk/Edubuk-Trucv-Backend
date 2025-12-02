@@ -9,7 +9,7 @@ import cookieParser from "cookie-parser";
 import cron from "node-cron";
 // import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import docRouter from "../routers/education.router";
+import docRouter from "../routers/documents.router"
 import cvRouter from "../routers/cv.router";
 import uploadRouter from "../routers/upload.router";
 import qrRoute from "../routers/qr.router";
@@ -92,7 +92,7 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-cron.schedule("*/40 * * * *", () => {
+cron.schedule("0 3 1 * *", () => {
   (async()=>{
     const issuers = await fetchIssuer();
     IssuerData.data = issuers.issuers;

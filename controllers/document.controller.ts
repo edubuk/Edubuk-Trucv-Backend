@@ -186,6 +186,23 @@ export const updateDoc = async (req: Request, res: Response) => {
     }
 }
 
+export const deleteEduDoc = async(req:Request,res:Response)=>{
+    try {
+        const {id} = req.params;
+        const document = await EducationDoc.findByIdAndDelete(id);
+        if(!document){
+            return res.status(404).json({success:false,message:"Document not found"})
+        }
+        return res.status(200).json({success:true,message:"Document deleted successfully"})
+    } catch (error:any) {
+        return res.status(500).json({
+            success:false,
+            message:"Something went wrong",
+            error:error.message||error
+        })
+    }
+}
+
 
 //--------------Experience Documents Methods--------------
 
@@ -334,6 +351,24 @@ export const updateExpDoc = async (req: Request, res: Response) => {
     }
 }
 
+
+export const deleteExpDoc = async(req:Request,res:Response)=>{
+    try {
+        const {id} = req.params;
+        const document = await ExperienceDoc.findByIdAndDelete(id);
+        if(!document){
+            return res.status(404).json({success:false,message:"Document not found"})
+        }
+        return res.status(200).json({success:true,message:"Document deleted successfully"})
+    } catch (error:any) {
+        return res.status(500).json({
+            success:false,
+            message:"Something went wrong",
+            error:error.message||error
+        })
+    }
+}
+
 export const getAllDocs = async (req: Request, res: Response) => {
     try {
         const typeReq = req as IGetUserAuthInfoRequest;
@@ -454,6 +489,25 @@ export const updateProjectDoc = async (req: Request, res: Response) => {
         })
     }
 }
+
+
+export const deleteProjectDoc = async(req:Request,res:Response)=>{
+    try {
+        const {id} = req.params;
+        const document = await ProjectDoc.findByIdAndDelete(id);
+        if(!document){
+            return res.status(404).json({success:false,message:"Document not found"})
+        }
+        return res.status(200).json({success:true,message:"Document deleted successfully"})
+    } catch (error:any) {
+        return res.status(500).json({
+            success:false,
+            message:"Something went wrong",
+            error:error.message||error
+        })
+    }
+}
+
 
 //--------------Award Documents Methods--------------
 export const saveAwardDoc = async (req: Request, res: Response) => {
@@ -587,6 +641,25 @@ export const updateAwardDoc = async (req: Request, res: Response) => {
 }
 
 
+export const deleteAwardDoc = async(req:Request,res:Response)=>{
+    try {
+        const {id} = req.params;
+        const document = await AwardDocs.findByIdAndDelete(id);
+        if(!document){
+            return res.status(404).json({success:false,message:"Document not found"})
+        }
+        return res.status(200).json({success:true,message:"Document deleted successfully"})
+    } catch (error:any) {
+        return res.status(500).json({
+            success:false,
+            message:"Something went wrong",
+            error:error.message||error
+        })
+    }
+}
+
+
+
 //----------Skill documents methods----------
 
 
@@ -673,6 +746,25 @@ export const updateSkills = async (req: Request, res: Response) => {
         })
     }
 }
+
+
+export const deleteSkillDoc = async(req:Request,res:Response)=>{
+    try {
+        const {id} = req.params;
+        const document = await SkillDoc.findByIdAndDelete(id);
+        if(!document){
+            return res.status(404).json({success:false,message:"Skill not found"})
+        }
+        return res.status(200).json({success:true,message:"Skill deleted successfully"})
+    } catch (error:any) {
+        return res.status(500).json({
+            success:false,
+            message:"Something went wrong",
+            error:error.message||error
+        })
+    }
+}
+
 
 
 export const getSkills = async (req: Request, res: Response) => {
