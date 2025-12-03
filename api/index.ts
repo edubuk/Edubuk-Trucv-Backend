@@ -57,22 +57,7 @@ app.use(helmet());
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(
-//   session({
-//     name: process.env.SESSION_NAME || "sid",
-//     secret: process.env.SESSION_SECRET || "default-secret", // MUST be set in production
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: {
-//       secure: process.env.NODE_ENV === "production",  // requires HTTPS
-//       httpOnly: true,                                // prevents XSS cookie access
-//       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-//       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-//     },
 
-//     proxy: process.env.NODE_ENV === "production", // trust reverse proxy (NGINX/Cloudflare)
-//   })
-// );
 
 // Routes
 app.use("/api-docs", swaggerUiSetup.serve, swaggerUiSetup.setup(swaggerSpec));
@@ -92,7 +77,7 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-cron.schedule("0 3 1 * *", () => {
+cron.schedule("0 18 3 * *", () => {
   (async()=>{
     const issuers = await fetchIssuer();
     IssuerData.data = issuers.issuers;

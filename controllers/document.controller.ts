@@ -375,9 +375,10 @@ export const getAllDocs = async (req: Request, res: Response) => {
         const id = req.query.userId;
         console.log("id", id);
         const userId = id ?? typeReq.user._id;
-        const [educations, experiences] = await Promise.all([
+        const [educations, experiences,awards] = await Promise.all([
             EducationDoc.find({ userId: userId }).sort({ createdAt: -1 }),
-            ExperienceDoc.find({ userId: userId }).sort({ createdAt: -1 })
+            ExperienceDoc.find({ userId: userId }).sort({ createdAt: -1 }),
+            AwardDocs.find({userId:userId}).sort({createdAt:-1})
         ])
         return res.status(200).json({
             success: true,
@@ -385,6 +386,7 @@ export const getAllDocs = async (req: Request, res: Response) => {
             data: {
                 educations,
                 experiences,
+                awards
             },
         });
     } catch (error: any) {
@@ -829,7 +831,7 @@ export const skillVerificationHandler = async(req:Request,res:Response)=>{
             await SkillVerificationReq.create({userId:userId,token:token,skills:data.skills,endoresBy:emailId})
             return res.status(200).json({success:true,message:"Email has been sent successfully"})
         }
-        return res.status(400).json({success:true,message:"something went wrong. Please check the entered email id"})
+        return res.status(400).json({success:false,message:"something went wrong. Please check the entered email id"})
     } catch (error:any) {
         return res.status(500).json({
             success: false,

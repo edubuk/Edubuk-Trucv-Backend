@@ -349,7 +349,7 @@ export const viewDoc = async (req: Request, res: Response) => {
 
 // normalize.js
 export function normalizeIssuers(rawIssuers = []) {
-  console.log("rawIssuers", rawIssuers);
+  //console.log("rawIssuers", rawIssuers);
   return rawIssuers.map((item: any) => {
     const shortName = (item.name || "").replace(/\s+/g, " ").trim();
     const orgId = item.orgid || item.orgId || item.org_id || item.org; // tolerant mapping
@@ -407,6 +407,35 @@ export const getIssuer = async (req: Request, res: Response) => {
   }
 
 }
+
+
+// export const fetchIssuer = async (req:Request,res:Response) => {
+//   try {
+//     const clientId = process.env.DIGILOCKER_CLIENT_ID as string;
+//     const clientSecret = process.env.DIGILOCKER_CLIENT_SECRET as string;
+//     const ts = currentIstSeconds().toString();
+//     const hmac = digilockerHmacConcat(clientId, clientSecret, ts);
+
+//     // DigiLocker expects application/x-www-form-urlencoded POST parameters
+//     const body = qs.stringify({
+//       clientid: clientId,
+//       hmac: hmac,
+//       ts: ts,
+//     });
+
+//     const headers = {
+//       'Content-Type': 'application/x-www-form-urlencoded'
+//     };
+//     console.log("hitiing");
+//     // POST to /pull/issuers (production URL in docs)
+//     const resp = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/issuers`, body, { headers, timeout: 15000 });
+//     console.log("resp",resp);
+//     return res.status(200).json({ok:true,data:resp.data});
+//   } catch (error: any) {
+//     console.error('Digilocker issuers error', error.response?.data || error.message || error);
+//     return res.status(500).json({ok:false,error:error.message});
+//   }
+// }
 
 
 
