@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { User } from "../models/user.model";
 import { CV } from "../models/cv.model";
+import { UserCV } from "../models/newCv.model";
 
 export const trujobsSignInAuthenticator = async (
   req: Request,
@@ -15,7 +16,9 @@ export const trujobsSignInAuthenticator = async (
       });
     }
 
-    const findUser = await User.findOne({ email: email });
+    const findUser = await User.findOne({ email: email }).select(
+      "_id name email phoneNumber yearOfExp profession userImageUrl profileSummary password"
+    ); // password because bcrypt requires password for comparison
     if (!findUser) {
       return res.status(404).json({
         success: false,
@@ -32,24 +35,27 @@ export const trujobsSignInAuthenticator = async (
     }
 
     // const cvIds = await CV.find({ userId: findUser._id }).select("nanoId");
-    const user_trucvs = await CV.find({ userId: findUser._id }).select(
-      "personalDetails experience skills profile_summary nanoId"
-    );
+    const user_trucvs = await UserCV.find({ userId: findUser._id });
 
-    const cvIds = user_trucvs.map((cv) => cv.nanoId);
-    if (!cvIds) {
+    if (!user_trucvs) {
       return res.status(403).json({
         success: false,
         message: "CV not found",
       });
     }
+    const cvIds = user_trucvs.map((cv) => ({
+      id: cv._id,
+      title: cv.title,
+    }));
+
+    const { password: _, ...userWithoutPassword } = findUser.toObject();
 
     return res.status(200).json({
       success: true,
       message: "USER AUTHENTICATED",
-      trucv_user: findUser,
-      user_trucvs,
       cvIds,
+      trucv_user: userWithoutPassword,
+      user_trucvs,
     });
   } catch (error) {
     console.log("ERROR IN trujobsSignInAuthenticator", error);
@@ -82,9 +88,9 @@ export const getCandidateTruCVsByUserId = async (
       });
     }
 
-    const user_trucvs = await CV.find({ userId }).select("nanoId createdAt");
+    const user_trucvs = await UserCV.find({ userId }).select("title createdAt");
 
-    if (!user_trucvs) {
+    if (!user_trucvs || user_trucvs.length === 0) {
       return res.status(404).json({
         success: false,
         message: "No CVs found",
@@ -118,7 +124,7 @@ export const getCandidateTruCVByTrucvId = async (
       });
     }
 
-    const truCV = await CV.findOne({ nanoId: trucvId });
+    const truCV = await UserCV.findById(trucvId);
     if (!truCV) {
       return res.status(404).json({
         success: false,
