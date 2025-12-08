@@ -286,7 +286,6 @@ export const fetchDocUri = async (req: Request, res: Response) => {
     console.log("token", token);
     const orgid = req.query.orgid;
     const doctype = req.query.doctype;
-    const regno = req.query.regno;
     const {rollno,year}=req.body;
     console.log("rollno", rollno);
     console.log("year", year);
@@ -322,30 +321,53 @@ export const fetchDocUri = async (req: Request, res: Response) => {
     res.status(500).json({ ok: false, error: err.response?.data || err.message });
   }
 }
+
+
 export const viewDoc = async (req: Request, res: Response) => {
   try {
-    //const token = dlSession(req).dl_token;
     const token = req.cookies.dl_token;
-    const docUri = req.query.docUri;
+    const docUri = String(req.query.docUri || "");
+
     if (!token) {
-      return res.status(401).json({ ok: false, error: "Not logged in" });
+      return res.status(401).json({ ok: false, error: "Not logged in (missing token)" });
     }
-    const headers = {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': `Bearer ${token}`
-    };
-    const response = await axios.get(`${process.env.DIGILOCKER_API_BASE}/1/file/${docUri}`,
-      {
-        headers: headers,
-        timeout: 15000
+    if (!docUri) {
+      return res.status(400).json({ ok: false, error: "Missing docUri" });
+    }
+
+    const url = `${process.env.DIGILOCKER_API_BASE}/1/file/${encodeURIComponent(docUri)}`;
+
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      responseType: "arraybuffer",
+      timeout: 15000,
+      validateStatus: (s) => s >= 200 && s < 500,
+    });
+
+    if (response.status !== 200) {
+      // if the server returned JSON, try to include it
+      const maybeText = response.data && response.headers["content-type"]?.includes("application/json")
+        ? Buffer.from(response.data).toString("utf8")
+        : undefined;
+      return res.status(response.status).json({
+        ok: false,
+        error: maybeText || `Upstream responded with status ${response.status}`,
       });
-    const {data,status} = response;
-    return res.status(status).json({ ok: true, message: "document found", data });
+    }
+
+    const buffer = Buffer.from(response.data as ArrayBuffer);
+    const base64 = buffer.toString("base64");
+    return res.status(200).json({ ok: true, message: "document found", data: base64 });
   } catch (err: any) {
-    console.error('Digilocker pull doc error', err.response?.data || err.message || err);
-    res.status(500).json({ ok: false, error: err.response?.data || err.message });
+    console.error("Digilocker pull doc error:", err?.response?.data || err?.message || err);
+    const status = err?.response?.status || 500;
+    const body = err?.response?.data ?? err?.message;
+    return res.status(status).json({ ok: false, error: body });
   }
-}
+};
+
 
 // normalize.js
 export function normalizeIssuers(rawIssuers = []) {

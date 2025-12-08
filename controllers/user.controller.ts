@@ -126,8 +126,8 @@ export const loginUser = async (req: Request, res: Response) => {
     //accesss and refresh token
     //send cookies
     const { email, password } = req.body;
-    console.log("email",email)
-    console.log("password",password)
+    //console.log("email",email)
+    //console.log("password",password)
     try {
         if (!email && !password) {
             return res.status(400).json({
@@ -153,8 +153,8 @@ export const loginUser = async (req: Request, res: Response) => {
         }
 
         const { accessToken, refreshToken } = await generateAccessRefreshToken(user._id as string);
-        console.log("accessToken",accessToken)
-        console.log("refreshToken",refreshToken)
+        //console.log("accessToken",accessToken)
+        //console.log("refreshToken",refreshToken)
         const loggedInUser = await User.findById(user._id).select("-providers -password -refreshToken");
 
         return res

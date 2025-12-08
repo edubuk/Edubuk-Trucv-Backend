@@ -709,11 +709,13 @@ export const saveSkills = async (req: Request, res: Response) => {
         return res.status(201).json({ success: true, message: "Skills saved successfully" })
   } catch (error: any) {
      if (error.code === 11000) {
+      console.log("error",error)
       return res.status(400).json({
         success: false,
         message: "some of the skills already exists",
       });
     }
+    console.log("error",error)
     return res.status(500).json({
       success: false,
       message: "Something went wrong",
