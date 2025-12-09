@@ -61,6 +61,7 @@ export const approveHandler = async (req: Request, res: Response) => {
     }
 
     doc.status = "verified";
+    doc.verified = true;
     doc.verifiedThrough = "Email";
     doc.updatedAt = new Date();
     await doc.save()
@@ -93,6 +94,7 @@ export const rejectHandler = async (req: Request, res: Response) => {
     }
 
     doc.status = "rejected";
+    doc.verified = false;
     doc.updatedAt = new Date();
     await doc.save()
     return res.status(200).send(renderReject())
