@@ -9,7 +9,7 @@ const router = Router();
 // router.post("/email-issuer",jwtTokenVerification,issuerEmailHandler);
 router.post("/save-eduDoc",jwtTokenVerification,saveDocuments);
 router.get("/education-docs",jwtTokenVerification,getEducationDocs);
-router.patch("/update-eduDoc/:id",jwtTokenVerification,updateDoc);
+router.put("/update-eduDoc/:id",jwtTokenVerification,updateDoc);
 router.delete("/delete-eduDoc/:id",jwtTokenVerification,deleteEduDoc);
 
 router.post("/save-expDoc",jwtTokenVerification,saveExpDocs);
