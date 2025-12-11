@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { jwtTokenVerification } from "../middleware/tokenauth";
-import { deleteAwardDoc, deleteEduDoc, deleteExpDoc, deleteProjectDoc, deleteSkillDoc, getAllDocs, getAwardDocs, getExpDocs, getProjectsDocs, getSkills, saveAwardDoc, saveExpDocs, saveProjects, saveSkills, updateAwardDoc, updateDoc, updateExpDoc, updateProjectDoc } from "../controllers/document.controller";
+import { deleteAwardDoc, deleteEduDoc, deleteExpDoc, deleteProjectDoc, deleteSkillDoc, getAllDocs, getAwardDocs, getExpDocs, getProjectsDocs, getSkills, resendEmailHandler, saveAwardDoc, saveExpDocs, saveProjects, saveSkills, updateAwardDoc, updateDoc, updateExpDoc, updateProjectDoc } from "../controllers/document.controller";
 import { saveDocuments } from "../controllers/document.controller";
 import { getEducationDocs } from "../controllers/document.controller";
 const router = Router();
@@ -32,4 +32,6 @@ router.delete("/delete-awardDoc/:id",jwtTokenVerification,deleteAwardDoc);
 router.post("/save-skills",jwtTokenVerification,saveSkills);
 router.get("/skill-docs",jwtTokenVerification,getSkills);
 router.delete("/delete-skillDoc/:id",jwtTokenVerification,deleteSkillDoc);
+
+router.post("/resend-email/:id",jwtTokenVerification,resendEmailHandler);
 export default router;

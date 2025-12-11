@@ -842,3 +842,76 @@ export const skillVerificationHandler = async(req:Request,res:Response)=>{
         })
     }
 }
+
+
+export const resendEmailHandler = async(req:Request,res:Response)=>{
+    try {
+        const {id} = req.params;
+        const {docType} = req.query;
+        const {data}= req.body;
+        //console.log("object id",objectId)
+        //const realId = typeof id === "string" ? id : id.id; 
+        if (!id || !docType || !data?.issuerEmailId || !data?.docUri || !data?.docHash) {
+            return res.status(400).json({ success: false, message: "all data not provided" });
+        }
+        const models:any = {
+            education:EducationDoc,
+            experience:ExperienceDoc,
+            award:AwardDocs
+        }
+
+        const doc = await models[docType as string].findById(id);
+          if (docType==="education") {
+            const status = await docVerificationEmailHandler({ emailId: data.issuerEmailId, level: doc.level, boardNameOrDegree: doc.boardNameOrDegree, institutionName: doc.institutionName, documentViewUrl: data.docUri, id: doc._id, docType: "education" })
+            if (status === "Succeeded") {
+                doc.isEmailSend = true;
+                doc.issuerEmailId = data.issuerEmailId;
+                doc.docUri = data.docUri;
+                doc.docHash = data.docHash;
+                await doc.save();
+                return res.status(200).json({
+                    success: true,
+                    status: status,
+                    message: "Email has been sent to issuer",
+                })
+            }
+        }
+          if (docType==="experience") {
+            const status = await docVerificationEmailHandler({ emailId: data.issuerEmailId, documentViewUrl: data.docUri, position: doc.position, companyName: doc.companyName, skills: doc.skills, duration: doc.duration, id: doc._id, docType: "experience" })
+            if (status === "Succeeded") {
+                doc.isEmailSend = true;
+                doc.issuerEmailId = data.issuerEmailId;
+                doc.docUri = data.docUri;
+                doc.docHash = data.docHash;
+                await doc.save();
+                return res.status(200).json({
+                    success: true,
+                    status: status,
+                    message: "Email has been sent to issuer",
+                })
+            }
+        }
+          if (docType==="award") {
+            const status: any = await docVerificationEmailHandler({ emailId: data.issuerEmailId, documentViewUrl: data.docUri, level: doc.level, organisation: doc.organisation, duration: doc?.duration, id: doc._id, docType: "award" })
+            if (status === "Succeeded") {
+                doc.isEmailSend = true;
+                doc.issuerEmailId = data.issuerEmailId;
+                doc.docUri = data.docUri;
+                doc.docHash = data.docHash;
+                await doc.save();
+                return res.status(200).json({
+                    success: true,
+                    status: status,
+                    message: "Email has been sent to issuer",
+                })
+            }
+        }
+        return res.status(400).json({success:false,message:"something went wrong"});
+    } catch (error:any) {
+        res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+            error: error.message || error
+        })  
+    }
+}
