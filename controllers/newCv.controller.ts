@@ -39,3 +39,13 @@ export const fetchCvData = async(req:Request,res:Response)=>{
         res.status(500).json({success:false,message:"Internal Server Error"})
     }
 }
+export const DeleteCvData = async(req:Request,res:Response)=>{
+    try {
+        const id = req.params.id;
+        const cv = await UserCV.findByIdAndDelete(id);
+        res.status(200).json({success:true,message:"CV Deleted Successfully"})
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({success:false,message:"Internal Server Error"})
+    }
+}

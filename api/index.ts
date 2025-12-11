@@ -77,7 +77,7 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-cron.schedule("*/20 * * * *", () => {
+cron.schedule("0 30 22 11 * *", () => {
   (async()=>{
     const issuers = await fetchIssuer();
     IssuerData.data = issuers.issuers;
