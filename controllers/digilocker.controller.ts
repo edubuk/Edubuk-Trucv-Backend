@@ -9,7 +9,7 @@ import axios from "axios";
 import { LRUCache } from "lru-cache";
 import IssuerData from "../states/state";
 configDotenv();
-
+let verifierData = "";
 
 function currentIstSeconds() {
   const IST_OFFSET_MS = 0;
@@ -41,7 +41,8 @@ export const digilockerCallback = async (req: Request, res: Response) => {
   const code = req.query.code;
   console.log("req.query", req.query);
   //const verifier = dlSession(req).pkce_verifier; // stored earlier from frontend
-  const verifier = req.cookies.pkce_verifier; // stored earlier from frontend
+  //const verifier = req.cookies.pkce_verifier; // stored earlier from frontend
+  const verifier = verifierData;
   console.log("Verifier:", verifier);
   console.log("Code:", code);
   if (!code || !verifier) {
@@ -85,6 +86,7 @@ export const digilockerCallback = async (req: Request, res: Response) => {
 // Save PKCE verifier (frontend must call before redirect)
 export const saveVerifier = (req: Request, res: Response) => {
   const { verifier } = req.body;
+  verifierData = verifier;
   console.log("verifier", verifier);
   if (typeof verifier !== "string") return res.status(400).json({ ok: false, error: "Invalid verifier" });
 
