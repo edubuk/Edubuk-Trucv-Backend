@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { digilockerCallback, fetchDocType, fetchDocuments, fetchIssuer, getIssuer, fetchProfile,saveVerifier, pullParams, fetchDocUri, viewDoc, redirectUrl } from "../controllers/digilocker.controller";
+import { digilockerCallback, fetchDocType, fetchDocuments, fetchIssuer, getIssuer, fetchProfile,saveVerifier, pullParams, fetchDocUri, viewDoc} from "../controllers/digilocker.controller";
 //import { jwtTokenVerification } from "../middleware/tokenauth";
 //import { viewDoc } from "../controllers/cv.controller";
 
@@ -15,6 +15,6 @@ router.get("/getIssuer", getIssuer);
 router.post("/pullParams", pullParams);
 router.post("/fetchDocUri", fetchDocUri);
 router.get("/view-doc", viewDoc);
-router.get("/redirect", redirectUrl);
+
 
 export default router;
