@@ -39,8 +39,11 @@ function digilockerHmacConcat(clientId: string, clientSecret: string, ts: string
 
 export const redirectUrl = (req:Request,res:Response)=>{
   try {
-    console.log("req aa gayi");
-    console.log("tokel dl",req.cookies.dl_token)
+    // console.log("req aa gayi");
+    // console.log("tokel dl",req.cookies.dl_token)
+      console.log("| req aa gayi");
+  console.log("Incoming Cookie header:", req.headers.cookie); // raw cookie header
+  console.log("tokel dl", req.cookies?.dl_token); // parsed by cookie-parser
     return res.redirect(`${process.env.CLIENT_URL}/create-cv`)
   } catch (error) {
     console.log("error",error)
@@ -81,9 +84,13 @@ export const digilockerCallback = async (req: Request, res: Response) => {
       res.status(200).cookie("dl_token", data.access_token, {
         httpOnly: true,
         secure: true,
-        sameSite: "none",
+        sameSite: "lax",
         maxAge: 1000 * 60 * 60 * 24 * 7,
-      }).redirect('https://trucv.org/api/dl/redirect');
+      })
+
+        console.log("Server Set-Cookie header:", res.getHeader("Set-Cookie"));
+      
+     return res.redirect('https://trucv.org/api/dl/redirect');
     } else {
       res.status(400).json(data);
     }
