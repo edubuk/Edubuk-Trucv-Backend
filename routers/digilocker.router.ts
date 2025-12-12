@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { digilockerCallback, fetchDocType, fetchDocuments, fetchIssuer, getIssuer, fetchProfile,saveVerifier, pullParams, fetchDocUri, viewDoc } from "../controllers/digilocker.controller";
-import { jwtTokenVerification } from "../middleware/tokenauth";
+//import { jwtTokenVerification } from "../middleware/tokenauth";
 //import { viewDoc } from "../controllers/cv.controller";
 
 const router = Router();
 
-router.get("/callback",jwtTokenVerification, digilockerCallback);
+router.get("/callback", digilockerCallback);
 router.post("/save-verifier", saveVerifier);
 router.get("/me", fetchProfile);
 router.post("/issuers", fetchIssuer);
