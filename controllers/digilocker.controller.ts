@@ -69,7 +69,7 @@ export const digilockerCallback = async (req: Request, res: Response) => {
       res.status(200).cookie("dl_token", data.access_token, {
         httpOnly: true,
         secure: true,
-        sameSite: "none",
+        sameSite: "lax",
         maxAge: 1000 * 60 * 60 * 24 * 7,
       }).redirect(`${process.env.CLIENT_URL}/create-cv`);
     } else {
@@ -91,7 +91,7 @@ export const saveVerifier = (req: Request, res: Response) => {
   res.status(200).cookie("pkce_verifier", verifier, {
     httpOnly: true,
     secure:true,
-    sameSite: "none",
+    sameSite: "lax",
     maxAge: 1000 * 60 * 60 * 24 * 7,
   })
   .json({ ok: true });
