@@ -40,6 +40,8 @@ app.use(
       "https://www.static-web-app.edubuktrujobs.com",
       "https://edubuktrujobs.com",
       "https://www.edubuktrujobs.com",
+      "https://www.trucv.org",
+      "https://trucv.org"
     ],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
