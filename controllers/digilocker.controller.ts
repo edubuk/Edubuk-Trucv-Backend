@@ -37,16 +37,16 @@ function digilockerHmacConcat(clientId: string, clientSecret: string, ts: string
 
 }
 
-export const redirectUrl = (req:Request,res:Response)=>{
+export const redirectUrl = (req: Request, res: Response) => {
   try {
     // console.log("req aa gayi");
     // console.log("tokel dl",req.cookies.dl_token)
-      console.log("| req aa gayi");
-  console.log("Incoming Cookie header:", req.headers.cookie); // raw cookie header
-  console.log("tokel dl", req.cookies?.dl_token); // parsed by cookie-parser
+    console.log("| req aa gayi");
+    console.log("Incoming Cookie header:", req.headers.cookie); // raw cookie header
+    console.log("tokel dl", req.cookies?.dl_token); // parsed by cookie-parser
     return res.redirect(`${process.env.CLIENT_URL}/create-cv`)
   } catch (error) {
-    console.log("error",error)
+    console.log("error", error)
     return res.redirect(`${process.env.CLIENT_URL}/`)
   }
 }
@@ -84,13 +84,13 @@ export const digilockerCallback = async (req: Request, res: Response) => {
       res.status(200).cookie("dl_token", data.access_token, {
         httpOnly: true,
         secure: true,
-        sameSite: "lax",
+        sameSite: "none",
         maxAge: 1000 * 60 * 60 * 24 * 7,
       })
 
-        console.log("Server Set-Cookie header:", res.getHeader("Set-Cookie"));
-      
-     return res.redirect('https://trucv.org/api/dl/redirect');
+      console.log("Server Set-Cookie header:", res.getHeader("Set-Cookie"));
+
+      return res.redirect('https://trucv.org/api/dl/redirect');
     } else {
       res.status(400).json(data);
     }
@@ -110,12 +110,12 @@ export const saveVerifier = (req: Request, res: Response) => {
 
   res.status(200).cookie("pkce_verifier", verifier, {
     httpOnly: true,
-    secure:true,
+    secure: true,
     sameSite: "none",
     maxAge: 1000 * 60 * 60 * 24 * 7,
   })
-  .json({ ok: true });
-  
+    .json({ ok: true });
+
 };
 
 
@@ -306,35 +306,35 @@ export const fetchDocUri = async (req: Request, res: Response) => {
     console.log("token", token);
     const orgid = req.query.orgid;
     const doctype = req.query.doctype;
-    const {rollno,year}=req.body;
+    const { rollno, year } = req.body;
     console.log("rollno", rollno);
     console.log("year", year);
     const dlBody = req.body;
-    console.log("data body",dlBody)
+    console.log("data body", dlBody)
 
     if (!token) {
       return res.status(401).json({ ok: false, error: "Not logged in" });
     }
     let body = null;
-      body = qs.stringify({
-        orgid:orgid,
-        doctype:doctype,
-        consent: "Y",
-        ...dlBody
+    body = qs.stringify({
+      orgid: orgid,
+      doctype: doctype,
+      consent: "Y",
+      ...dlBody
     });
     console.log("body", body);
     const headers = {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Authorization': `Bearer ${token}`
     };
-     const response = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/pulldocument`,
+    const response = await axios.post(`${process.env.DIGILOCKER_API_BASE}/1/pull/pulldocument`,
       body,
       {
         headers: headers,
         timeout: 15000
       });
-    
-    const {data,status} = response;
+
+    const { data, status } = response;
     return res.status(status).json({ ok: true, message: "document found", data });
   } catch (err: any) {
     console.error('Digilocker pull doc error', err.response?.data || err.message || err);
