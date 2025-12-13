@@ -81,14 +81,15 @@ export const digilockerCallback = async (req: Request, res: Response) => {
   }
 };
 
-export const redirectToCallBack = (res:Response,req:Request)=>{
+export const redirectToCallBack = (req: Request, res: Response) => {
   try {
     res.redirect(`https://edubuktrucv.com/api/api/dl/redirect`);
   } catch (error) {
     console.log(error);
     res.status(500).send("Redirect failed");
   }
-}
+};
+
 
 
 // Save PKCE verifier (frontend must call before redirect)
