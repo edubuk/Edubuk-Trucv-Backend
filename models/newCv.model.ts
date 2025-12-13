@@ -15,6 +15,7 @@ export interface IPersonal {
   linkedin: string;
   github: string;
   summary: string;
+  imgUrl?:string;
 }
 
 export interface IEducation {
@@ -112,6 +113,7 @@ const PersonalSchema = new Schema<IPersonal>(
     linkedin: { type: String, required: false },
     github: { type: String, required: false },
     summary: { type: String, required: false },
+    imgUrl:{type:String,required:false},
   },
   { _id: false }
 );
