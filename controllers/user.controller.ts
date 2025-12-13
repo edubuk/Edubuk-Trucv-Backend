@@ -15,6 +15,8 @@ import { CV } from "../models/cv.model";
 
 config();
 
+const isProd = process.env.NODE_ENV === "production";
+
 const generateAccessRefreshToken = async (userId: string) => {
     try {
         const user = await User.findById(userId);
@@ -161,14 +163,14 @@ export const loginUser = async (req: Request, res: Response) => {
             .status(200)
             .cookie("accessToken", accessToken, {
                 httpOnly: true,
-                secure: true,
-                sameSite: "none",     
+                secure: isProd,
+                sameSite: "lax",     
                 maxAge: 1000 * 60 * 60 * 15,
             })
             .cookie("refreshToken", refreshToken, {
                 httpOnly: true,
-                secure: true,
-                sameSite: "none",     
+                secure: isProd,
+                sameSite: "lax",     
                 maxAge: 1000 * 60 * 60 * 24 * 7,
             })
             .json({
@@ -200,20 +202,20 @@ export const logoutUser = async(req:Request,res:Response)=>{
 
         const options={
             httpOnly:true,
-            secure:process.env.NODE_ENV==="production",
-            sameSite: "none",     
+            secure:isProd,
+            sameSite: "lax",     
             maxAge: 1000 * 60 * 60 * 15,
         }
 
         res.status(200).clearCookie("accessToken",{
             httpOnly:true,
-            secure:process.env.NODE_ENV==="production",
-            sameSite: "none",     
+            secure:isProd,
+            sameSite: "lax",     
             maxAge: 1000 * 60 * 60 * 15,
         }).clearCookie("refreshToken",{
             httpOnly:true,
-            secure:process.env.NODE_ENV==="production",
-            sameSite: "none",     
+            secure:isProd,
+            sameSite: "lax",     
             maxAge: 1000 * 60 * 60 * 24 * 7,
         }).json({
             success:true,
@@ -269,19 +271,18 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       user._id as string
     );
 
-    const isProd = process.env.NODE_ENV === "production";
 
     return res
       .cookie("accessToken", accessToken, {
         httpOnly: true,
       secure: isProd,
-      sameSite: isProd ? "none" : "lax" as const,
+      sameSite:"lax",
        maxAge: 1000 * 60 * 15,
       })
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
       secure: isProd,
-      sameSite: isProd ? "none" : "lax" as const,
+      sameSite:"lax",
        maxAge: 1000 * 60 * 60 * 24 * 7,
       })
       .status(200)
