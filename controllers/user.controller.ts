@@ -248,7 +248,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
         incomingRefreshToken,
         process.env.REFRESH_TOKEN_SECRET as string
       );
-      console.log("refresh token verified",decodedToken)
+      //console.log("refresh token verified",decodedToken)
     } catch (err: any) {
       return res.status(401).json({
         success: false,
@@ -400,7 +400,7 @@ export const userSubscription = async(req:Request,res:Response)=>{
     try {
         const typeReq = req as IGetUserAuthInfoRequest;
         const userId=req.query.id??typeReq.user._id
-        console.log("userId",req.query.id)
+        //console.log("userId",req.query.id)
         const subscription = await Subscription.findOne({userId:userId});
         if(!subscription)
         {

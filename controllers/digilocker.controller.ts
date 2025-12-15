@@ -297,11 +297,10 @@ export const fetchDocUri = async (req: Request, res: Response) => {
     console.log("token", token);
     const orgid = req.query.orgid;
     const doctype = req.query.doctype;
-    const {rollno,year}=req.body;
-    console.log("rollno", rollno);
-    console.log("year", year);
+    //console.log("rollno", rollno);
+    //console.log("year", year);
     const dlBody = req.body;
-    console.log("data body",dlBody)
+    //console.log("data body",dlBody)
 
     if (!token) {
       return res.status(401).json({ ok: false, error: "Not logged in" });
@@ -313,7 +312,7 @@ export const fetchDocUri = async (req: Request, res: Response) => {
         consent: "Y",
         ...dlBody
     });
-    console.log("body", body);
+    //console.log("body", body);
     const headers = {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Authorization': `Bearer ${token}`
