@@ -57,7 +57,7 @@ export const otpEmailHandler = async (emailId: string, otp: string) => {
       </p>
 
       <p style="margin:0 0 12px; font-size:14px;">
-        This code will expire in <strong>10 minutes</strong>.
+        This code will expire in <strong>5 minutes</strong>.
       </p>
 
       <p style="margin:0; font-size:14px;">

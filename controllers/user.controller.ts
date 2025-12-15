@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { User } from "../models/user.model";
 import crypto from "crypto";
-import { Otp } from "../models/otp.model";
+import { IOtp, Otp } from "../models/otp.model";
 import bcrypt from "bcrypt";
 import { otpEmailHandler} from "../utils/otpEmailHandler";
 //import { v4 as uuidv4 } from "uuid";
@@ -45,6 +45,7 @@ export const generateOtp = async (req: Request, res: Response) => {
                 message:"user already registered"
             })
         }
+        
         const digits = "0123456789";
         const bytes = crypto.randomBytes(6);
         let otp = "";

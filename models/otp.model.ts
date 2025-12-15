@@ -1,6 +1,6 @@
 import mongoose,{Schema,Document} from "mongoose";
 
-interface IOtp extends Document{
+export interface IOtp extends Document{
     email:string,
     otpHash:string,
     expiresAt:Date,
