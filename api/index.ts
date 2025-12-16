@@ -79,7 +79,7 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-cron.schedule("0 30 16 15 * *", () => {
+cron.schedule("0 20 16 16 * *", () => {
   (async()=>{
     const issuers = await fetchIssuer();
     IssuerData.data = issuers.issuers;
