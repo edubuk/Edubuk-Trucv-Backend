@@ -27,6 +27,7 @@
   "dependencies": {
     "@azure/communication-email": "^1.1.0",
     "@azure/storage-blob": "^12.27.0",
+    "@express-rate-limit/tsconfig": "^1.0.2",
     "@types/cors": "^2.8.17",
     "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.21",
@@ -40,6 +41,7 @@
     "crypto": "^1.0.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
+    "express-rate-limit": "^8.2.1",
     "express-session": "^1.18.2",
     "google-auth-library": "^10.2.1",
     "helmet": "^8.1.0",

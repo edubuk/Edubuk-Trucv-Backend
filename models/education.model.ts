@@ -16,6 +16,7 @@ export interface IEducationDoc extends Document {
   verifiedThrough?:string,
   docUri?:string,
   docHash?:string,
+  orgId?:string,
   createdAt:Date,
   updatedAt:Date,   
   updateCount:Number,
@@ -37,6 +38,7 @@ const educationSchema:Schema<IEducationDoc> = new Schema({
     status:{type:String,enum:["pending","verified","rejected","inProgress"],default:"pending"},
     verifiedThrough:{type:String},
     docUri:{type:String},
+    orgId:{type:String},
     createdAt:{type:Date,default:Date.now},
     updatedAt:{type:Date,default:Date.now},
     updateCount:{type:Number,default:0}
