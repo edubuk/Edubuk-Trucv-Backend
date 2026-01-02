@@ -209,16 +209,16 @@ export const couponVerification = async (req: Request, res: Response) => {
         currPrice = 236;
         break;
       case "DISCOUNTCV":
-        currPrice = 236;
+        currPrice = 10;
         break;
       case "CAREERUPDIS":
-        currPrice = 236;
+        currPrice = 10;
         break;
       case "JOBSCVDIS":
         currPrice = 236;
         break;
       case "UPLOADCVDIS":
-        currPrice = 236;
+        currPrice = 10;
         break;
       case "RESPACKDIS":
         currPrice = 236;
