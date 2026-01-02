@@ -108,6 +108,16 @@ export const registerUser = async (req: Request, res: Response) => {
         await user.save();
         otpData.used = true;
         await otpData.save();
+
+        await Subscription.create({
+            userId: user._id,
+            subscriptionPlan: "pro",
+            paymentId: "NA",
+            couponCode: "",
+            orderId: "NA",
+            endDate: new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000) // 3 months from now
+        });
+        
         res.status(200).json({
             success: true,
             message: "your are registered successfully"
