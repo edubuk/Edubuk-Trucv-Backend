@@ -3,14 +3,14 @@ import { User } from "../models/user.model";
 import crypto from "crypto";
 import { IOtp, Otp } from "../models/otp.model";
 import bcrypt from "bcrypt";
-import { otpEmailHandler} from "../utils/otpEmailHandler";
+import { otpEmailHandler} from "../utils/emailHandler";
 //import { v4 as uuidv4 } from "uuid";
 import { IGetUserAuthInfoRequest } from "../types/definitionFile";
 import { config } from "dotenv";
 import jwt from "jsonwebtoken";
 import { Certificate } from "../models/userDoc.model";
 import Subscription from "../models/subscription.model";
-import { sendResetLinkEMail } from "../utils/sendResetEmail";
+import { sendResetLinkEMail } from "../utils/emailHandler";
 import { CV } from "../models/cv.model";
 
 config();
@@ -117,7 +117,7 @@ export const registerUser = async (req: Request, res: Response) => {
             orderId: "NA",
             endDate: new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000) // 3 months from now
         });
-        
+
         res.status(200).json({
             success: true,
             message: "your are registered successfully"

@@ -4,6 +4,7 @@ import { ExperienceDoc } from "../models/experience.model";
 import { AwardDocs } from "../models/award.model";
 import { SkillVerificationReq } from "../models/skillVerificationRequest.model";
 import { SkillDoc } from "../models/skill.model";
+import { DocVerificationRequest } from "../models/docVerificationRequest.model";
 
 function renderSuccess() {
   return `
@@ -15,6 +16,7 @@ function renderSuccess() {
     </html>
   `;
 }
+
 function renderReject() {
   return `
     <html>
@@ -40,23 +42,29 @@ function renderError(message: string) {
 
 export const approveHandler = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const { emailId, docType } = req.query;
-
+    const { token } = req.params;
+    console.log("token",token)
+    const requestDoc = await DocVerificationRequest.findOne({token:token});
+    console.log("requestDoc",requestDoc);
+    if(!requestDoc || requestDoc?.tokenUsed)
+    {
+      return res.status(400).send(renderError("Invalid token"));
+    }
     const models: any = {
       education: EducationDoc,
       experience: ExperienceDoc,
       award: AwardDocs
     }
 
-    const Model = models[docType as string];
+    const Model = models[requestDoc?.documentType as string];
 
     if (!Model) {
       return res.status(400).send(renderError("Invalid verification type."));
     }
 
-    const doc = await Model.findById(id);
-    if (!doc || emailId !== doc.issuerEmailId) {
+    const doc = await Model.findById(requestDoc.documentId);
+    //console.log("doc",doc);
+    if (!doc) {
       return res.status(404).send(renderError("Document not found or issuer emailId is mismatched."));
     }
 
@@ -65,6 +73,12 @@ export const approveHandler = async (req: Request, res: Response) => {
     doc.verifiedThrough = "Email";
     doc.updatedAt = new Date();
     await doc.save()
+
+    requestDoc.status="verified";
+    requestDoc.tokenUsed=true,
+    requestDoc.verified=true,
+    await requestDoc.save();
+
     return res.status(200).send(renderSuccess())
   } catch (error) {
     return res.status(500).send(renderError("Internal server error"))
@@ -73,8 +87,15 @@ export const approveHandler = async (req: Request, res: Response) => {
 
 export const rejectHandler = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const { emailId, docType } = req.query;
+    const { token } = req.params;
+
+    const requestDoc = await DocVerificationRequest.findOne({token:token});
+
+    if(!requestDoc || requestDoc.tokenUsed)
+    {
+      return res.status(400).send(renderError("Invalid token"));
+
+    }
 
     const models: any = {
       education: EducationDoc,
@@ -82,14 +103,14 @@ export const rejectHandler = async (req: Request, res: Response) => {
       award: AwardDocs
     }
 
-    const Model = models[docType as string];
+    const Model = models[requestDoc.documentType as string];
 
     if (!Model) {
       return res.status(400).send(renderError("Invalid verification type."));
     }
 
-    const doc = await Model.findById(id);
-    if (!doc || emailId !== doc.issuerEmailId) {
+    const doc = await Model.findById(requestDoc.documentId);
+    if (!doc) {
       return res.status(404).send(renderError("Document not found or issuer emailId is mismatched."));
     }
 
@@ -97,6 +118,12 @@ export const rejectHandler = async (req: Request, res: Response) => {
     doc.verified = false;
     doc.updatedAt = new Date();
     await doc.save()
+
+    requestDoc.status="rejected";
+    requestDoc.tokenUsed=true,
+    requestDoc.verified=false,
+    await requestDoc.save();
+
     return res.status(200).send(renderReject())
   } catch (error) {
     return res.status(500).send(renderError("Internal server error"))
@@ -122,6 +149,7 @@ export const requestedSkills = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: "internal server error" })
   }
 }
+
 export const approveSkills = async (req: Request, res: Response) => {
   try {
     const { token } = req.params;
