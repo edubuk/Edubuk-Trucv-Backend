@@ -19,7 +19,7 @@ import trujobsRouter from "../routers/trujobs.route";
 import approvalRouter from "../routers/approval.router"
 import IssuerData from "../states/state";
 import { fetchIssuer } from "../controllers/digilocker.controller";
-
+import hackathonRouter from "../routers/hackathon.router";
 // Initialize dotenv and Express app
 config();
 const app = express();
@@ -72,7 +72,8 @@ app.use("/qr", qrRoute);
 app.use("/admin", adminRouter);
 app.use("/trujobs", trujobsRouter);
 app.use("/api/dl",digilockerRouter);
-app.use("/issuer",approvalRouter)
+app.use("/issuer",approvalRouter);
+app.use("/hackathon",hackathonRouter);
 app.get("/", (req: Request, res: Response) => {
   return res.json({
     message: "Health is ok !",

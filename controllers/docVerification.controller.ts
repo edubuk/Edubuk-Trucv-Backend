@@ -39,7 +39,6 @@ function renderError(message: string) {
   `;
 }
 
-
 export const approveHandler = async (req: Request, res: Response) => {
   try {
     const { token } = req.params;
