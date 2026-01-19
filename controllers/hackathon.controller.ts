@@ -1,6 +1,7 @@
 
 import { Request, Response } from "express";
 import { IGetUserAuthInfoRequest } from "../types/definitionFile";
+import { Certification } from "../models/certification.model";
 
 export const isEmailPresentInSheet = async (
   req: Request,
@@ -33,4 +34,16 @@ export const isEmailPresentInSheet = async (
     res.status(500).json({ success: false, message: "Internal server error" });
    }
 
+}
+
+
+export const getCertificationData = async (req: Request, res: Response) => {
+    try {
+        const typeReq = req as IGetUserAuthInfoRequest;
+        const userId = typeReq.user._id;
+        const certification = await Certification.findOne({ userId });
+        res.status(200).json({ success: true, certification });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
 }
