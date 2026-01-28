@@ -20,8 +20,10 @@ export const createUserCV = async(req:Request,res:Response)=>{
 
 export const userCvs = async(req:Request,res:Response)=>{
     try {
+        const {userIdThroughAdmin} = req.query;
+        //console.log("user id",userIdThroughAdmin)
         const typeReq = req as IGetUserAuthInfoRequest;
-        const userId = typeReq.user._id;
+        const userId = userIdThroughAdmin??typeReq.user._id;
         const cv = await UserCV.find({userId}).select("_id title")
         res.status(200).json({success:true,data:cv})
     } catch (error) {
