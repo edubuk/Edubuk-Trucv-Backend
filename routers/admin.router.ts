@@ -15,5 +15,5 @@ router.get("/users-list",jwtTokenVerification,isAdmin,getUsers);
 router.get("/user-docs",jwtTokenVerification,isAdmin,getAllDocs);
 router.get("/user-cvs",jwtTokenVerification,isAdmin,userCvs);
 router.put("/updateSubscriptionPlan",jwtTokenVerification,isAdmin,updateSubscriptionPlan);
-router.get("/hackathon-certificate-list",getHackathonCertificateList);
+router.get("/hackathon-certificate-list",jwtTokenVerification,isAdmin,getHackathonCertificateList);
 export default router;
