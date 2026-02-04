@@ -47,3 +47,31 @@ export const getCertificationData = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 }
+
+export const getHackathonCertificateList = async(req:Request,res:Response)=>{
+  try {
+    const hackathonName = req.query.hackathonName as string;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const page = parseInt(req.query.page as string)|| 1;
+    const offset = (page-1)*limit;
+
+    const data = await Certification.find(hackathonName?{hackathonName}:{}).limit(limit).skip(offset);
+
+    const totalCertificate = await Certification.countDocuments(hackathonName?{hackathonName}:{});
+
+    res.status(200).json({ 
+      success: true, 
+      data, 
+      pagination:{
+        limit,
+        pageSize:limit,
+        totalPages:Math.ceil(totalCertificate/limit),
+        currentPage:page,
+        hasNextPage:page < Math.ceil(totalCertificate/limit),
+        hasPrevPage:page > 1,
+        totalCertificate
+      } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+}
