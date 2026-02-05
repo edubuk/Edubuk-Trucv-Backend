@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { User } from "../models/user.model";
 import Subscription from "../models/subscription.model";
+import { UserCV } from "../models/newCv.model";
 
 
 export const adminController = async (req:Request,res:Response) => {
@@ -112,6 +113,26 @@ export const updateSubscriptionPlan = async (req:Request,res:Response) => {
                 message:"Subscription plan updated successfully"
             })
         }
+    } catch (error) {
+        console.log("ERROR:ADMIN_CONTROLLER",error)
+        return res.status(500).json({message:"Something went wrong",error:error,success:false})
+    }
+}
+
+export const allUserCvs = async (req:Request,res:Response) => {
+    try {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 20;
+        const offset = (page-1)*limit;
+
+        const cvs = await UserCV.find().select("_id").skip(offset).limit(limit);
+        const totalCV = await UserCV.countDocuments();
+        return res.status(200).json({
+            success:true,
+            data:cvs,
+            totalPage:Math.ceil(totalCV/limit),
+            totalCVs:totalCV
+        })
     } catch (error) {
         console.log("ERROR:ADMIN_CONTROLLER",error)
         return res.status(500).json({message:"Something went wrong",error:error,success:false})
