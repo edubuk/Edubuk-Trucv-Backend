@@ -7,19 +7,19 @@ import { IGetUserAuthInfoRequest } from "../types/definitionFile";
 import { Certification } from "../models/certification.model";
 configDotenv;
 
-const Spark_Wallet_Add = process.env.Spark_Wallet_Add;
+const TYGN_Wallet_Add = process.env.TYGN_Wallet_Add;
 const SKALE_MAINNET_RPC = process.env.SKALE_MAINNET_RPC;
-const Skale_Spark_Private_Key = process.env.Skale_Spark_Private_Key;
-console.log("Spark_Wallet_Add", Spark_Wallet_Add);
+const TYGN_Private_Key = process.env.TYGN_Private_Key;
+console.log("TYGN_Wallet_Add", TYGN_Wallet_Add);
 console.log("SKALE_MAINNET_RPC", SKALE_MAINNET_RPC);
 
 export const createContract = async () => {
     try {
-        if (!Skale_Spark_Private_Key) {
+        if (!TYGN_Private_Key) {
             throw new Error("Private key or contract address not found");
         }
         const provider = new ethers.JsonRpcProvider(SKALE_MAINNET_RPC);
-        const wallet = new Wallet(Skale_Spark_Private_Key, provider);
+        const wallet = new Wallet(TYGN_Private_Key, provider);
         const contract = new ethers.Contract(EdubukConAdd, EdubukConABI.abi, wallet);
         return contract;
     } catch (error: any) {
@@ -33,13 +33,14 @@ export const createContract = async () => {
 export const uploadCertificate = async (req: Request, res: Response) => {
     try {
         console.log("api hitting");
-        const { name, uri, filehash, certificateType, issuerName } = req.body;
+        const { name, uri, filehash, certificateType, issuerName,hackathonName } = req.body;
         const typeReq = req as IGetUserAuthInfoRequest;
 
         const data = await Certification.findOneAndUpdate(
             { userId: typeReq.user._id },   // filter
             {
-                certUrl: uri
+                certUrl: uri,
+                hackathonName: hackathonName
             },
             {
                 new: true,        // return updated / created document
@@ -58,17 +59,17 @@ export const uploadCertificate = async (req: Request, res: Response) => {
                 });
         }
 
-        if (!Spark_Wallet_Add || !SKALE_MAINNET_RPC) {
+        if (!TYGN_Wallet_Add || !SKALE_MAINNET_RPC) {
             return res
                 .status(500)
-                .json({ success: false, message: "Spark wallet address or SKALE RPC not configured" });
+                .json({ success: false, message: "TYGN wallet address or SKALE RPC not configured" });
         }
-        //console.log("parameters", { name, uri, filehash, certificateType, issuerName, Spark_Wallet_Add, SKALE_MAINNET_RPC });
+        //console.log("parameters", { name, uri, filehash, certificateType, issuerName, TYGN_Wallet_Add, SKALE_MAINNET_RPC });
         // create contract and post certificate
         const contract = await createContract();
         const tx = await contract.postCertificate(
             name,
-            Spark_Wallet_Add,
+            TYGN_Wallet_Add,
             uri,
             filehash,
             certificateType,

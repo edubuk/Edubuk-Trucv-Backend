@@ -28,8 +28,8 @@ export const isEmailPresentInSheet = async (
       return res.status(200).json({ success: true, match: false });
     }
     const data = matchData.split(",");
-    console.log("data", data[0],data[1],data[2]);
-    return res.status(200).json({ success: true, match: true, tag: data[1], rank: data[2] });
+    console.log("data", data[0],data[1],data[2],data[3]);
+    return res.status(200).json({ success: true, match: true, tag: data[1], rank: data[2], collegeName: data[3] });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
