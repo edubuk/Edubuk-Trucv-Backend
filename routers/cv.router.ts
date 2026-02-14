@@ -2,8 +2,9 @@ import { Router } from "express";
 import { createCv, getUserCVIds, getCv,getCvByNanoId,verifyDoc } from "../controllers/cv.controller";
 import { checkout, couponVerification, paymentVerification } from "../controllers/payment.controller";
 import { jwtTokenVerification } from "../middleware/tokenauth";
-import { createUserCV, DeleteCvData, fetchCvData, userCvs } from "../controllers/newCv.controller";
-
+import { createUserCV, cvParse, DeleteCvData, fetchCvData, userCvs } from "../controllers/newCv.controller";
+import multer from "multer";
+const upload = multer({ storage: multer.memoryStorage() });
 const router = Router();
 
 router.post("/create",jwtTokenVerification, createCv);
@@ -20,4 +21,5 @@ router.post("/create-cv",jwtTokenVerification,createUserCV);
 router.get("/user-cvs",jwtTokenVerification,userCvs);
 router.get("/user-cv/:id",fetchCvData);
 router.delete("/delete-cv/:id",jwtTokenVerification,DeleteCvData);
+router.post("/cv-parse",jwtTokenVerification,upload.single("file"),cvParse);
 export default router;

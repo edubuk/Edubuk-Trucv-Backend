@@ -21,6 +21,7 @@ import IssuerData from "../states/state";
 import { fetchIssuer } from "../controllers/digilocker.controller";
 import hackathonRouter from "../routers/hackathon.router";
 import certificationRouter from "../routers/certification.router";
+
 // Initialize dotenv and Express app
 config();
 const app = express();
@@ -53,8 +54,8 @@ app.use(helmet());
 
 app.use(
   rateLimit({
-    windowMs: 10 * 60 * 1000,
-    max: 200, // limit each IP to 200 requests per 10 minutes
+    windowMs: 5 * 60 * 1000,
+    max: 500, // limit each IP to 500 requests per 5 minutes
   })
 );
 
@@ -82,7 +83,7 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-cron.schedule("30 17 6 * *", () => {
+cron.schedule("45 18 14 * *", () => {
   (async()=>{
     const issuers = await fetchIssuer();
     IssuerData.data = issuers.issuers;
@@ -90,8 +91,7 @@ cron.schedule("30 17 6 * *", () => {
     //console.log("issuers",issuers);
     //console.log("IssuerData",IssuerData);
   })();
-},{timezone:"Asia/Kolkata"})
-
+},{timezone:"Asia/Kolkata"});
 app.listen(process.env.PORT || 5000, () => {
   MongoConnection();
   console.log("Backend running on PORT:", 5000);
