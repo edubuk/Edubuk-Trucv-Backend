@@ -52,12 +52,12 @@ app.use(
 
 app.use(helmet());
 
-app.use(
-  rateLimit({
-    windowMs: 5 * 60 * 1000,
-    max: 500, // limit each IP to 500 requests per 5 minutes
-  })
-);
+// app.use(
+//   rateLimit({
+//     windowMs: 5 * 60 * 1000,
+//     max: 500, // limit each IP to 500 requests per 5 minutes
+//   })
+// );
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -83,7 +83,7 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-cron.schedule("45 18 14 * *", () => {
+cron.schedule("35 16 24 * *", () => {
   (async()=>{
     const issuers = await fetchIssuer();
     IssuerData.data = issuers.issuers;
