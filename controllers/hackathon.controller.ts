@@ -20,16 +20,16 @@ export const isEmailPresentInSheet = async (
     const csvText = await response.text();
 
     const normalizedEmail = userEmailId.trim().toLowerCase();
-
+    console.log("normal", csvText);
     const matchData = csvText.split("\n").find(
-      row => row.split(",")[0]?.toLowerCase() === normalizedEmail
+      row => row.trim().toLowerCase() === normalizedEmail
     );
     if (!matchData) {
       return res.status(200).json({ success: true, match: false });
     }
-    const data = matchData.split(",");
-    console.log("data", data[0],data[1],data[2],data[3]);
-    return res.status(200).json({ success: true, match: true, tag: data[1], rank: data[2], collegeName: data[3] });
+    // const data = matchData.split(",");
+    // console.log("data", data[0],data[1],data[2],data[3]);
+    return res.status(200).json({ success: true, match: true});
   } catch (error) {
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
