@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import OpenAI from "openai";
 import Scraper from "../../models/scrapers/scraper.model";
 const client = new ApifyClient({
-  token: "apify_api_kDeDJgKPzWo3kRYxFgLtZJmadCWAEm20rFlD",
+  token: process.env.APIFY_CLIENT,
 });
 
 const openAIClient = new OpenAI({
