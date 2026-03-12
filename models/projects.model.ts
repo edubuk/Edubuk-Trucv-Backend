@@ -15,12 +15,12 @@ export interface IProject{
 
 const projectSchema:Schema<IProject> = new Schema({
     userId:{type:Schema.ObjectId,ref:"TruCvUser"},
-    projectName:{type:String,required:true},
+    projectName:{type:String},
     projectUrl:{type:String},
-    duration:{from:{type:String,required:true},to:{type:String}},
-    skills:{type:String,required:true},
-    description:{type:String,required:true},
-    selfAttested:{type:Boolean,required:true},
+    duration:{from:{type:String},to:{type:String}},
+    skills:{type:String},
+    description:{type:String},
+    selfAttested:{type:Boolean},
     createdAt:{type:Date,default:Date.now},
     updatedAt:{type:Date,default:Date.now},
 })

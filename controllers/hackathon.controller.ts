@@ -20,7 +20,7 @@ export const isEmailPresentInSheet = async (
     const csvText = await response.text();
 
     const normalizedEmail = userEmailId.trim().toLowerCase();
-    console.log("normal", csvText);
+    // console.log("normal", csvText);
     const matchData = csvText.split("\n").find(
       row => row.trim().toLowerCase() === normalizedEmail
     );
