@@ -2,6 +2,7 @@ import { ApifyClient } from "apify-client";
 import { Request, Response } from "express";
 import OpenAI from "openai";
 import Scraper from "../../models/scrapers/scraper.model";
+import mongoose from "mongoose";
 const client = new ApifyClient({
   token: process.env.APIFY_CLIENT,
 });
@@ -353,6 +354,38 @@ export const linkdeinProfileScraper = async (req: Request, res: Response) => {
     console.log("ERROR:WHILE SCRAPINNG LINKDEIN PROFILE VIA APIFY", error);
     return res.status(500).json({
       message: "ERROR:WHILE SCRAPINNG LINKDEIN PROFILE",
+      error,
+    });
+  }
+};
+export const getUserAllImportedLinkdeinProfiles = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const importedProfiles = await Scraper.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId((req as any).user._id as string),
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          linkdeinScrapedUrl: 1,
+          scrapedAt: 1,
+          fullName: "$scrapedData.personal.fullName",
+          imgUrl: "$scrapedData.personal.imgUrl",
+        },
+      },
+    ]);
+
+    return res.status(200).json(importedProfiles);
+  } catch (error) {
+    console.log("ERROR:WHILE GETTING ALL IMPORTED LINKDEIN PROFILES", error);
+    return res.status(500).json({
+      message: "ERROR:WHILE GETTING ALL IMPORTED LINKDEIN PROFILES",
       error,
     });
   }
