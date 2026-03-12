@@ -28,21 +28,20 @@ const awardSchema:Schema<IAward> = new Schema({
     level:{
         type:String,
         enum:["Award","Certificate","Course"],
-        required:true
     },
-    name:{type:String,required:true},
-    organisation:{type:String,required:true},
+    name:{type:String},
+    organisation:{type:String},
     duration:{
-        from:{type:String,required:true},
+        from:{type:String},
         to:{type:String}
     },
-    description:{type:String,required:true},
-    selfAttested:{type:Boolean,required:true},
+    description:{type:String},
+    selfAttested:{type:Boolean},
     isEmailSend:{type:Boolean},
     issuerEmailId:{type:String},
     docUri:{type:String},
-    verified:{type:Boolean,required:true},
-    status:{type:String,required:true},
+    verified:{type:Boolean},
+    status:{type:String},
     docHash:{type:String},
     verifiedThrough:{type:String},
     createdAt:{type:Date,default:Date.now},
