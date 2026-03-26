@@ -97,7 +97,7 @@ export const otpEmailHandler = async (emailId: string, otp: string) => {
 export const sendResetLinkEMail = async (emailId: string, resetToken: string) => {
     try {
         // change this to your client URL (frontend route that accepts the raw token)
-        const CLIENT_URL = process.env.CLIENT_URL || "https://edubuktrucv.com";
+        const CLIENT_URL = process.env.CLIENT_URL || "https://dev-server.edubuktrucv.com";
         const resetUrl = `${CLIENT_URL.replace(/\/$/, "")}/password-reset?token=${encodeURIComponent(
             resetToken
         )}`;
@@ -322,19 +322,12 @@ export const docVerificationEmailHandler = async (
 
           <div style="text-align: center; margin-bottom: 20px;">
             <a
-              href="https://trucv.org/issuer/approve/${token}"
+              href="https://dev-server.edubuktrucv.com/verify-document/${token}"
               target="_blank"
               
               style="display: inline-block; padding: 10px 20px; margin-right: 10px; background: #28a745; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;"
             >
-              ✔ Approve
-            </a>
-            <a
-              href="https://trucv.org/issuer/reject/${token}"
-              target="_blank"
-              style="display: inline-block; padding: 10px 20px; background: #f14419; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 5px"
-            >
-              ✗ Reject
+              Review Document and Take Action ↗
             </a>
           </div>
 
@@ -347,7 +340,8 @@ export const docVerificationEmailHandler = async (
           </p>
 
           <p style="margin-top: 25px; font-size: 13px; color: #888; text-align: center;">
-            This email was sent automatically by EduBukeSeal Verification System. Please do not reply.
+            This is an automated email sent by the Edubuk Verification System.
+            Please do not reply to this email.
           </p>
         </td>
       </tr>
@@ -552,8 +546,8 @@ export const docVerificationNotifyEmailHandler = async (
     const message = {
       senderAddress: "support@edubukeseal.org",
       content: {
-        subject: "Candidate Documents Verification",
-        plainText: "This is a test email sent from ACS Email SDK (Node.js).",
+        subject: "Acknowledgement: Candidate Documents Verification",
+        plainText: "This is an acknowledgement email sent from Edubuk Verification System.",
         html: html,
       },
       recipients: {
@@ -604,7 +598,7 @@ export const skillVerificationEmailHandler = async(emailId:string,userName:strin
           <!-- Document Metadata -->
 
           <p style="margin-bottom: 20px;">
-            You can review the skill and also can change the level securely using the link below:
+            You can review the skill using the link below:
           </p>
 
 
@@ -612,7 +606,7 @@ export const skillVerificationEmailHandler = async(emailId:string,userName:strin
 
           <div style="text-align: center; margin-bottom: 20px;">
             <a
-              href="https://edubuktrucv.com/verify-skill/${token}"
+              href="https://dev-server.edubuktrucv.com/verify-skill/${token}"
               target="_blank"
               
               style="display: inline-block; padding: 10px 20px; margin-right: 10px; background: #28a745; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;"
@@ -630,7 +624,8 @@ export const skillVerificationEmailHandler = async(emailId:string,userName:strin
           </p>
 
           <p style="margin-top: 25px; font-size: 13px; color: #888; text-align: center;">
-            This email was sent automatically by EduBukeSeal Verification System. Please do not reply.
+            This is an automated email sent by the Edubuk Verification System.
+            Please do not reply to this email.
           </p>
         </td>
       </tr>

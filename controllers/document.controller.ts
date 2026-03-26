@@ -12,7 +12,6 @@ import { SkillVerificationReq } from "../models/skillVerificationRequest.model";
 import { DocVerificationRequest } from "../models/docVerificationRequest.model";
 
 
-
 const isEmpty = (value: any) => {
     if (value === undefined || value === null) return true;
     if (typeof value === "string" && value.trim() === "") return true;
@@ -25,14 +24,24 @@ export const saveDocuments = async (req: Request, res: Response) => {
         const typeReq = req as IGetUserAuthInfoRequest;
         const user = typeReq.user;
         const { data } = req.body;
-        const token=generateVerificationToken();
+        const token = generateVerificationToken();
 
         const doc: any = await EducationDoc.create({ userId: user._id, ...data });
+        if (doc.verifiedThrough === "DigiLocker") {
+            await DocVerificationRequest.create({
+                userId: user._id,
+                documentId: doc._id,
+                documentType: "education",
+                docName: doc.level,
+                docHash: doc.docHash,
+                token,
+            });
+        }
         res.status(200).json({
-            success:true,
-            message:"Document saved successfully."
+            success: true,
+            message: "Document saved successfully."
         })
-        
+
         //background task
         process.nextTick(async () => {
             try {
@@ -56,8 +65,8 @@ export const saveDocuments = async (req: Request, res: Response) => {
                         EducationDoc.updateOne(
                             { _id: doc._id },
                             { isEmailSend: true }
-                            ),
-                        
+                        ),
+
                         docVerificationNotifyEmailHandler({
                             emailId: doc.issuerEmailId,
                             level: doc.level,
@@ -67,46 +76,23 @@ export const saveDocuments = async (req: Request, res: Response) => {
                             id: doc._id,
                             docType: "education",
                             userEmail: user.email,
-                    }),
+                        }),
                         DocVerificationRequest.create({
                             userId: user._id,
                             documentId: doc._id,
                             documentType: "education",
                             issuerEmailId: doc.issuerEmailId,
+                            docName: doc.level,
+                            docHash: doc.docHash,
                             token,
                         }),
-                ]);
+                    ]);
                 }
             } catch (err) {
                 console.error("Email background task failed:", err);
             }
         });
 
-
-        // if (doc._id && doc.issuerEmailId && doc.docUri) {
-        //     const status = await docVerificationEmailHandler({ emailId: doc.issuerEmailId, level: doc.level, boardNameOrDegree: doc.boardNameOrDegree, institutionName: doc.institutionName, documentViewUrl: doc.docUri, id: doc._id, docType: "education",token:token,userEmail:user.email })
-        //     if (status === "Succeeded") {
-        //         doc.isEmailSend = true;
-        //         await doc.save();
-        //         await docVerificationNotifyEmailHandler({emailId: doc.issuerEmailId, level: doc.level, boardNameOrDegree: doc.boardNameOrDegree, institutionName: doc.institutionName, documentViewUrl: doc.docUri, id: doc._id, docType: "education",userEmail:user.email})
-        //         await DocVerificationRequest.create({
-        //             userId: user._id,
-        //             documentId: doc._id,
-        //             documentType: "education",
-        //             issuerEmailId: doc.issuerEmailId,
-        //             token: token
-        //         });
-        //         return res.status(200).json({
-        //             success: true,
-        //             status: status,
-        //             message: "Documents saved and email has been sent to issuer",
-        //         })
-        //     }
-        // }
-        // return res.status(201).json({
-        //     success: true,
-        //     message: "Documents saved successfully"
-        // })
     } catch (error: any) {
         return res.status(500).json({
             success: false,
@@ -190,19 +176,19 @@ export const updateDoc = async (req: Request, res: Response) => {
     }
 }
 
-export const deleteEduDoc = async(req:Request,res:Response)=>{
+export const deleteEduDoc = async (req: Request, res: Response) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const document = await EducationDoc.findByIdAndDelete(id);
-        if(!document){
-            return res.status(404).json({success:false,message:"Document not found"})
+        if (!document) {
+            return res.status(404).json({ success: false, message: "Document not found" })
         }
-        return res.status(200).json({success:true,message:"Document deleted successfully"})
-    } catch (error:any) {
+        return res.status(200).json({ success: true, message: "Document deleted successfully" })
+    } catch (error: any) {
         return res.status(500).json({
-            success:false,
-            message:"Something went wrong",
-            error:error.message||error
+            success: false,
+            message: "Something went wrong",
+            error: error.message || error
         })
     }
 }
@@ -215,58 +201,59 @@ export const saveExpDocs = async (req: Request, res: Response) => {
         const typeReq = req as IGetUserAuthInfoRequest;
         const user = typeReq.user;
         const { data } = req.body;
-        const token=generateVerificationToken();
+        const token = generateVerificationToken();
 
         const doc: any = await ExperienceDoc.create({ userId: user._id, ...data });
         res.status(200).json({
-            success:true,
-            message:"Document Saved Successfully"
+            success: true,
+            message: "Document Saved Successfully"
         })
 
-        process.nextTick(async()=>{
+        process.nextTick(async () => {
             try {
-                
-                if(!doc.issuerEmailId || !doc.docUri) {
+
+                if (!doc.issuerEmailId || !doc.docUri || !doc.docHash) {
                     return;
                 }
 
-                const status = await docVerificationEmailHandler({ 
-                    emailId: doc.issuerEmailId, 
-                    documentViewUrl: doc.docUri, 
-                    position: doc.position, 
-                    companyName: doc.companyName, 
-                    skills: doc.skills, 
-                    duration: doc.duration, 
-                    id: doc._id, 
+                const status = await docVerificationEmailHandler({
+                    emailId: doc.issuerEmailId,
+                    documentViewUrl: doc.docUri,
+                    position: doc.jobRole,
+                    companyName: doc.companyName,
+                    skills: doc.skills,
+                    duration: doc.duration,
+                    id: doc._id,
                     docType: "experience",
-                    token:token,
-                    userEmail:user.email 
+                    token: token,
+                    userEmail: user.email
                 })
 
-                if(status === "Succeeded")
-                {
+                if (status === "Succeeded") {
+                    doc.isEmailSend = true;
+                    await doc.save();
+
                     await Promise.all([
-                        ExperienceDoc.updateOne(
-                            { _id: doc._id },
-                            { isEmailSend: true }
-                        ),
                         docVerificationNotifyEmailHandler({
-                            emailId: doc.issuerEmailId, 
-                            documentViewUrl: doc.docUri, 
-                            position: doc.position, 
-                            companyName: doc.companyName, 
-                            skills: doc.skills, 
-                            duration: doc.duration, 
-                            id: doc._id, 
+                            emailId: doc.issuerEmailId,
+                            documentViewUrl: doc.docUri,
+                            position: doc.jobRole,
+                            companyName: doc.companyName,
+                            skills: doc.skills,
+                            duration: doc.duration,
+                            id: doc._id,
                             docType: "experience",
-                            userEmail:user.email}),
+                            userEmail: user.email
+                        }),
 
                         DocVerificationRequest.create({
                             userId: user._id,
                             documentId: doc._id,
                             documentType: "experience",
+                            docName: doc.jobRole,
+                            docHash: doc.docHash,
                             issuerEmailId: doc.issuerEmailId,
-                            token:token
+                            token: token
                         })
                     ]);
 
@@ -275,30 +262,6 @@ export const saveExpDocs = async (req: Request, res: Response) => {
                 console.error('Error in emailing background process:', error);
             }
         })
-        // if (doc._id && doc.issuerEmailId && doc.docUri) {
-        //     const status = await docVerificationEmailHandler({ emailId: doc.issuerEmailId, documentViewUrl: doc.docUri, position: doc.position, companyName: doc.companyName, skills: doc.skills, duration: doc.duration, id: doc._id, docType: "experience",token:token,userEmail:user.email })
-        //     if (status === "Succeeded") {
-        //         doc.isEmailSend = true;
-        //         await doc.save();
-        //         await docVerificationNotifyEmailHandler({emailId: doc.issuerEmailId, documentViewUrl: doc.docUri, position: doc.position, companyName: doc.companyName, skills: doc.skills, duration: doc.duration, id: doc._id, docType: "experience",userEmail:user.email})
-        //         await DocVerificationRequest.create({
-        //             userId: user._id,
-        //             documentId: doc._id,
-        //             documentType: "experience",
-        //             issuerEmailId: doc.issuerEmailId,
-        //             token:token
-        //         });
-        //         return res.status(200).json({
-        //             success: true,
-        //             status: status,
-        //             message: "Documents saved and email has been sent to issuer",
-        //         })
-        //     }
-        // }
-        // return res.status(201).json({
-        //     success: true,
-        //     message: "Documents saved successfully"
-        // })
 
     } catch (error: any) {
         return res.status(500).json({
@@ -379,19 +342,19 @@ export const updateExpDoc = async (req: Request, res: Response) => {
 }
 
 
-export const deleteExpDoc = async(req:Request,res:Response)=>{
+export const deleteExpDoc = async (req: Request, res: Response) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const document = await ExperienceDoc.findByIdAndDelete(id);
-        if(!document){
-            return res.status(404).json({success:false,message:"Document not found"})
+        if (!document) {
+            return res.status(404).json({ success: false, message: "Document not found" })
         }
-        return res.status(200).json({success:true,message:"Document deleted successfully"})
-    } catch (error:any) {
+        return res.status(200).json({ success: true, message: "Document deleted successfully" })
+    } catch (error: any) {
         return res.status(500).json({
-            success:false,
-            message:"Something went wrong",
-            error:error.message||error
+            success: false,
+            message: "Something went wrong",
+            error: error.message || error
         })
     }
 }
@@ -402,10 +365,10 @@ export const getAllDocs = async (req: Request, res: Response) => {
         const id = req.query.userId;
         console.log("id", id);
         const userId = id ?? typeReq.user._id;
-        const [educations, experiences,awards] = await Promise.all([
+        const [educations, experiences, awards] = await Promise.all([
             EducationDoc.find({ userId: userId }).sort({ createdAt: -1 }),
             ExperienceDoc.find({ userId: userId }).sort({ createdAt: -1 }),
-            AwardDocs.find({userId:userId}).sort({createdAt:-1})
+            AwardDocs.find({ userId: userId }).sort({ createdAt: -1 })
         ])
         return res.status(200).json({
             success: true,
@@ -520,19 +483,19 @@ export const updateProjectDoc = async (req: Request, res: Response) => {
 }
 
 
-export const deleteProjectDoc = async(req:Request,res:Response)=>{
+export const deleteProjectDoc = async (req: Request, res: Response) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const document = await ProjectDoc.findByIdAndDelete(id);
-        if(!document){
-            return res.status(404).json({success:false,message:"Document not found"})
+        if (!document) {
+            return res.status(404).json({ success: false, message: "Document not found" })
         }
-        return res.status(200).json({success:true,message:"Document deleted successfully"})
-    } catch (error:any) {
+        return res.status(200).json({ success: true, message: "Document deleted successfully" })
+    } catch (error: any) {
         return res.status(500).json({
-            success:false,
-            message:"Something went wrong",
-            error:error.message||error
+            success: false,
+            message: "Something went wrong",
+            error: error.message || error
         })
     }
 }
@@ -544,41 +507,43 @@ export const saveAwardDoc = async (req: Request, res: Response) => {
         const typeReq = req as IGetUserAuthInfoRequest;
         const user = typeReq.user;
         const { data } = req.body;
-        const token=generateVerificationToken();
+        const token = generateVerificationToken();
         //console.log("payload", data);
         const doc: any = await AwardDocs.create({ userId: user._id, ...data })
         res.status(200).json({
-            success:true,
-            message:"Document saved successfully."
+            success: true,
+            message: "Document saved successfully."
         })
 
-        process.nextTick(async()=>{
+        process.nextTick(async () => {
             try {
-                if(!doc.issuerEmailId || !doc.docUri) {
+                if (!doc.issuerEmailId || !doc.docUri) {
                     return;
                 }
-                const status: any = await docVerificationEmailHandler({ 
-                    emailId: doc.issuerEmailId, 
-                    documentViewUrl: doc.docUri, 
-                    level: doc.level, 
-                    organisation: doc.organisation, 
-                    duration: doc?.duration, 
-                    id: doc._id, 
+                const status: any = await docVerificationEmailHandler({
+                    emailId: doc.issuerEmailId,
+                    documentViewUrl: doc.docUri,
+                    level: doc.level,
+                    organisation: doc.organisation,
+                    duration: doc?.duration,
+                    id: doc._id,
                     docType: "award",
-                    token:token,
-                    userEmail:user.email 
+                    token: token,
+                    userEmail: user.email
                 });
                 //console.log("status", status);
                 if (status === "Succeeded") {
                     doc.isEmailSend = true;
                     await doc.save();
-                    await docVerificationNotifyEmailHandler({emailId: doc.issuerEmailId, documentViewUrl: doc.docUri, level: doc.level, organisation: doc.organisation, duration: doc?.duration, id: doc._id, docType: "award",userEmail:user.email})
+                    await docVerificationNotifyEmailHandler({ emailId: doc.issuerEmailId, documentViewUrl: doc.docUri, level: doc.level, organisation: doc.organisation, duration: doc?.duration, id: doc._id, docType: "award", userEmail: user.email })
                     await DocVerificationRequest.create({
                         userId: user._id,
                         documentId: doc._id,
                         documentType: "award",
                         issuerEmailId: doc.issuerEmailId,
-                        token:token
+                        docName: doc.name,
+                        docHash: doc.docHash,
+                        token: token
                     });
                 }
             } catch (error) {
@@ -679,19 +644,19 @@ export const updateAwardDoc = async (req: Request, res: Response) => {
 }
 
 
-export const deleteAwardDoc = async(req:Request,res:Response)=>{
+export const deleteAwardDoc = async (req: Request, res: Response) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const document = await AwardDocs.findByIdAndDelete(id);
-        if(!document){
-            return res.status(404).json({success:false,message:"Document not found"})
+        if (!document) {
+            return res.status(404).json({ success: false, message: "Document not found" })
         }
-        return res.status(200).json({success:true,message:"Document deleted successfully"})
-    } catch (error:any) {
+        return res.status(200).json({ success: true, message: "Document deleted successfully" })
+    } catch (error: any) {
         return res.status(500).json({
-            success:false,
-            message:"Something went wrong",
-            error:error.message||error
+            success: false,
+            message: "Something went wrong",
+            error: error.message || error
         })
     }
 }
@@ -702,21 +667,21 @@ export const deleteAwardDoc = async(req:Request,res:Response)=>{
 
 
 export const saveSkills = async (req: Request, res: Response) => {
-  try {
-    const typeReq = req as IGetUserAuthInfoRequest;
-    const userId = typeReq.user._id;
-    const { data } = req.body;
+    try {
+        const typeReq = req as IGetUserAuthInfoRequest;
+        const userId = typeReq.user._id;
+        const { data } = req.body;
 
-    console.log("data", data);
+        console.log("data", data);
 
-    const incomingSkills = data?.skills;
+        const incomingSkills = data?.skills;
 
-    if (!Array.isArray(incomingSkills) || incomingSkills.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "skills must be a non-empty array",
-      });
-    }
+        if (!Array.isArray(incomingSkills) || incomingSkills.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "skills must be a non-empty array",
+            });
+        }
 
         let documents = [];
         for (const doc of incomingSkills) {
@@ -743,21 +708,21 @@ export const saveSkills = async (req: Request, res: Response) => {
         })
         session.endSession();
         return res.status(201).json({ success: true, message: "Skills saved successfully" })
-  } catch (error: any) {
-     if (error.code === 11000) {
-      console.log("error",error)
-      return res.status(400).json({
-        success: false,
-        message: "some of the skills already exists",
-      });
+    } catch (error: any) {
+        if (error.code === 11000) {
+            console.log("error", error)
+            return res.status(400).json({
+                success: false,
+                message: "some of the skills already exists",
+            });
+        }
+        console.log("error", error)
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+            error: error.message || error,
+        });
     }
-    console.log("error",error)
-    return res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-      error: error.message || error,
-    });
-  }
 };
 
 
@@ -770,7 +735,7 @@ export const updateSkills = async (req: Request, res: Response) => {
         if (!doc) {
             return res.status(404).json({ success: false, message: "Document not found" })
         }
-        doc.skillName=data.skillName;
+        doc.skillName = data.skillName;
         doc.level = data.level;
         doc.selfAttested = data.selfAttested;
         doc.endoresBy = data.endoresBy;
@@ -788,19 +753,19 @@ export const updateSkills = async (req: Request, res: Response) => {
 }
 
 
-export const deleteSkillDoc = async(req:Request,res:Response)=>{
+export const deleteSkillDoc = async (req: Request, res: Response) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const document = await SkillDoc.findByIdAndDelete(id);
-        if(!document){
-            return res.status(404).json({success:false,message:"Skill not found"})
+        if (!document) {
+            return res.status(404).json({ success: false, message: "Skill not found" })
         }
-        return res.status(200).json({success:true,message:"Skill deleted successfully"})
-    } catch (error:any) {
+        return res.status(200).json({ success: true, message: "Skill deleted successfully" })
+    } catch (error: any) {
         return res.status(500).json({
-            success:false,
-            message:"Something went wrong",
-            error:error.message||error
+            success: false,
+            message: "Something went wrong",
+            error: error.message || error
         })
     }
 }
@@ -850,28 +815,28 @@ export const getSkills = async (req: Request, res: Response) => {
 //     }
 // }
 
-export const skillVerificationHandler = async(req:Request,res:Response)=>{
+export const skillVerificationHandler = async (req: Request, res: Response) => {
     try {
         const typeReq = req as IGetUserAuthInfoRequest;
         const userId = typeReq.user._id;
-        const {data} = req.body;
-        const {emailId} = req.params;
-        console.log("data",data);
-        if(!Array.isArray(data.skills) || data.skills.length===0){
+        const { data } = req.body;
+        const { emailId } = req.params;
+        console.log("data", data);
+        if (!Array.isArray(data.skills) || data.skills.length === 0) {
             return res.status(400).json({
                 success: false,
                 message: "No data provided"
             })
         }
         const token = generateVerificationToken();
-        const status = await skillVerificationEmailHandler(emailId,typeReq.user.name,token);
-        if(status === "Succeeded"){
-            await SkillVerificationReq.create({userId:userId,token:token,skills:data.skills,endoresBy:emailId});
-            await skillverificationNotifyEmailHandler(emailId,typeReq.user.name,typeReq.user.email);
-            return res.status(200).json({success:true,message:"Email has been sent successfully"})
+        const status = await skillVerificationEmailHandler(emailId, typeReq.user.name, token);
+        if (status === "Succeeded") {
+            await SkillVerificationReq.create({ userId: userId, token: token, skills: data.skills, endoresBy: emailId });
+            await skillverificationNotifyEmailHandler(emailId, typeReq.user.name, typeReq.user.email);
+            return res.status(200).json({ success: true, message: "Email has been sent successfully" })
         }
-        return res.status(400).json({success:false,message:"something went wrong. Please check the entered email id"})
-    } catch (error:any) {
+        return res.status(400).json({ success: false, message: "something went wrong. Please check the entered email id" })
+    } catch (error: any) {
         return res.status(500).json({
             success: false,
             message: "Something went wrong",
@@ -881,79 +846,207 @@ export const skillVerificationHandler = async(req:Request,res:Response)=>{
 }
 
 
-export const resendEmailHandler = async(req:Request,res:Response)=>{
+export const resendEmailHandler = async (req: Request, res: Response) => {
     try {
         const typeReq = req as IGetUserAuthInfoRequest;
         const user = typeReq.user;
-        const {id} = req.params;
-        const {docType} = req.query;
-        const {data}= req.body;
+        const { id} = req.params;
+        const { docType } = req.query;
+        const { data } = req.body;
         //console.log("object id",objectId)
         //const realId = typeof id === "string" ? id : id.id; 
         if (!id || !docType || !data?.issuerEmailId || !data?.docUri || !data?.docHash) {
             return res.status(400).json({ success: false, message: "all data not provided" });
         }
-        const models:any = {
-            education:EducationDoc,
-            experience:ExperienceDoc,
-            award:AwardDocs
+        const token = generateVerificationToken();
+        const models: any = {
+            education: EducationDoc,
+            experience: ExperienceDoc,
+            award: AwardDocs
         }
 
         const doc = await models[docType as string].findById(id);
-          if (docType==="education") {
-            const status = await docVerificationEmailHandler({ emailId: data.issuerEmailId, level: doc.level, boardNameOrDegree: doc.boardNameOrDegree, institutionName: doc.institutionName, documentViewUrl: data.docUri, id: doc._id, docType: "education" })
-            if (status === "Succeeded") {
-                doc.isEmailSend = true;
-                doc.issuerEmailId = data.issuerEmailId;
-                doc.docUri = data.docUri;
-                doc.docHash = data.docHash;
-                await doc.save();
-                await docVerificationNotifyEmailHandler({emailId: data.issuerEmailId, level: doc.level, boardNameOrDegree: doc.boardNameOrDegree, institutionName: doc.institutionName, documentViewUrl: data.docUri, id: doc._id, docType: "education",userEmail:user.email })
+        if (docType === "education") {
+            console.log("education doc",doc)
+            try {
+                const status = await docVerificationEmailHandler({
+                    emailId: data.issuerEmailId,
+                    level: doc.level,
+                    boardNameOrDegree: doc.boardNameOrDegree,
+                    institutionName: doc.institutionName,
+                    documentViewUrl: data.docUri,
+                    id: doc._id,
+                    docType: "education",
+                    token,
+                    userEmail: user.email,
+                });
+                console.log("status", status)
+                if (status === "Succeeded") {
+                    doc.isEmailSend = true;
+                    doc.issuerEmailId = data.issuerEmailId;
+                    doc.docHash = data.docHash;
+                    doc.docUri = data.docUri;
+                    await doc.save();
+
+                    await Promise.all([
+
+                        docVerificationNotifyEmailHandler({
+                            emailId: data.issuerEmailId,
+                            level: doc.level,
+                            boardNameOrDegree: doc.boardNameOrDegree,
+                            institutionName: doc.institutionName,
+                            documentViewUrl: data.docUri,
+                            id: doc._id,
+                            docType: "education",
+                            userEmail: user.email,
+                        }),
+                        DocVerificationRequest.create({
+                            userId: user._id,
+                            documentId: doc._id,
+                            documentType: "education",
+                            issuerEmailId: data.issuerEmailId,
+                            docName: doc.level,
+                            docHash: data.docHash,
+                            token,
+                        })
+                    ]);
+                    return res.status(200).json({
+                        success: true,
+                        message: "Document email process completed successfully"
+                    });
+
+                }
+
                 return res.status(200).json({
-                    success: true,
-                    status: status,
-                    message: "Email has been sent to issuer",
+                    success: false,
+                    message: "Failed to send email"
+                });
+            } catch (error) {
+                console.error('Error in award document email process:', error);
+            }
+        }
+        if (docType === "experience") {
+            try {
+                const status = await docVerificationEmailHandler({
+                    emailId: data.issuerEmailId,
+                    documentViewUrl: data.docUri,
+                    position: doc.jobRole,
+                    companyName: doc.companyName,
+                    skills: doc.skills,
+                    duration: doc.duration,
+                    id: doc._id,
+                    docType: "experience",
+                    token: token,
+                    userEmail: user.email
+                })
+
+                if (status === "Succeeded") {
+                    doc.isEmailSend = true;
+                    doc.issuerEmailId = data.issuerEmailId;
+                    doc.docHash = data.docHash;
+                    doc.docUri = data.docUri;
+                    await doc.save();
+
+                    await Promise.all([
+                        docVerificationNotifyEmailHandler({
+                            emailId: data.issuerEmailId,
+                            documentViewUrl: data.docUri,
+                            position: doc.jobRole,
+                            companyName: doc.companyName,
+                            skills: doc.skills,
+                            duration: doc.duration,
+                            id: doc._id,
+                            docType: "experience",
+                            userEmail: user.email
+                        }),
+
+                        DocVerificationRequest.create({
+                            userId: user._id,
+                            documentId: doc._id,
+                            documentType: "experience",
+                            docName: doc.jobRole,
+                            docHash: data.docHash,
+                            issuerEmailId: data.issuerEmailId,
+                            token: token
+                        })
+                    ]);
+
+                    return res.status(200).json({
+                        success: true,
+                        message: "Document email process completed successfully"
+                    });
+
+                }
+
+                return res.status(200).json({
+                    success: false,
+                    message: "Failed to send email"
+                });
+
+            } catch (error: any) {
+                console.error('Error in emailing background process:', error);
+                res.status(500).json({
+                    success: false,
+                    message: "Failed to submit document on blockchain"
                 })
             }
         }
-          if (docType==="experience") {
-            const status = await docVerificationEmailHandler({ emailId: data.issuerEmailId, documentViewUrl: data.docUri, position: doc.position, companyName: doc.companyName, skills: doc.skills, duration: doc.duration, id: doc._id, docType: "experience" })
-            if (status === "Succeeded") {
-                doc.isEmailSend = true;
-                doc.issuerEmailId = data.issuerEmailId;
-                doc.docUri = data.docUri;
-                doc.docHash = data.docHash;
-                await doc.save();
-                await docVerificationNotifyEmailHandler({emailId: data.issuerEmailId, documentViewUrl: data.docUri, position: doc.position, companyName: doc.companyName, skills: doc.skills, duration: doc.duration, id: doc._id, docType: "experience", userEmail:user.email})
+
+        if (docType === "award") {
+            try {
+                const status: any = await docVerificationEmailHandler({
+                    emailId: data.issuerEmailId,
+                    documentViewUrl: data.docUri,
+                    level: doc.name,
+                    organisation: doc.organisation,
+                    duration: doc?.duration,
+                    id: doc._id,
+                    docType: "award",
+                    token: token,
+                    userEmail: user.email
+                });
+                //console.log("status", status);
+                if (status === "Succeeded") {
+                    doc.isEmailSend = true;
+                    doc.issuerEmailId = data.issuerEmailId;
+                    doc.docHash = data.docHash;
+                    doc.docUri = data.docUri;
+                    await doc.save();
+                    await Promise.all([
+                        docVerificationNotifyEmailHandler({ emailId: doc.issuerEmailId, documentViewUrl: doc.docUri, level: doc.level, organisation: doc.organisation, duration: doc?.duration, id: doc._id, docType: "award", userEmail: user.email }),
+                        DocVerificationRequest.create({
+                            userId: user._id,
+                            documentId: doc._id,
+                            documentType: "award",
+                            issuerEmailId: data.issuerEmailId,
+                            docName: doc.name,
+                            docHash:    data.docHash,
+                            token: token
+                        })])
+                    return res.status(200).json({
+                        success: true,
+                        message: "Document email process completed successfully"
+                    });
+                }
+
                 return res.status(200).json({
-                    success: true,
-                    status: status,
-                    message: "Email has been sent to issuer",
-                })
+                    success: false,
+                    message: "Failed to send email"
+                });
+            } catch (error: any) {
+                console.error('Error in award document email process:', error);
+                res.status(500).json({
+                    success: false,
+                    message: "Something went wrong",
+                    error: error.message || error
+                });
             }
         }
-          if (docType==="award") {
-            const status: any = await docVerificationEmailHandler({ emailId: data.issuerEmailId, documentViewUrl: data.docUri, level: doc.level, organisation: doc.organisation, duration: doc?.duration, id: doc._id, docType: "award" })
-            if (status === "Succeeded") {
-                doc.isEmailSend = true;
-                doc.issuerEmailId = data.issuerEmailId;
-                doc.docUri = data.docUri;
-                doc.docHash = data.docHash;
-                await doc.save();
-                await docVerificationNotifyEmailHandler({emailId: data.issuerEmailId, documentViewUrl: data.docUri, level: doc.level, organisation: doc.organisation, duration: doc?.duration, id: doc._id, docType: "award",userEmail:user.email})
-                return res.status(200).json({
-                    success: true,
-                    status: status,
-                    message: "Email has been sent to issuer",
-                })
-            }
-        }
-        return res.status(400).json({success:false,message:"something went wrong"});
-    } catch (error:any) {
+    } catch (error: any) {
         res.status(500).json({
             success: false,
             message: "Something went wrong",
             error: error.message || error
-        })  
+        })
     }
 }
