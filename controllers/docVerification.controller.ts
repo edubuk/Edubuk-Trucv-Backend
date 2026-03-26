@@ -6,39 +6,72 @@ import { SkillVerificationReq } from "../models/skillVerificationRequest.model";
 import { SkillDoc } from "../models/skill.model";
 import { DocVerificationRequest } from "../models/docVerificationRequest.model";
 
-function renderSuccess() {
-  return `
-    <html>
-      <body style="font-family: Arial; text-align:center; margin-top:50px;">
-        <h1 style="color: green;">✔ Document Verified Successfully</h1>
-        <p style="font-size:16px;">Thank you! The document is now verified.</p>
-      </body>
-    </html>
-  `;
-}
+// function renderSuccess() {
+//   return `
+//     <html>
+//       <body style="font-family: Arial; text-align:center; margin-top:50px;">
+//         <h1 style="color: green;">✔ Document Verified Successfully</h1>
+//         <p style="font-size:16px;">Thank you! The document is now verified.</p>
+//       </body>
+//     </html>
+//   `;
+// }
 
-function renderReject() {
-  return `
-    <html>
-      <body style="font-family: Arial; text-align:center; margin-top:50px">
-        <h1 style="color: red;"> ❌ Document Rejected Successfully</h1>
-        <p style="font-size:16px;">Thank you! The document is now rejected.</p>
-      </body>
-    </html>
-  `;
-}
+// function renderReject() {
+//   return `
+//     <html>
+//       <body style="font-family: Arial; text-align:center; margin-top:50px">
+//         <h1 style="color: red;"> ❌ Document Rejected Successfully</h1>
+//         <p style="font-size:16px;">Thank you! The document is now rejected.</p>
+//       </body>
+//     </html>
+//   `;
+// }
 
-function renderError(message: string) {
-  return `
-    <html>
-      <body style="font-family: Arial; text-align:center; margin-top:50px;">
-        <h1 style="color: red;">❌ Verification Failed</h1>
-        <p style="font-size:16px;">${message}</p>
-      </body>
-    </html>
-  `;
-}
+// function renderError(message: string) {
+//   return `
+//     <html>
+//       <body style="font-family: Arial; text-align:center; margin-top:50px;">
+//         <h1 style="color: red;">❌ Verification Failed</h1>
+//         <p style="font-size:16px;">${message}</p>
+//       </body>
+//     </html>
+//   `;
+// }
 
+
+export const getRequestedData = async(req: Request, res: Response)=>{
+  try {
+    const {token} = req.params;
+    console.log("token",token);
+    const requestDoc = await DocVerificationRequest.findOne({token:token});
+    if(!requestDoc){
+      return res.status(404).json({success:false,message:"Invalid Token"});
+    }
+    if(requestDoc.tokenUsed){
+      return res.status(400).json({success:false,message:"Invalid token. This token has already been used"});
+    }
+
+    const models: any = {
+      education: EducationDoc,
+      experience: ExperienceDoc,
+      award: AwardDocs,
+    };
+
+    const Model = models[requestDoc.documentType];
+    if (!Model) throw new Error("Invalid document type");
+
+    const doc = await Model.findById(requestDoc.documentId);
+    if (!doc) throw new Error("Document not found");
+    return res.status(200).json({
+      success: true,
+      doc: doc
+    });
+  } catch (error) {
+    console.log("error",error)
+    return res.status(500).json({message:"Internal server error",error:error});
+  }
+}
 
 export const approveHandler = async (req: Request, res: Response) => {
   try {
@@ -48,7 +81,7 @@ export const approveHandler = async (req: Request, res: Response) => {
     console.log("requestDoc",requestDoc);
     if(!requestDoc || requestDoc?.tokenUsed)
     {
-      return res.status(400).send(renderError("Invalid token"));
+      return res.status(400).json({success:false,message:"Invalid token"});
     }
     const models: any = {
       education: EducationDoc,
@@ -59,13 +92,13 @@ export const approveHandler = async (req: Request, res: Response) => {
     const Model = models[requestDoc?.documentType as string];
 
     if (!Model) {
-      return res.status(400).send(renderError("Invalid verification type."));
+      return res.status(400).json({success:false,message:"Invalid verification type"});
     }
 
     const doc = await Model.findById(requestDoc.documentId);
     //console.log("doc",doc);
     if (!doc) {
-      return res.status(404).send(renderError("Document not found or issuer emailId is mismatched."));
+      return res.status(404).json({success:false,message:"Document not found or issuer emailId is mismatched"});
     }
 
     doc.status = "verified";
@@ -74,14 +107,13 @@ export const approveHandler = async (req: Request, res: Response) => {
     doc.updatedAt = new Date();
     await doc.save()
 
-    requestDoc.status="verified";
     requestDoc.tokenUsed=true,
     requestDoc.verified=true,
     await requestDoc.save();
 
-    return res.status(200).send(renderSuccess())
+    return res.status(200).json({success:true,message:"Document approved"})
   } catch (error) {
-    return res.status(500).send(renderError("Internal server error"))
+    return res.status(500).json({success:false,message:"Internal server error",error:error})
   }
 }
 
@@ -93,7 +125,7 @@ export const rejectHandler = async (req: Request, res: Response) => {
 
     if(!requestDoc || requestDoc.tokenUsed)
     {
-      return res.status(400).send(renderError("Invalid token"));
+      return res.status(400).json({success:false,message:"Invalid token"});
 
     }
 
@@ -106,12 +138,12 @@ export const rejectHandler = async (req: Request, res: Response) => {
     const Model = models[requestDoc.documentType as string];
 
     if (!Model) {
-      return res.status(400).send(renderError("Invalid verification type."));
+      return res.status(400).json({success:false,message:"Invalid verification type"});
     }
 
     const doc = await Model.findById(requestDoc.documentId);
     if (!doc) {
-      return res.status(404).send(renderError("Document not found or issuer emailId is mismatched."));
+      return res.status(404).json({success:false,message:"Document not found or issuer emailId is mismatched"});
     }
 
     doc.status = "rejected";
@@ -119,14 +151,13 @@ export const rejectHandler = async (req: Request, res: Response) => {
     doc.updatedAt = new Date();
     await doc.save()
 
-    requestDoc.status="rejected";
     requestDoc.tokenUsed=true,
     requestDoc.verified=false,
     await requestDoc.save();
 
-    return res.status(200).send(renderReject())
+    return res.status(200).json({success:true,message:"Document rejected"})
   } catch (error) {
-    return res.status(500).send(renderError("Internal server error"))
+    return res.status(500).json({success:false,message:"Internal server error",error:error})
   }
 }
 
@@ -146,7 +177,7 @@ export const requestedSkills = async (req: Request, res: Response) => {
 
   } catch (error) {
     console.log("error", error)
-    res.status(500).json({ success: false, message: "internal server error" })
+    res.status(500).json({ success: false, message: "internal server error", error: error })
   }
 }
 
@@ -197,7 +228,7 @@ export const approveSkills = async (req: Request, res: Response) => {
     return res.status(200).json({ success: true, message: "Skills verified successfully" })
   } catch (error) {
     console.log("error", error)
-    res.status(500).json({ success: false, message: "internal server error" })
+    res.status(500).json({ success: false, message: "internal server error", error: error  })
   }
 }
 

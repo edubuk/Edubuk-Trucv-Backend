@@ -5,8 +5,8 @@ import { digilockerCallback, fetchDocType, fetchDocuments, fetchIssuer, getIssue
 
 const router = Router();
 
-router.get("/callback", redirectToCallBack);
-router.get("/redirect", digilockerCallback);
+router.get("/callback", digilockerCallback);
+//router.get("/redirect", digilockerCallback);
 router.post("/save-verifier", saveVerifier);
 router.get("/me", fetchProfile);
 router.post("/issuers", fetchIssuer);

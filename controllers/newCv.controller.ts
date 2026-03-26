@@ -1,6 +1,8 @@
 import { Request,Response } from "express";
 import { IGetUserAuthInfoRequest } from "../types/definitionFile"
 import { UserCV } from "../models/newCv.model";
+import FormData from "form-data";
+import axios from "axios";
 
 
 
@@ -13,15 +15,17 @@ export const createUserCV = async(req:Request,res:Response)=>{
         const cv = await UserCV.create({userId,title,personal:data.personal,educations:data.educations,experiences:data.experiences,skills:data.skills,projects:data.projects,awards:data.awards})
         res.status(200).json({success:true,message:"CV Created Successfully",id:cv._id});
     } catch (error:any) {
-        console.log(error)
+        //console.log("error on creating cv",error)
         res.status(500).json({success:false,message:error.message||error||"Internal Server Error"})
     }
 }
 
 export const userCvs = async(req:Request,res:Response)=>{
     try {
+        const {userIdThroughAdmin} = req.query;
+        //console.log("user id",userIdThroughAdmin)
         const typeReq = req as IGetUserAuthInfoRequest;
-        const userId = typeReq.user._id;
+        const userId = userIdThroughAdmin??typeReq.user._id;
         const cv = await UserCV.find({userId}).select("_id title")
         res.status(200).json({success:true,data:cv})
     } catch (error) {
@@ -48,4 +52,45 @@ export const DeleteCvData = async(req:Request,res:Response)=>{
         console.log(error)
         res.status(500).json({success:false,message:"Internal Server Error"})
     }
+}
+
+export const cvParse = async(req:Request,res:Response)=>{
+    try {
+
+    const cvFile = (req as any).file;
+
+    if (!cvFile) {
+      return res.status(400).json({ error: "No file provided" });
+    }
+
+    const data = new FormData();
+    data.append(
+      "file",
+      cvFile.buffer,
+      cvFile.originalname
+    );
+
+    const response = await axios.request({
+      method: "post",
+      maxBodyLength: Infinity,
+      url: "https://cv-to-trucv-api-test-cfc9hvczahamdycd.centralindia-01.azurewebsites.net/api/cv-to-trucv-test",
+      headers: {
+        "x-functions-key": "9lSqsxuy9z9tdqmkd3D2KECMhB-KHA2nQiiDt1lFD6gYAzFuVpLBsw==",
+        ...data.getHeaders(),
+      },
+      data: data,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: response.data,
+    });
+
+  } catch (error: any) {
+    console.error("CV Parse Error:", error?.response?.data || error);
+    return res.status(500).json({
+      success: false,
+      message: "CV parsing failed",
+    });
+  }
 }

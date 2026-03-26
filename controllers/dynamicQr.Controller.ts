@@ -1,5 +1,5 @@
 import { Request,Response } from "express";
-import UrlMap from "../models/qr.model";
+import { Certification } from "../models/certification.model";
 
 export const dynamicQrUrlMap = async (req: Request, res: Response) => {
   try {
@@ -8,7 +8,7 @@ export const dynamicQrUrlMap = async (req: Request, res: Response) => {
     if (!url || !id) {
       return res.status(400).json({ success: false, error: "URL and id are required" });
     }
-    await UrlMap.create({ id, url });
+    await Certification.create({ qrId: id, qrUrl: url });
     res.status(200).json({ success: true, message: "Redirect link mapped successfully" });
   } catch (error) {
     console.error("Error generating dynamic QR code:", error);
@@ -24,11 +24,11 @@ export const dynamicQrRedirect = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: "ID is required" });
     }
 
-    const urlMap = await UrlMap.findOne({ id });
+    const urlMap:any = await Certification.findOne({ qrId: id });
     if (!urlMap) {
       return res.status(404).json({ success: false, error: "No URL found for this ID" });
     }   
-    res.redirect(urlMap.url);
+    res.redirect(urlMap.qrUrl);
   } catch (error) {
     console.error("Error redirecting dynamic QR code:", error);
     res.status(500).json({ success: false, error: "Internal server error" });

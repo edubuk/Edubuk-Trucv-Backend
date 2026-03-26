@@ -1,8 +1,6 @@
-import express from "express";
 import { Request, Response } from "express";
 import { configDotenv } from "dotenv";
 import "express-session";
-import type { Session } from "express-session";
 import crypto from "crypto";
 import qs from "qs";
 import axios from "axios";
@@ -15,7 +13,6 @@ function currentIstSeconds() {
   const IST_OFFSET_MS = 0;
   return Math.floor((Date.now() + IST_OFFSET_MS) / 1000).toString();
 }
-
 
 function digilockerHmacConcat(clientId: string, clientSecret: string, ts: string, docType?: string, orgid?: string) {
   if (orgid && docType) {
@@ -71,7 +68,7 @@ export const digilockerCallback = async (req: Request, res: Response) => {
         secure: true,
         sameSite: "lax",
         maxAge: 1000 * 60 * 60 * 24 * 7,
-      }).redirect(`${process.env.CLIENT_URL}/create-cv`);
+      }).redirect(`${process.env.CLIENT_URL}/dl-connect`);
     } else {
       res.status(400).json(data);
     }
@@ -84,7 +81,7 @@ export const digilockerCallback = async (req: Request, res: Response) => {
 export const redirectToCallBack = (req: Request, res: Response) => {
   try {
     const code = req.query.code;
-    res.redirect(`https://edubuktrucv.com/api/api/dl/redirect?code=${code}`);
+    res.redirect(`https://dev-server.edubuktrucv.com/api/api/dl/redirect?code=${code}`);
   } catch (error) {
     console.log(error);
     res.status(500).send("Redirect failed");
@@ -112,7 +109,7 @@ export const saveVerifier = (req: Request, res: Response) => {
 
 // Fetch DigiLocker Profile
 export const fetchProfile = async (req: Request, res: Response) => {
-  //const token = dlSession(req).dl_token;
+  //const token = "393db4aa9666ec762fc865860ae98500011d4ed0";
   const token = req.cookies.dl_token;
   if (!token) return res.status(401).send("Not logged in");
 
@@ -131,7 +128,7 @@ export const fetchProfile = async (req: Request, res: Response) => {
 
 // Fetch Issued Documents
 export const fetchDocuments = async (req: Request, res: Response) => {
-  //const token = dlSession(req).dl_token;
+  //const token = "393db4aa9666ec762fc865860ae98500011d4ed0";
   const token = req.cookies.dl_token;
   console.log("token", token);
   if (!token) return res.status(401).send("Not logged in");
@@ -292,7 +289,7 @@ export const pullParams = async (req: Request, res: Response) => {
 
 export const fetchDocUri = async (req: Request, res: Response) => {
   try {
-    //const token = dlSession(req).dl_token;
+    //const token = "393db4aa9666ec762fc865860ae98500011d4ed0";
     const token = req.cookies.dl_token;
     console.log("token", token);
     const orgid = req.query.orgid;
@@ -335,6 +332,7 @@ export const fetchDocUri = async (req: Request, res: Response) => {
 
 export const viewDoc = async (req: Request, res: Response) => {
   try {
+    //const token = "393db4aa9666ec762fc865860ae98500011d4ed0";
     const token = req.cookies.dl_token;
     const docUri = String(req.query.docUri || "");
 

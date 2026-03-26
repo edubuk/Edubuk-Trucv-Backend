@@ -13,7 +13,7 @@ export interface ISkill{
 
 const skillDocs = new Schema({
     userId : {type:Schema.ObjectId,ref:"TruCvUser"},
-    skillName:{type:String,required:true},
+    skillName:{type:String},
     level:{type:String,enum:["beginner","intermediate","advanced","expert"],default:"beginner"},
     selfAttested:{type:Boolean,default:false,required:true},
     endoresBy:{type:String},
