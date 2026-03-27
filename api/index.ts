@@ -40,6 +40,8 @@ app.use(
       "https://www.edubuktrucv.com",
       "https://static-web-app.edubuktrujobs.com",
       "https://www.static-web-app.edubuktrujobs.com",
+      "https://eni.edubuktrucv.com",
+      "https://www.eni.edubuktrucv.com",
       "https://edubuktrujobs.com",
       "https://www.edubuktrujobs.com",
       "https://www.trucv.org",

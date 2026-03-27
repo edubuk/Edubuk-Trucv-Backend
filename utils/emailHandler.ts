@@ -97,7 +97,7 @@ export const otpEmailHandler = async (emailId: string, otp: string) => {
 export const sendResetLinkEMail = async (emailId: string, resetToken: string) => {
     try {
         // change this to your client URL (frontend route that accepts the raw token)
-        const CLIENT_URL = process.env.CLIENT_URL || "https://dev-server.edubuktrucv.com";
+        const CLIENT_URL = process.env.CLIENT_URL || "https://eni.edubuktrucv.com/";
         const resetUrl = `${CLIENT_URL.replace(/\/$/, "")}/password-reset?token=${encodeURIComponent(
             resetToken
         )}`;
@@ -322,7 +322,7 @@ export const docVerificationEmailHandler = async (
 
           <div style="text-align: center; margin-bottom: 20px;">
             <a
-              href="https://dev-server.edubuktrucv.com/verify-document/${token}"
+              href="https://eni.edubuktrucv.com/verify-document/${token}"
               target="_blank"
               
               style="display: inline-block; padding: 10px 20px; margin-right: 10px; background: #28a745; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;"
@@ -606,7 +606,7 @@ export const skillVerificationEmailHandler = async(emailId:string,userName:strin
 
           <div style="text-align: center; margin-bottom: 20px;">
             <a
-              href="https://dev-server.edubuktrucv.com/verify-skill/${token}"
+              href="https://eni.edubuktrucv.com/verify-skill/${token}"
               target="_blank"
               
               style="display: inline-block; padding: 10px 20px; margin-right: 10px; background: #28a745; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;"
