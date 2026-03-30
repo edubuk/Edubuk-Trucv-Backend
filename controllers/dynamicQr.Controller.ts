@@ -34,7 +34,7 @@ export const dynamicQrRedirect = async (req: Request, res: Response) => {
     if (!urlMap) {
       return res.status(404).json({ success: false, error: "No URL found for this ID" });
     }   
-    res.redirect(urlMap.qrUrl);
+    res.redirect(`https://trucvstorage.blob.core.windows.net/uploads/${urlMap.qrUrl}`);
   } catch (error) {
     console.error("Error redirecting dynamic QR code:", error);
     res.status(500).json({ success: false, error: "Internal server error" });
