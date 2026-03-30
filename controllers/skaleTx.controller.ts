@@ -33,21 +33,8 @@ export const createContract = async () => {
 export const uploadCertificate = async (req: Request, res: Response) => {
     try {
         console.log("api hitting");
-        const { name, uri, filehash, certificateType, issuerName,hackathonName } = req.body;
+        const { name, uri, filehash, certificateType, issuerName} = req.body;
         const typeReq = req as IGetUserAuthInfoRequest;
-
-        const data = await Certification.findOneAndUpdate(
-            { userId: typeReq.user._id },   // filter
-            {
-                certUrl: uri,
-                hackathonName: hackathonName
-            },
-            {
-                new: true,        // return updated / created document
-                upsert: true,     // create if not exists
-                setDefaultsOnInsert: true, // apply schema defaults on insert
-            }
-        );
         // required validation
         if (!name || !certificateType || !issuerName || !filehash || !uri) {
             return res
@@ -105,7 +92,7 @@ export const uploadCertificate = async (req: Request, res: Response) => {
         });
     } catch (error: any) {
         console.error("uploadCertificate error:", error);
-        const msg = error?.message || "Internal server error";
+        const msg = error?.info?.error?.message || "Internal server error";
         return res.status(500).json({ success: false, message: msg });
     }
 };

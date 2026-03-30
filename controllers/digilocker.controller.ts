@@ -1,8 +1,6 @@
-import express from "express";
 import { Request, Response } from "express";
 import { configDotenv } from "dotenv";
 import "express-session";
-import type { Session } from "express-session";
 import crypto from "crypto";
 import qs from "qs";
 import axios from "axios";

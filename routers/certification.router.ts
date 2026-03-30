@@ -6,6 +6,6 @@ import { dynamicQrUrlMap } from "../controllers/dynamicQr.Controller";
 
 const router = Router();
 
-router.post("/register-on-chain",jwtTokenVerification, uploadCertificate );
+router.put("/register-on-chain",jwtTokenVerification, uploadCertificate );
 router.put("/dynamicQrUrlMap", jwtTokenVerification, dynamicQrUrlMap);
 export default router;
