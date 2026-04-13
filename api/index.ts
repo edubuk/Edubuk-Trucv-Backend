@@ -80,7 +80,7 @@ app.use("/hackathon", hackathonRouter);
 app.use("/certification", certificationRouter);
 app.get("/", (req: Request, res: Response) => {
   return res.json({
-    message: "Health is ok !",
+    message: "Trucv-dev-backend Health is ok !",
   });
 });
 
