@@ -81,7 +81,7 @@ export const digilockerCallback = async (req: Request, res: Response) => {
 export const redirectToCallBack = (req: Request, res: Response) => {
   try {
     const code = req.query.code;
-    res.redirect(`https://eni.edubuktrucv.com/api/api/dl/redirect?code=${code}`);
+    res.redirect(`https://backend-dev-server.edubuktrucv.com/api/api/dl/redirect?code=${code}`);
   } catch (error) {
     console.log(error);
     res.status(500).send("Redirect failed");
