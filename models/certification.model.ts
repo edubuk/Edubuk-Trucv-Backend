@@ -1,6 +1,10 @@
 import mongoose, { Schema } from "mongoose";
 
 const certificationSchema:Schema = new Schema({
+    hackathonId:{
+      type:Schema.ObjectId,
+      ref:"Hackathon"
+    },
     userId:{type:Schema.ObjectId,ref:"TruCvUser"},
     hackathonName:{type:String,required:true},
     certUrl:{type:String},

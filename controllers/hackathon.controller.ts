@@ -2,6 +2,35 @@
 import { Request, Response } from "express";
 import { IGetUserAuthInfoRequest } from "../types/definitionFile";
 import { Certification } from "../models/certification.model";
+import { validateEmail } from "../utils/utilFunctions";
+import { Hackathon } from "../models/hackathon.model";
+import asyncHandler from "../utils/asyncHandler";
+
+
+export const registerHackathon = asyncHandler(async(req:Request,res:Response)=>{
+  const {hackathonName,organization,emailId} = req.body;
+  if(!hackathonName || !organization || !emailId){
+    return res.status(400).json({ success: false, message: "All fields are required" });
+  }
+
+  if(!validateEmail(emailId)){
+    return res.status(400).json({ success: false, message: "Invalid email" });
+  }
+
+  // const hackathon = await Certification.findOne({ emailId });
+  // if(hackathon){
+  //   return res.status(400).json({ success: false, message: "Hackathon already registered with this " });
+  // }
+
+  const hackathon = await Hackathon.create({
+    hackathonName,
+    organization,
+    emailId
+  });
+
+  return res.status(200).json({ success: true, hackathon });
+  
+} )
 
 export const isEmailPresentInSheet = async (
   req: Request,

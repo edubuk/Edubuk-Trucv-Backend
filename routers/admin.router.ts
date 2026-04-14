@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { allUserCvs, getUsers, updateSubscriptionPlan } from "../controllers/admin.controller";
+import { allUserCvs, getReqDocForDigiLocker, getUsers, updateSubscriptionPlan } from "../controllers/admin.controller";
 // import { verifyGoogleToken } from "../middleware/verifyGoogleToken";
 // import { jwtTokenVerification } from "../middleware/tokenauth";
 // import { isAdmin } from "../middleware/adminAuth";
@@ -17,4 +17,5 @@ router.get("/user-cvs",jwtTokenVerification,isAdmin,userCvs);
 router.put("/updateSubscriptionPlan",jwtTokenVerification,isAdmin,updateSubscriptionPlan);
 router.get("/hackathon-certificate-list",jwtTokenVerification,isAdmin,getHackathonCertificateList);
 router.get("/all-user-cvs",jwtTokenVerification,isAdmin,allUserCvs);
+router.get("/get-requested-doc",jwtTokenVerification,isAdmin,getReqDocForDigiLocker);
 export default router;

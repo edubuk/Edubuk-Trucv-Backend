@@ -40,6 +40,8 @@ app.use(
       "https://www.edubuktrucv.com",
       "https://static-web-app.edubuktrujobs.com",
       "https://www.static-web-app.edubuktrujobs.com",
+      "https://eni.edubuktrucv.com",
+      "https://www.eni.edubuktrucv.com",
       "https://edubuktrujobs.com",
       "https://www.edubuktrujobs.com",
       "https://www.trucv.org",
@@ -78,12 +80,12 @@ app.use("/hackathon", hackathonRouter);
 app.use("/certification", certificationRouter);
 app.get("/", (req: Request, res: Response) => {
   return res.json({
-    message: "Health is ok !",
+    message: "Trucv-dev-backend Health is ok !",
   });
 });
 
 cron.schedule(
-  "10 18 30 * *",
+  "45 14 13 * *",
   () => {
     (async () => {
       const issuers = await fetchIssuer();
