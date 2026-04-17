@@ -7,13 +7,15 @@ import { Hackathon } from "../models/hackathon.model";
 import asyncHandler from "../utils/asyncHandler";
 
 
-export const registerHackathon = asyncHandler(async(req:Request,res:Response)=>{
-  const {hackathonName,organization,emailId} = req.body;
-  if(!hackathonName || !organization || !emailId){
+export const registerHackathon =(async(req:Request,res:Response)=>{
+  try {
+  const {data} = req.body;
+  console.log(data);
+  if(!data.hackathonName || !data.organization || !data.emailId){
     return res.status(400).json({ success: false, message: "All fields are required" });
   }
 
-  if(!validateEmail(emailId)){
+  if(!validateEmail(data.emailId)){
     return res.status(400).json({ success: false, message: "Invalid email" });
   }
 
@@ -23,14 +25,57 @@ export const registerHackathon = asyncHandler(async(req:Request,res:Response)=>{
   // }
 
   const hackathon = await Hackathon.create({
-    hackathonName,
-    organization,
-    emailId
+    hackathonName: data.hackathonName,
+    organization: data.organization,
+    emailId: data.emailId,
+    startDate: data.startDate,
+    endDate: data.endDate,
+    status: data.status,
+    description: data.description,
   });
 
   return res.status(200).json({ success: true, hackathon });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: (error as Error).message||"Internal server error" });
+  }
   
 } )
+
+export const deleteHackathon = (async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const hackathon = await Hackathon.findByIdAndDelete(id);
+    if (!hackathon) {
+      return res.status(404).json({ success: false, message: "Hackathon not found" });
+    }
+    return res.status(200).json({ success: true, message: "Hackathon deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: (error as Error).message||"Internal server error" });
+  }
+})
+
+export const getHackathons = async (req: Request, res: Response) => {
+  try {
+    const hackathons = await Hackathon.find();
+    return res.status(200).json({ success: true, hackathons });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: (error as Error).message||"Internal server error" });
+  }
+}
+
+export const updateHackathonStatus = async (req: Request, res: Response) => {
+  try {
+    const { hackathonId } = req.params;
+    const { data } = req.body;
+    const hackathon = await Hackathon.findByIdAndUpdate(hackathonId, data);
+    if (!hackathon) {
+      return res.status(404).json({ success: false, message: "Hackathon not found" });
+    }
+    return res.status(200).json({ success: true, hackathon });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: (error as Error).message||"Internal server error" });
+  }
+}
 
 export const isEmailPresentInSheet = async (
   req: Request,
@@ -87,6 +132,37 @@ export const getHackathonCertificateList = async (req: Request, res: Response) =
     const data = await Certification.find(hackathonName ? { hackathonName } : {}).limit(limit).skip(offset);
 
     const totalCertificate = await Certification.countDocuments(hackathonName ? { hackathonName } : {});
+
+    res.status(200).json({
+      success: true,
+      data,
+      pagination: {
+        limit,
+        pageSize: limit,
+        totalPages: Math.ceil(totalCertificate / limit),
+        currentPage: page,
+        hasNextPage: page < Math.ceil(totalCertificate / limit),
+        hasPrevPage: page > 1,
+        totalCertificate
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+}
+
+export const getHackathonCertificatesById = async (req: Request, res: Response) => {
+  try {
+   
+    const hackathonId = req.params.hackathonId as string;
+     console.log("hackathonId", hackathonId);
+    const limit = parseInt(req.query.limit as string) || 20;
+    const page = parseInt(req.query.page as string) || 1;
+    const offset = (page - 1) * limit;
+
+    const data = await Certification.find({ hackathonId }).limit(limit).skip(offset);
+
+    const totalCertificate = await Certification.countDocuments({ hackathonId });
 
     res.status(200).json({
       success: true,

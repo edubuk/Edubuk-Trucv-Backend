@@ -7,7 +7,7 @@ import { getAllDocs } from "../controllers/document.controller";
 import { jwtTokenVerification } from "../middleware/tokenauth";
 import { isAdmin } from "../middleware/adminAuth";
 import { userCvs } from "../controllers/newCv.controller";
-import { getHackathonCertificateList } from "../controllers/hackathon.controller";
+import { getHackathonCertificateList, registerHackathon, deleteHackathon, getHackathonCertificatesById, updateHackathonStatus } from "../controllers/hackathon.controller";
 
 const router = Router();
 
@@ -18,4 +18,9 @@ router.put("/updateSubscriptionPlan",jwtTokenVerification,isAdmin,updateSubscrip
 router.get("/hackathon-certificate-list",jwtTokenVerification,isAdmin,getHackathonCertificateList);
 router.get("/all-user-cvs",jwtTokenVerification,isAdmin,allUserCvs);
 router.get("/get-requested-doc",jwtTokenVerification,isAdmin,getReqDocForDigiLocker);
+router.post("/register-hackathon",jwtTokenVerification,isAdmin,registerHackathon);
+router.delete("/delete-hackathon/:id",jwtTokenVerification,isAdmin,deleteHackathon);
+router.get("/get-hackathon-certificates/:hackathonId",jwtTokenVerification,isAdmin,getHackathonCertificatesById);
+router.put("/update-hackathon-status/:hackathonId",jwtTokenVerification,isAdmin,updateHackathonStatus);
+
 export default router;

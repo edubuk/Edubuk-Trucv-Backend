@@ -2,16 +2,19 @@ import mongoose, { Schema } from "mongoose";
 
 
 const hackathonSchema = new Schema({
-    hackathonName: String,
-    organization: String,
+    hackathonName:{type:String,required:true},
+    organization: {type:String,required:true},
     emailId:String,
+    startDate:String,
+    endDate:String,
     status:{
       type:String,
       enum:["active","inactive","completed"],
       default:"active"
     },
-    createdAt: Date,
-    updatedAt: Date,
+    description:String,
+    createdAt:{type:Date,default:Date.now},
+    updatedAt:{type:Date,default:Date.now},
 })
 
 export const Hackathon = mongoose.model("Hackathon", hackathonSchema);
