@@ -3,12 +3,12 @@ import { Certification } from "../models/certification.model";
 
 export const dynamicQrUrlMap = async (req: Request, res: Response) => {
   try {
-    const { url, id } = req.body;
-
+    const {hackathonName, url, id } = req.body;
+    console.log("hackathonName", hackathonName,url,id);
     if (!url || !id) {
       return res.status(400).json({ success: false, error: "URL and id are required" });
     }
-    await Certification.create({ qrId: id, qrUrl: url });
+    await Certification.create({ qrId: id, qrUrl: url, hackathonName:hackathonName });
     res.status(200).json({ success: true, message: "Redirect link mapped successfully" });
   } catch (error) {
     console.error("Error generating dynamic QR code:", error);
