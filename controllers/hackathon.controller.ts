@@ -114,8 +114,15 @@ export const isEmailPresentInSheet = async (
 export const getCertificationData = async (req: Request, res: Response) => {
   try {
     const typeReq = req as IGetUserAuthInfoRequest;
-    const userId = typeReq.user._id;
-    const certification = await Certification.findOne({ userId });
+    const user = typeReq.user;
+    console.log("user", user);
+    const certification = await Certification.findOne({ userId: user._id });
+    if (!certification) {
+      return res.status(404).json({
+        success: false,
+        message: "Certification not found"
+      });
+    }
     res.status(200).json({ success: true, certification });
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal server error" });
