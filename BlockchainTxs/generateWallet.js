@@ -1,4 +1,5 @@
 // const ethers = require("ethers");
+// const crypto = require("crypto");
 
 // const contractAddress = "0x007aa7830d7E894C312d46389D1bD89144fCf076";
 // const abi = [{
@@ -44,7 +45,7 @@
 //     console.log("wallet",wallet);
 //     const tx = await transferWallet.sendTransaction({
 //         to:newWallet.address,
-//         value:ethers.parseEther("0.001")
+//         value:ethers.parseEther("0.018")
 //     })
 //     console.log("txHash",tx.hash);
 //     }
@@ -52,8 +53,10 @@
 
 //     if(tx.hash)
 //     {
-//         const doc = await contract.submitDocument("test","test","test","test");
-//         console.log("doc",doc);
+//         const hash = crypto.randomBytes(32).toString('hex');
+//         const doc = await contract.submitDocument("AWS",hash,"course","");
+//         await doc.wait();
+//         console.log("doc",doc.hash);
 //     }
 // }
 
