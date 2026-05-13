@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { deleteUserData, generateOtp, getUser, loginUser, logoutUser, refreshAccessToken, registerUser, sendResetLink, updatePassword, updateUserInfo, userDocs, userSubscription } from "../controllers/user.controller";
-import { jwtTokenVerification } from "../middleware/tokenauth";
+import * as userController from "../controllers/user.controller";
+import { jwtTokenVerification } from "../middleware/auth.middleware";
 //import { getUserCVIds } from "../controllers/cv.controller";
 
 const router = Router();
@@ -28,7 +28,7 @@ const router = Router();
  *       400:
  *         description: Invalid request or failed to send OTP
  */
-router.post("/generateOtp", generateOtp);
+router.post("/generateOtp", userController.generateOtp);
 
 /**
  * @swagger
@@ -64,7 +64,7 @@ router.post("/generateOtp", generateOtp);
  *       400:
  *         description: Invalid request or failed to register user
  */
-router.post("/register", registerUser);
+router.post("/register", userController.registerUser);
 /**
  * @swagger
  * /api/login:
@@ -90,7 +90,7 @@ router.post("/register", registerUser);
  *       400:
  *         description: Invalid request or failed to login user
  */
-router.post("/login", loginUser);
+router.post("/login", userController.loginUser);
 /**
  * @swagger
  * /api/logout:
@@ -105,9 +105,9 @@ router.post("/login", loginUser);
  *       400:
  *         description: Invalid request or failed to logout user
  */
-router.put("/logout", jwtTokenVerification, logoutUser)
+router.put("/logout",jwtTokenVerification, userController.logoutUser)
 
-router.post("/refresh-token", refreshAccessToken)
+router.post("/refresh-token", userController.refreshAccessToken)
 
 /**
  * @swagger
@@ -124,7 +124,7 @@ router.post("/refresh-token", refreshAccessToken)
  *         description: Invalid request or failed to fetch user details
  */
 
-router.get("/profile", jwtTokenVerification, getUser)
+router.get("/profile",jwtTokenVerification, userController.getUser)
 
 /**
  * @swagger
@@ -141,7 +141,7 @@ router.get("/profile", jwtTokenVerification, getUser)
  *         description: Invalid request or failed to fetch documents
  */
 
-router.get("/user-docs", jwtTokenVerification, userDocs)
+router.get("/user-docs", userController.userDocs)
 
 
 /**
@@ -159,7 +159,7 @@ router.get("/user-docs", jwtTokenVerification, userDocs)
  *         description: Invalid request or failed to fetch subscription
  */
 
-router.get("/subscription", jwtTokenVerification, userSubscription)
+router.get("/subscription",jwtTokenVerification, userController.userSubscription)
 
 /**
  * @swagger
@@ -185,7 +185,7 @@ router.get("/subscription", jwtTokenVerification, userSubscription)
  *       500:
  *         description: Internal server error
  */
-router.post("/password-reset-link", sendResetLink);
+router.post("/password-reset-link", userController.sendResetLink);
 
 /**
  * @swagger
@@ -214,10 +214,12 @@ router.post("/password-reset-link", sendResetLink);
  *       500:
  *         description: Internal server error
  */
-router.post("/update-password", updatePassword);
+router.post("/update-password", userController.updatePassword);
 
-router.delete("/delete-userData",jwtTokenVerification,deleteUserData)
+router.delete("/delete-userData",jwtTokenVerification,userController.deleteUserData)
 
-router.put("/update-userInfo",jwtTokenVerification,updateUserInfo)
+router.put("/update-userInfo",userController.updateUserInfo)
+
+router.post("/ocid-register",userController.ocidRegisterUser)
 
 export default router;

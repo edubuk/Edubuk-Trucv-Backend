@@ -132,6 +132,7 @@ export const registerUser = async (req: Request, res: Response) => {
 }
 
 
+
 export const loginUser = async (req: Request, res: Response) => {
     //req body->data
     //find user by email
@@ -166,8 +167,8 @@ export const loginUser = async (req: Request, res: Response) => {
         }
 
         const { accessToken, refreshToken } = await generateAccessRefreshToken(user._id as string);
-        //console.log("accessToken",accessToken)
-        //console.log("refreshToken",refreshToken)
+        console.log("accessToken",accessToken)
+        console.log("refreshToken",refreshToken)
         const loggedInUser = await User.findById(user._id).select("-providers -password -refreshToken");
 
         return res
@@ -192,6 +193,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
 
     } catch (error: any) {
+        console.log("login error", error);
         res.status(500).json({
             success: false,
             message: "Something went wrong",
@@ -206,17 +208,11 @@ export const logoutUser = async(req:Request,res:Response)=>{
     //update refreshToken
     //reset cookie
     const typeReq = req as IGetUserAuthInfoRequest
+    //console.log("typeReq",typeReq.user)
     try {
         await User.findByIdAndUpdate(typeReq.user._id,{
             $set:{"refreshToken":undefined}
         })
-
-        const options={
-            httpOnly:true,
-            secure:isProd,
-            sameSite: "lax",     
-            maxAge: 1000 * 60 * 60 * 15,
-        }
 
         res.status(200).clearCookie("accessToken",{
             httpOnly:true,
@@ -314,7 +310,9 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
 export const getUser = async(req:Request,res:Response)=>{
     try {
         const reqType = req as IGetUserAuthInfoRequest;
+        console.log("reqType.user",reqType.user)
         const user = await User.findById(reqType.user._id).select("-providers -password -refreshToken");
+        console.log("user",user)
         if(!user){
             res.status(400).json({
                 success:false,
@@ -533,4 +531,42 @@ export const deleteUserData = async(req:Request,res:Response)=>{
         })
     }
 } 
+
+
+export const ocidRegisterUser = async (req: Request, res: Response) => {
+    try {
+        const {name, id} = req.body;
+        console.log({name,id});
+        const isUser = await User.findOne({uuid:id})
+        if(isUser)
+        {
+            return res.status(200).json({
+                success:true,
+            })
+        }
+
+        const user = new User({ email:"", name, password:"", phoneNumber:"",address:"", uuid:id });
+        await user.save();
+
+        await Subscription.create({
+            userId: user._id,
+            subscriptionPlan: "pro",
+            paymentId: "NA",
+            couponCode: "",
+            orderId: "NA",
+            endDate: new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000) // 3 months from now
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "your are registered successfully"
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+            error
+        })
+    }
+}
 

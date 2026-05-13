@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { uploadCertificate } from "../controllers/skaleTx.controller";
-import { jwtTokenVerification } from "../middleware/tokenauth";
+import { jwtTokenVerification } from "../middleware/auth.middleware";
 import { dynamicQrUrlMap } from "../controllers/dynamicQr.Controller";
 
 

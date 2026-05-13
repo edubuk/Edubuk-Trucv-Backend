@@ -1,10 +1,7 @@
 import { Router } from "express";
 import { allUserCvs, getReqDocForDigiLocker, getUsers, updateSubscriptionPlan } from "../controllers/admin.controller";
-// import { verifyGoogleToken } from "../middleware/verifyGoogleToken";
-// import { jwtTokenVerification } from "../middleware/tokenauth";
-// import { isAdmin } from "../middleware/adminAuth";
 import { getAllDocs } from "../controllers/document.controller";
-import { jwtTokenVerification } from "../middleware/tokenauth";
+import { jwtTokenVerification } from "../middleware/auth.middleware";
 import { isAdmin } from "../middleware/adminAuth";
 import { userCvs } from "../controllers/newCv.controller";
 import { getHackathonCertificateList, registerHackathon, deleteHackathon, getHackathonCertificatesById, updateHackathonStatus } from "../controllers/hackathon.controller";

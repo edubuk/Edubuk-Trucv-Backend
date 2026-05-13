@@ -6,8 +6,9 @@ export interface IGetUserAuthInfoRequest extends Request{
         _id:Types.ObjectId,
         name:string,
         email:string,
-        phoneNumber:string,
-        uuid:string,
-        roles:string
+        phoneNumber?:string,
+        uuid?:string,
+        roles?:string,
+        authType:string
     }
 }

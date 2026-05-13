@@ -23,6 +23,7 @@ import hackathonRouter from "../routers/hackathon.router";
 import certificationRouter from "../routers/certification.router";
 import ApifyScraperRouter from "../routers/scraper/apify-scraper-route";
 
+
 // Initialize dotenv and Express app
 config();
 const app = express();
@@ -65,20 +66,19 @@ app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
-app.use("/api-docs", swaggerUiSetup.serve, swaggerUiSetup.setup(swaggerSpec));
-app.use("/api-docs", swaggerUiSetup.serve, swaggerUiSetup.setup(swaggerSpec));
-app.use("/scraper", ApifyScraperRouter);
-app.use("/doc", docRouter);
-app.use("/cv", cvRouter);
-app.use("/user", userRouter);
-app.use("/file", uploadRouter);
-app.use("/qr", qrRoute);
-app.use("/admin", adminRouter);
-app.use("/trujobs", trujobsRouter);
-app.use("/api/dl", digilockerRouter);
-app.use("/issuer", approvalRouter);
-app.use("/hackathon", hackathonRouter);
-app.use("/certification", certificationRouter);
+app.use("/api/v1/api-docs", swaggerUiSetup.serve, swaggerUiSetup.setup(swaggerSpec));
+app.use("/api/v1/scraper", ApifyScraperRouter);
+app.use("/api/v1/doc", docRouter);
+app.use("/api/v1/cv", cvRouter);
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/file", uploadRouter);
+app.use("/api/v1/qr", qrRoute);
+app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/trujobs", trujobsRouter);
+app.use("/dl", digilockerRouter);
+app.use("/api/v1/issuer", approvalRouter);
+app.use("/api/v1/hackathon", hackathonRouter);
+app.use("/api/v1/certification", certificationRouter);
 app.get("/", (req: Request, res: Response) => {
   return res.json({
     message: "Trucv-dev-backend Health is ok !",

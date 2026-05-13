@@ -3,7 +3,7 @@ import {
   getUserAllImportedLinkdeinProfiles,
   linkdeinProfileScraper,
 } from "../../controllers/scraper/linkdein.scraper.controller";
-import { jwtTokenVerification } from "../../middleware/tokenauth";
+import { jwtTokenVerification } from "../../middleware/auth.middleware";
 
 const router = express.Router();
 

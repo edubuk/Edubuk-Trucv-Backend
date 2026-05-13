@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { jwtTokenVerification } from "../middleware/tokenauth";
+import { jwtTokenVerification } from "../middleware/auth.middleware";
 import { isEmailPresentInSheet, getCertificationData, getHackathons } from "../controllers/hackathon.controller";
 
 const router = Router();
