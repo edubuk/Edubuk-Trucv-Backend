@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { approveHandler, approveSkills, getRequestedData, rejectHandler, requestedSkills } from "../controllers/docVerification.controller";
-import { jwtTokenVerification } from "../middleware/tokenauth";
+import { jwtTokenVerification } from "../middleware/auth.middleware";
 import { skillVerificationHandler } from "../controllers/document.controller";
 
 const router = Router();

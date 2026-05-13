@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { createCv, getUserCVIds, getCv,getCvByNanoId,verifyDoc } from "../controllers/cv.controller";
 import { checkout, couponVerification, paymentVerification } from "../controllers/payment.controller";
-import { jwtTokenVerification } from "../middleware/tokenauth";
+import { jwtTokenVerification } from "../middleware/auth.middleware";
 import { createUserCV, cvParse, DeleteCvData, fetchCvData, userCvs } from "../controllers/newCv.controller";
 import multer from "multer";
 const upload = multer({ storage: multer.memoryStorage() });

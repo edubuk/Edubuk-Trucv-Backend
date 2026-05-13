@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { jwtTokenVerification } from "../middleware/tokenauth";
+import { jwtTokenVerification } from "../middleware/auth.middleware";
 import { deleteAwardDoc, deleteEduDoc, deleteExpDoc, deleteProjectDoc, deleteSkillDoc, getAllDocs, getAwardDocs, getExpDocs, getProjectsDocs, getSkills, resendEmailHandler, saveAwardDoc, saveExpDocs, saveProjects, saveSkills, updateAwardDoc, updateDoc, updateExpDoc, updateProjectDoc } from "../controllers/document.controller";
 import { saveDocuments } from "../controllers/document.controller";
 import { getEducationDocs } from "../controllers/document.controller";

@@ -72,18 +72,14 @@ const userSchema = new Schema<IUser>({
     },
     email: {
         type: String,
-        required: true,
         lowercase: true,
         trim: true,
-        index: true,
-        unique: true
     },
     phoneNumber: {
         type: String,
     },
     address: {
         type: String,
-        required: true
     },
     roles: {
         type: String,

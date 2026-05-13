@@ -11,9 +11,9 @@ export const dynamicQrUrlMap = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: "URL and id are required" });
     }
     const data = await Certification.findOne({ qrId: id });
-    if (data && data.userId) {
-      return res.status(200).json({ success:true, message: "URL already exists for this ID,Go to next step" });
-    }
+    // if (data && data.userId) {
+    //   return res.status(200).json({ success:true, message: "URL already exists for this ID,Go to next step" });
+    // }
     const certificationData = await Certification.create({userId:typeReq.user._id, qrId: id, qrUrl: url, hackathonName });
     console.log("certificationData", certificationData);
     res.status(200).json({ success: true, message: "Redirect link mapped successfully", certificationData });
