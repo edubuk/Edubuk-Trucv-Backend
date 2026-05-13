@@ -30,6 +30,29 @@ const FUNDING_KEYS = [
   "dd08d6c16298e370d3ef27b61d5b5e59ae6d86deac37c0282a8fbd67af152eae"
 ];
 
+const pvtKey=[
+  "b8c4d7c8e93d942fa0e697ac31369baf59647df537b6d1e74ff6e2da6d3e0ad3",
+  "a6f882d66bc673293bf91334675cdbc66ef8adfe865cbe8615a2f2999c71f845",
+  "3bc6aec9cb541a0a14af9c366a4f7fcb596008c909071d42389bf50c1b2384c2",
+  "444f6922de397b0eec30f1dae4c15048e9ad60c2059e08691a2e7dd347ae154a",
+  "7a3928c2a011b94885aa493edf5d3fe6e66390295d0c3a5dfcb95cddd8c3b4d2",
+  "2216953ea61820ca86998386d138dda1d0508ce3ebdfb6510389490d992393a3",
+  "6026d99c1f9826ebadc381b4ad7f8a4e5d068e3b69a1c47ec27a2c6c88697cb5",
+  "536244fcc23cae6374909466a5f11c46eca7e72b382056798f68e2fac1c16b2d",
+  "ee88831f964bdb3df6bec031e152323f24b42d6184b6c5901c29a8da282b019c",
+  "4d941d2c57e24a999736f72fdead89048fc4396970b687172408f8d8cdd8e7b6",
+  "2c02b52d201b6ab21f690bf984a659db96bb6f46c486560911b7d8b567fd86f8",
+  "c9f55df95c9ce8a65ab12a9703f174f8342411f7e290884152a4310d77d8b68e",
+  "9dff78bffd8f3dfad8492f0f2946091fd9e09dee1e37088fb5cd07b0f85fc5f4",
+  "5029c1cf84ba5cbfe175e0f80d0851068b1641160c9703d58e6a662f187e8b96",
+  "d354c3e5fce0eb577256c03bf2fdb2b5b10cfb076c052a7f543ea64852cb215a",
+  "f6cb75bf748c6cc1c05f465c80108985dccf5d0cab2d7b06b45e333cbfe15b61",
+  "6d308021ca958ca3a1aea74952915eddb852b0038d8ff63e914a4712bc0194b7",
+  "e9b0561b12e1bf507a1127adb7f876507dcbfa0007d6a6351368c0ccd1b0d55f",
+  "a87142ff7e8114e2df70be6a81b96a5ccb8541c5ea1cfa701ca934530220ba1c",
+  "f1fcd0ba423317908b8afbb9cbbbab27e6ff525fec7041b552aca130784822dd",
+]
+
 
 // Randomize delay — human-like behavior
 const randomDelay = (min, max) => {
@@ -181,7 +204,7 @@ const transferToken = async () => {
       await randomDelay(30000, 50000);
     }
 
-    for (let j = 19; j>=0; j--) {
+    for (let j =19; j>=0; j--) {
       const rpc = RPC_LIST[j % RPC_LIST.length];
       const provider = new ethers.JsonRpcProvider(rpc);
       const privateKey = pvtKey[j];
