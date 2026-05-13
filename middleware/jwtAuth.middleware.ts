@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import { Types } from "mongoose";
 import { User } from "../models/user.model";
 
 export const verifyJwtToken = async (token:string) => {

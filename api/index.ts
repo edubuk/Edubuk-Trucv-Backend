@@ -54,7 +54,30 @@ app.use(
   }),
 );
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // React needs this
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: [
+        "'self'",
+        "https://digilocker.meripehchaan.gov.in/public/oauth2",
+        "https://ochub.com",
+      ],
+      fontSrc: ["'self'", "data:"],
+      frameSrc: ["'self'"],
+      frameAncestors: [ // THIS IS THE KEY ONE
+        "'self'",
+        "https://hub.sandbox.opencampus.xyz",
+        "http://localhost:3000"
+      ]
+    }
+  },
+  crossOriginEmbedderPolicy: false, // Allow embedding
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // app.use(
 //   rateLimit({
@@ -62,6 +85,20 @@ app.use(helmet());
 //     max: 500, // limit each IP to 500 requests per 5 minutes
 //   })
 // );
+
+app.get('/api/dl/callback', (req, res, next) => {
+  // Remove ALL helmet headers
+  res.removeHeader('Content-Security-Policy');
+  res.removeHeader('X-Frame-Options');
+  res.removeHeader('Cross-Origin-Embedder-Policy');
+  res.removeHeader('Cross-Origin-Resource-Policy');
+  res.removeHeader('Cross-Origin-Opener-Policy');
+  
+  // Set permissive headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  
+  next();
+});
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -86,7 +123,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 cron.schedule(
-  "16 03 23 * *",
+  "55 16 13 * *",
   () => {
     (async () => {
       const issuers = await fetchIssuer();
