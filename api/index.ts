@@ -48,6 +48,8 @@ app.use(
       "https://www.edubuktrujobs.com",
       "https://www.trucv.org",
       "https://trucv.org",
+      "https://educhain.edubuktrucv.com",
+      "https://www.educhain.edubuktrucv.com",
     ],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
