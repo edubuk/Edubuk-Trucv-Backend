@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-
+import { Document } from "mongoose";
 export interface IEducationDoc extends Document {
   userId:mongoose.ObjectId;
   eduDocId:string,
