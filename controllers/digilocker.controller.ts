@@ -59,7 +59,7 @@ export const digilockerCallback = async (req: Request, res: Response) => {
       }),
     });
 
-    const data = await response.json();
+    const data:any = await response.json();
     console.log("Token response:", data);
 
     if (data.access_token) {
