@@ -114,7 +114,7 @@ app.use("/api/v1/file", uploadRouter);
 app.use("/api/v1/qr", qrRoute);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/trujobs", trujobsRouter);
-app.use("/dl", digilockerRouter);
+app.use("/api/dl", digilockerRouter);
 app.use("/api/v1/issuer", approvalRouter);
 app.use("/api/v1/hackathon", hackathonRouter);
 app.use("/api/v1/certification", certificationRouter);
