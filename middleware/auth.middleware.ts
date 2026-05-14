@@ -37,7 +37,7 @@ export const jwtTokenVerification: RequestHandler = async (req: Request, res: Re
 
         // Check for session token in cookies
         const sessionToken = req.cookies.accessToken;
-        console.log("sessionToken", sessionToken);
+        //console.log("sessionToken", sessionToken);
         if (sessionToken) {
             const sessionUser = await verifyJwtToken(sessionToken);
             if (sessionUser) {
