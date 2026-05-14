@@ -218,7 +218,7 @@ router.post("/update-password", userController.updatePassword);
 
 router.delete("/delete-userData",jwtTokenVerification,userController.deleteUserData)
 
-router.put("/update-userInfo",userController.updateUserInfo)
+router.put("/update-userInfo",jwtTokenVerification,userController.updateUserInfo)
 
 router.post("/ocid-register",jwtTokenVerification,userController.ocidRegisterUser)
 
