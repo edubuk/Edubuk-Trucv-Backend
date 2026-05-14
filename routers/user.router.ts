@@ -220,6 +220,6 @@ router.delete("/delete-userData",jwtTokenVerification,userController.deleteUserD
 
 router.put("/update-userInfo",userController.updateUserInfo)
 
-router.post("/ocid-register",userController.ocidRegisterUser)
+router.post("/ocid-register",jwtTokenVerification,userController.ocidRegisterUser)
 
 export default router;
