@@ -120,7 +120,7 @@ app.use("/api/v1/hackathon", hackathonRouter);
 app.use("/api/v1/certification", certificationRouter);
 app.get("/", (req: Request, res: Response) => {
   return res.json({
-    message: "Trucv-Prod-backend Health is ok !",
+    message: "Trucv-Backend-Prod Health is ok !",
   });
 });
 
