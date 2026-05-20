@@ -379,9 +379,8 @@ export const updateUserInfo = async(req:Request,res:Response)=>{
                 message:"User not found"
             })
         }
-        const {name,email,phoneNumber,address,userImageUrl,linkedInUrl,githubUrl,selfAttested,yearOfExp,profession,profileSummary} = req.body;
+        const {name,phoneNumber,address,userImageUrl,linkedInUrl,githubUrl,selfAttested,yearOfExp,profession,profileSummary} = req.body;
         user.name = name;
-        user.email = email;
         user.phoneNumber = phoneNumber;
         user.address = address;
         user.userImageUrl = userImageUrl || "";
