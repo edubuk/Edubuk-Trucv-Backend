@@ -34,4 +34,5 @@ router.get("/skill-docs",jwtTokenVerification,getSkills);
 router.delete("/delete-skillDoc/:id",jwtTokenVerification,deleteSkillDoc);
 
 router.post("/resend-email/:id",jwtTokenVerification,resendEmailHandler);
+
 export default router;
