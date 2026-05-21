@@ -8,20 +8,20 @@ const connectionString = process.env.ACS_CONNECTION_STRING as string; // from Az
 const client = new EmailClient(connectionString);
 
 export interface IDocEmail {
-    emailId: string;
-    level?: string;
-    boardNameOrDegree?: string;
-    institutionName?: string;
-    documentViewUrl?: string;
-    skills?: string | undefined;
-    organisation?:string,
-    companyName?:string,
-    duration?:{from?:string,to?:string},
-    position?:string,
-    id?:mongoose.ObjectId,
-    docType:string,
-    userEmail?:string,
-    token?:string
+  emailId: string;
+  level?: string;
+  boardNameOrDegree?: string;
+  institutionName?: string;
+  documentViewUrl?: string;
+  skills?: string | undefined;
+  organisation?: string,
+  companyName?: string,
+  duration?: { from?: string, to?: string },
+  position?: string,
+  id?: mongoose.ObjectId,
+  docType: string,
+  userEmail?: string,
+  token?: string
 }
 
 export const otpEmailHandler = async (emailId: string, otp: string) => {
@@ -95,18 +95,18 @@ export const otpEmailHandler = async (emailId: string, otp: string) => {
 };
 
 export const sendResetLinkEMail = async (emailId: string, resetToken: string) => {
-    try {
-        // change this to your client URL (frontend route that accepts the raw token)
-        const CLIENT_URL = process.env.CLIENT_URL || "https://edubuktrucv.com/";
-        const resetUrl = `${CLIENT_URL.replace(/\/$/, "")}/password-reset?token=${encodeURIComponent(
-            resetToken
-        )}`;
+  try {
+    // change this to your client URL (frontend route that accepts the raw token)
+    const CLIENT_URL = process.env.CLIENT_URL || "https://edubuktrucv.com/";
+    const resetUrl = `${CLIENT_URL.replace(/\/$/, "")}/password-reset?token=${encodeURIComponent(
+      resetToken
+    )}`;
 
-        const message = {
-            senderAddress: "noreply@edubukeseal.org",
-            content: {
-                subject: "Reset your Edubuk password",
-                plainText: `Hi ${emailId},
+    const message = {
+      senderAddress: "noreply@edubukeseal.org",
+      content: {
+        subject: "Reset your Edubuk password",
+        plainText: `Hi ${emailId},
 
 You (or someone using your email) requested a password reset for your Edubuk account.
 Use the link below to reset your password (this link will expire in 1 hour):
@@ -118,7 +118,7 @@ If you didn't request this, please ignore this email.
 — Team Edubuk
 https://edubukeseal.org`,
 
-                html: `
+        html: `
   <div style="max-width:600px;margin:auto;font-family:Arial, Helvetica, sans-serif;background:#ffffff;border:1px solid #e5eaf0;border-radius:12px;overflow:hidden;">
     <!-- Header -->
     <div style="background:#f7fbff;padding:28px 22px 18px;text-align:center;">
@@ -185,34 +185,34 @@ https://edubukeseal.org`,
     </div>
   </div>
         `,
-            },
-            recipients: {
-                to: [{ address: emailId, displayName: "Recipient" }],
-            },
-        };
+      },
+      recipients: {
+        to: [{ address: emailId, displayName: "Recipient" }],
+      },
+    };
 
-        const poller = await client.beginSend(message);
-        const result = await poller.pollUntilDone();
-        return result.status;
-        console.log("Send result:", result);
-    } catch (error) {
-        console.log("error", error);
-    }
+    const poller = await client.beginSend(message);
+    const result = await poller.pollUntilDone();
+    return result.status;
+    console.log("Send result:", result);
+  } catch (error) {
+    console.log("error", error);
+  }
 };
 
 export const docVerificationEmailHandler = async (
-  {emailId,
-  level,
-  boardNameOrDegree,
-  institutionName,
-  documentViewUrl,
-  skills,
-  organisation,
-  companyName,
-  duration,
-  position,
-  id,
-  docType,token,userEmail}:IDocEmail
+  { emailId,
+    level,
+    boardNameOrDegree,
+    institutionName,
+    documentViewUrl,
+    skills,
+    organisation,
+    companyName,
+    duration,
+    position,
+    id,
+    docType, token, userEmail }: IDocEmail
 ) => {
   try {
     const currentDate = new Date();
@@ -251,47 +251,47 @@ export const docVerificationEmailHandler = async (
             cellspacing="0"
             style="background-color: #f4f6fa; border-radius: 8px; margin: 20px 0;"
           >
-            ${level? `<tr>
+            ${level ? `<tr>
               <td style="width: 40%; font-weight: bold;">Document Type:</td>
               <td>${level}</td>
-            </tr>`:""}
-            ${boardNameOrDegree? `<tr>
+            </tr>`: ""}
+            ${boardNameOrDegree ? `<tr>
               <td style="font-weight: bold;">Board Name/Degree:</td>
               <td>${boardNameOrDegree}</td>
-            </tr>`:""}
+            </tr>`: ""}
 
-            ${institutionName? `<tr>
+            ${institutionName ? `<tr>
               <td style="font-weight: bold;">Institution Name:</td>
               <td>${institutionName}</td>
-            </tr>`:""}
-            ${companyName? `<tr>
+            </tr>`: ""}
+            ${companyName ? `<tr>
               <td style="font-weight: bold;">Organisation Name:</td>
               <td>${companyName}</td>
-            </tr>`:""}
-            ${position? `<tr>
+            </tr>`: ""}
+            ${position ? `<tr>
               <td style="font-weight: bold;">Position:</td>
               <td>${position}</td>
-            </tr>`:""}
-            ${organisation? `<tr>
+            </tr>`: ""}
+            ${organisation ? `<tr>
               <td style="font-weight: bold;">Organisation Name:</td>
               <td>${organisation}</td>
-            </tr>`:""}
+            </tr>`: ""}
             
             ${skills
-                    ? `
+        ? `
             <tr>
               <td style="font-weight: bold;">Used Skills:</td>
               <td>${skills}</td>
             </tr>
             `
-                    : ""
-                  }
+        : ""
+      }
             
             <tr>
-            ${duration? `<tr>
+            ${duration ? `<tr>
               <td style="font-weight: bold;">Duration:</td>
               <td>${duration?.from}-${duration?.to}</td>
-            </tr>`:""}
+            </tr>`: ""}
               <td style="font-weight: bold;">Submitted On:</td>
               <td>${currentDate}</td>
             </tr>
@@ -370,20 +370,20 @@ export const docVerificationEmailHandler = async (
 };
 
 export const docVerificationNotifyEmailHandler = async (
-  {emailId,
-  level,
-  boardNameOrDegree,
-  institutionName,
-  documentViewUrl,
-  skills,
-  organisation,
-  companyName,
-  duration,
-  position,
-  id,
-  docType,
-  userEmail,
-}:IDocEmail
+  { emailId,
+    level,
+    boardNameOrDegree,
+    institutionName,
+    documentViewUrl,
+    skills,
+    organisation,
+    companyName,
+    duration,
+    position,
+    id,
+    docType,
+    userEmail,
+  }: IDocEmail
 ) => {
   try {
     const currentDate = new Date();
@@ -551,8 +551,8 @@ export const docVerificationNotifyEmailHandler = async (
         html: html,
       },
       recipients: {
-        to: [{ address:userEmail ?? emailId, displayName: "Candidate" }],
-        cc: [{ address:emailId, displayName: "Issuer" }],
+        to: [{ address: userEmail ?? emailId, displayName: "Candidate" }],
+        cc: [{ address: emailId, displayName: "Issuer" }],
       },
 
     };
@@ -565,7 +565,7 @@ export const docVerificationNotifyEmailHandler = async (
   }
 };
 
-export const skillVerificationEmailHandler = async(emailId:string,userName:string,token:string)=>{
+export const skillVerificationEmailHandler = async (emailId: string, userName: string, token: string) => {
   try {
     const html = `<!DOCTYPE html>
     <html lang="en" style="font-family: Arial, sans-serif;">
@@ -654,7 +654,7 @@ export const skillVerificationEmailHandler = async(emailId:string,userName:strin
 }
 
 export const skillverificationNotifyEmailHandler = async (
-  emailId:string,userName:string,userEmail:string
+  emailId: string, userName: string, userEmail: string
 ) => {
   try {
     const currentDate = new Date();
@@ -751,8 +751,466 @@ export const skillverificationNotifyEmailHandler = async (
         html: html,
       },
       recipients: {
-        to: [{ address:userEmail ?? emailId, displayName: "Candidate" }],
-        cc: [{ address:emailId, displayName: "Issuer" }],
+        to: [{ address: userEmail ?? emailId, displayName: "Candidate" }],
+        cc: [{ address: emailId, displayName: "Issuer" }],
+      },
+
+    };
+
+    const poller = await client.beginSend(message);
+    const result = await poller.pollUntilDone();
+    return result.status;
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
+
+export const userDocVerificationEmailHandler = async (
+  emailId: string, password:string
+) => {
+  try {
+    const currentDate = new Date();
+    const html = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Welcome to TruCV</title>
+    <!--[if mso]>
+    <style type="text/css">
+        body, table, td {font-family: Arial, Helvetica, sans-serif !important;}
+    </style>
+    <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; background-color: #f7f8fb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">
+    
+    <!-- Main Container -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f7f8fb;">
+        <tr>
+            <td style="padding: 20px 0;">
+                
+                <!-- Email Container -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" align="center">
+                    
+                    <!-- Header Section -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #03257e 0%, #024a8f 100%); background-color: #03257e; padding: 40px 30px; text-align: center;">
+                            
+                            <!-- Logo -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding-bottom: 20px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 8px; padding: 15px;">
+                                            <tr>
+                                                <td>
+                                                    <!-- Replace with your logo URL -->
+                                                    <img src="https://miitserverlessafba.blob.core.windows.net/edubuklogo/Edubuk_Logo-removebg-preview.png" alt="TruCV Logo" width="120" height="auto" style="display: block; border: 0;" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center">
+                                        <h1 style="margin: 15px 0 5px 0; font-size: 32px; font-weight: bold; color: #ffffff; letter-spacing: 1px;">TruCV</h1>
+                                        <p style="margin: 0; font-size: 14px; color: #ffffff; opacity: 0.9;">Blockchain-Powered Credential Verification</p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                        </td>
+                    </tr>
+                    
+                    <!-- Body Section -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            
+                            <!-- Greeting -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td style="padding-bottom: 20px;">
+                                        <h2 style="margin: 0; font-size: 24px; font-weight: bold; color: #03257e;">Welcome to TruCV! 👋</h2>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-bottom: 30px;">
+                                        <p style="margin: 0; font-size: 16px; color: #4a5568; line-height: 1.8;">
+                                            We're excited to have you on board! Your account has been successfully created, and you're just a few steps away from securing and verifying your professional credentials on the blockchain.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Credentials Box -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f0f9ff; border-left: 4px solid #03257e; border-radius: 8px; margin: 30px 0;">
+                                <tr>
+                                    <td style="padding: 25px;">
+                                        
+                                        <!-- Title -->
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="padding-bottom: 15px;">
+                                                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #03257e;">🔐 Your Login Credentials</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        
+                                        <!-- Email Credential -->
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 12px;">
+                                            <tr>
+                                                <td style="padding: 12px;">
+                                                    <p style="margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #006666; font-weight: 600;">EMAIL ADDRESS</p>
+                                                    <p style="margin: 0; font-size: 16px; font-weight: 600; color: #03257e; font-family: 'Courier New', monospace; word-break: break-all;">${emailId}</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        
+                                        <!-- Password Credential -->
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px;">
+                                            <tr>
+                                                <td style="padding: 12px;">
+                                                    <p style="margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #006666; font-weight: 600;">TEMPORARY PASSWORD</p>
+                                                    <p style="margin: 0; font-size: 16px; font-weight: 600; color: #03257e; font-family: 'Courier New', monospace; word-break: break-all;">${password}</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Security Notice -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #fff7ed; border-left: 4px solid #f14419; border-radius: 8px; margin: 25px 0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: bold; color: #f14419; text-transform: uppercase; letter-spacing: 0.5px;">⚠️ IMPORTANT SECURITY NOTICE</p>
+                                        <p style="margin: 0; font-size: 14px; color: #4a5568; line-height: 1.6;">
+                                            This is a temporary password. For your security, please change it immediately after your first login. Keep your credentials confidential and never share them with anyone.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Getting Started Steps -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 30px 0;">
+                                <tr>
+                                    <td style="padding-bottom: 20px;">
+                                        <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: #03257e;">Getting Started in 3 Easy Steps</h3>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Step 1 -->
+                                <tr>
+                                    <td style="padding-bottom: 20px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f9fafb; border-radius: 8px;">
+                                            <tr>
+                                                <td style="padding: 15px;">
+                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                        <tr>
+                                                            <td width="36" valign="top">
+                                                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="36" height="36" style="background-color: #006666; border-radius: 50%;">
+                                                                    <tr>
+                                                                        <td align="center" valign="middle">
+                                                                            <p style="margin: 0; color: #ffffff; font-weight: bold; font-size: 16px; padding: 10px;">1</p>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                            <td width="15"></td>
+                                                            <td>
+                                                                <p style="margin: 0 0 5px 0; font-size: 15px; font-weight: 600; color: #03257e;">Log In to Your Account</p>
+                                                                <p style="margin: 0; font-size: 14px; color: #4a5568; line-height: 1.5;">Click the button below and use the credentials provided above to access your TruCV dashboard.</p>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Step 2 -->
+                                <tr>
+                                    <td style="padding-bottom: 20px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f9fafb; border-radius: 8px;">
+                                            <tr>
+                                                <td style="padding: 15px;">
+                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                        <tr>
+                                                            <td width="36" valign="top">
+                                                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="36" height="36" style="background-color: #006666; border-radius: 50%;">
+                                                                    <tr>
+                                                                        <td align="center" valign="middle">
+                                                                            <p style="margin: 0; color: #ffffff; font-weight: bold; font-size: 16px; padding: 10px;">2</p>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                            <td width="15"></td>
+                                                            <td>
+                                                                <p style="margin: 0 0 5px 0; font-size: 15px; font-weight: 600; color: #03257e;">Upload Your Documents</p>
+                                                                <p style="margin: 0; font-size: 14px; color: #4a5568; line-height: 1.5;">Navigate to "My Documents", Click on 'Request Verification' button to upload your education certificates, work experience letters, and awards.</p>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Step 3 -->
+                                <tr>
+                                    <td style="padding-bottom: 20px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f9fafb; border-radius: 8px;">
+                                            <tr>
+                                                <td style="padding: 15px;">
+                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                        <tr>
+                                                            <td width="36" valign="top">
+                                                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="36" height="36" style="background-color: #006666; border-radius: 50%;">
+                                                                    <tr>
+                                                                        <td align="center" valign="middle">
+                                                                            <p style="margin: 0; color: #ffffff; font-weight: bold; font-size: 16px; padding: 10px;">3</p>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                            <td width="15"></td>
+                                                            <td>
+                                                                <p style="margin: 0 0 5px 0; font-size: 15px; font-weight: 600; color: #03257e;">Enter Issuer or any refrence Email Id</p>
+                                                                <p style="margin: 0; font-size: 14px; color: #4a5568; line-height: 1.5;">Enter the email id of the issuer or any reference email id that can verify your uploaded documents. For example, if you uploaded a degree certificate, you can enter the email id of the university that issued the certificate. if you uploaded your experience certificate, you can enter the email id of your previous employer. etc.</p>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <!-- Step 4 -->
+                                <tr>
+                                    <td>
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f9fafb; border-radius: 8px;">
+                                            <tr>
+                                                <td style="padding: 15px;">
+                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                        <tr>
+                                                            <td width="36" valign="top">
+                                                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="36" height="36" style="background-color: #006666; border-radius: 50%;">
+                                                                    <tr>
+                                                                        <td align="center" valign="middle">
+                                                                            <p style="margin: 0; color: #ffffff; font-weight: bold; font-size: 16px; padding: 10px;">4</p>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                            <td width="15"></td>
+                                                            <td>
+                                                                <p style="margin: 0 0 5px 0; font-size: 15px; font-weight: 600; color: #03257e;">Request Verification</p>
+                                                                <p style="margin: 0; font-size: 14px; color: #4a5568; line-height: 1.5;">Click on 'Send Email' button and our system will automatically send verification requests to your document issuers via email for authentication.</p>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- CTA Button -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 35px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td style="border-radius: 8px; background-color: #006666;">
+                                                    <a href="https://edubuktrucv.com/dashboard?tab=docs" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 16px; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px;">
+                                                        Access My Documents →
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="padding-top: 12px;">
+                                        <p style="margin: 0; font-size: 13px; color: #718096;">Click here to start uploading and verifying your credentials</p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Benefits Section -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #fef3f2; border-radius: 8px; margin: 30px 0;">
+                                <tr>
+                                    <td style="padding: 25px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="padding-bottom: 15px;">
+                                                    <h3 style="margin: 0; font-size: 16px; font-weight: bold; color: #03257e;">Why Verify Your Credentials with TruCV?</h3>
+                                                </td>
+                                            </tr>
+                                            
+                                            <!-- Benefit 1 -->
+                                            <tr>
+                                                <td style="padding-bottom: 10px;">
+                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                        <tr>
+                                                            <td width="18" valign="top">
+                                                                <p style="margin: 0; font-size: 18px; color: #006666;">✓</p>
+                                                            </td>
+                                                            <td width="10"></td>
+                                                            <td>
+                                                                <p style="margin: 0; font-size: 14px; color: #4a5568; line-height: 1.6;">
+                                                                    <strong>Blockchain Security:</strong> Your credentials are securely stored and tamper-proof on the blockchain
+                                                                </p>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            
+                                            <!-- Benefit 2 -->
+                                            <tr>
+                                                <td style="padding-bottom: 10px;">
+                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                        <tr>
+                                                            <td width="18" valign="top">
+                                                                <p style="margin: 0; font-size: 18px; color: #006666;">✓</p>
+                                                            </td>
+                                                            <td width="10"></td>
+                                                            <td>
+                                                                <p style="margin: 0; font-size: 14px; color: #4a5568; line-height: 1.6;">
+                                                                    <strong>Instant Verification:</strong> Employers can instantly verify your credentials without contacting issuers
+                                                                </p>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            
+                                            <!-- Benefit 3 -->
+                                            <tr>
+                                                <td style="padding-bottom: 10px;">
+                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                        <tr>
+                                                            <td width="18" valign="top">
+                                                                <p style="margin: 0; font-size: 18px; color: #006666;">✓</p>
+                                                            </td>
+                                                            <td width="10"></td>
+                                                            <td>
+                                                                <p style="margin: 0; font-size: 14px; color: #4a5568; line-height: 1.6;">
+                                                                    <strong>Lifetime Access:</strong> Access your verified credentials anytime, anywhere, forever
+                                                                </p>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            
+                                            <!-- Benefit 4 -->
+                                            <tr>
+                                                <td>
+                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                        <tr>
+                                                            <td width="18" valign="top">
+                                                                <p style="margin: 0; font-size: 18px; color: #006666;">✓</p>
+                                                            </td>
+                                                            <td width="10"></td>
+                                                            <td>
+                                                                <p style="margin: 0; font-size: 14px; color: #4a5568; line-height: 1.6;">
+                                                                    <strong>Career Advancement:</strong> Stand out with verified, trustworthy credentials that boost your profile
+                                                                </p>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Support Section -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f9fafb; border-radius: 8px; margin: 30px 0;">
+                                <tr>
+                                    <td style="padding: 25px; text-align: center;">
+                                        <h3 style="margin: 0 0 10px 0; font-size: 16px; font-weight: bold; color: #03257e;">Need Help?</h3>
+                                        <p style="margin: 0 0 15px 0; font-size: 14px; color: #4a5568;">Our support team is here to assist you every step of the way.</p>
+                                        <a href="mailto:support@edubukeseal.org" style="color: #006666; text-decoration: none; font-weight: 600; font-size: 14px;">support@edubukeseal.org</a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer Section -->
+                    <tr>
+                        <td style="background-color: #f7f8fb; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td style="padding-bottom: 15px;">
+                                        <p style="margin: 0; font-size: 13px; color: #718096; line-height: 1.6;">
+                                            This email was sent to ${emailId} for document upload and verification<br/>
+                                            If this email id does not belongs to you, please contact us immediately.
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 20px 0;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
+                                            <tr>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://www.linkedin.com/company/edubuk-ai-web3/" style="color: #03257e; text-decoration: none; font-size: 14px; font-weight: 500;">LinkedIn</a>
+                                                </td>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://x.com/edubuktrust" style="color: #03257e; text-decoration: none; font-size: 14px; font-weight: 500;">Twitter</a>
+                                                </td>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://edubuk.com" style="color: #03257e; text-decoration: none; font-size: 14px; font-weight: 500;">Website</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p style="margin: 0; font-size: 12px; color: #a0aec0;">
+                                            © 2024 TruCV by Edubuk. All rights reserved.<br/>
+                                            Blockchain-powered credential verification platform.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                        </td>
+                    </tr>
+                    
+                </table>
+                
+            </td>
+        </tr>
+    </table>
+    
+</body>
+</html>`
+
+    const message = {
+      senderAddress: "support@edubukeseal.org",
+      content: {
+        subject: "Candidate Documents Verification",
+        plainText: "This is a test email sent from ACS Email SDK (Node.js).",
+        html: html,
+      },
+      recipients: {
+        to: [{ address:emailId, displayName: "Candidate" }],
       },
 
     };

@@ -3,29 +3,8 @@ import { User } from "../models/user.model";
 import Subscription from "../models/subscription.model";
 import { UserCV } from "../models/newCv.model";
 import { DocVerificationRequest } from "../models/docVerificationRequest.model";
+import { userDocVerificationEmailHandler} from "../utils/emailHandler";
 
-
-export const adminController = async (req:Request,res:Response) => {
-    // const userData = req.user;
-    // console.log("userData",userData);
-    // const ALLOWED_EMAILS:string[] = process.env.ADMIN_EMAILS?.split(",") || [];
-    // // console.log("ALLOWED_EMAIL",ALLOWED_EMAILS[5].trim()===userData?.email.toString());
-    // // console.log("ALLOWED_EMAIL",ALLOWED_EMAILS.includes(userData?.email));
-    
-    // try {
-    //     if(userData?.email && ALLOWED_EMAILS.includes(userData?.email)){
-    //         const getAllUser = await User.find();
-    //         if(!getAllUser){
-    //             return res.status(404).json({message:"No User Found",success:false})
-    //         }
-    //         return res.status(200).json({message:"User Found",data:getAllUser,success:true})
-    //     }
-    //     return res.status(401).json({message:"Unauthorized",success:false})
-    // } catch (error) {
-    //     console.log("ERROR:ADMIN_CONTROLLER",error)
-    //     return res.status(500).json({message:"Something went wrong",error:error,success:false})
-    // }
-}
 
 export const getUsers = async(req:Request,res:Response)=>{
     try{
@@ -154,6 +133,63 @@ export const getReqDocForDigiLocker = async (req:Request,res:Response) => {
             message:"internal server error",
             error:error.message || error
         });
+    }
+}
+
+
+export const registerUser = async (req: Request, res: Response) => {
+    try {
+        const { data } = req.body;
+        const { v4: uuidv4 } = await import("uuid");
+        const isUser = await User.findOne({email:data?.email})
+        if(isUser)
+        {
+            return res.status(400).json({
+                success:false,
+                message:"User already exists"
+            })
+        }
+        const user = new User({ email: data.email, name: data.name, password: data.password, phoneNumber: data.phoneNumber,address: data.address, uuid: uuidv4() });
+        await user.save();
+        await Subscription.create({
+            userId: user._id,
+            subscriptionPlan: "pro",
+            paymentId: "NA",
+            couponCode: "",
+            orderId: "NA",
+            endDate: new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000) // 3 months from now
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "your are registered successfully"
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+            error
+        })
+    }
+}
+
+
+export const sendRequestToLoginAndUploadDocs = async (req: Request, res: Response) => {
+    try {
+        const {data} = req.body;
+        console.log("data",data)
+        const status = await userDocVerificationEmailHandler(data?.emailId,data?.password);
+            return res.status(200).json({
+                success:true,
+                status,
+                message:"Email sent successfully"
+            })  
+    } catch (error:any) {
+        return res.status(500).json({
+            success:false,
+            message:"internal server error",
+            error:error.message || error
+        })
     }
 }
 
