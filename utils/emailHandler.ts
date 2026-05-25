@@ -807,7 +807,7 @@ export const userDocVerificationEmailHandler = async (
                                             <tr>
                                                 <td>
                                                     <!-- Replace with your logo URL -->
-                                                    <img src="https://miitserverlessafba.blob.core.windows.net/edubuklogo/Edubuk_Logo-removebg-preview.png" alt="TruCV Logo" width="120" height="auto" style="display: block; border: 0;" />
+                                                    <img src="https://edubuktrucv.com/assets/truCV2-CgxWe8kD.png" alt="TruCV Logo" width="120" height="auto" style="display: block; border: 0;" />
                                                 </td>
                                             </tr>
                                         </table>
@@ -1040,6 +1040,26 @@ export const userDocVerificationEmailHandler = async (
                                 <tr>
                                     <td align="center" style="padding-top: 12px;">
                                         <p style="margin: 0; font-size: 13px; color: #718096;">Click here to start uploading and verifying your credentials</p>
+                                    </td>
+                                </tr>
+                            </table>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 35px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td style="border-radius: 8px; background-color: #03257e;">
+                                                    <a href="https://edubuktrucv.com/document-verification-guide" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 16px; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px;">
+                                                        Check Complete Documents Verification Guide →
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="padding-top: 12px;">
+                                        <p style="margin: 0; font-size: 13px; color: #718096;">Click here to check all the steps of document verification along with images</p>
                                     </td>
                                 </tr>
                             </table>
