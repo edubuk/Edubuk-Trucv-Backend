@@ -167,8 +167,8 @@ export const loginUser = async (req: Request, res: Response) => {
         }
 
         const { accessToken, refreshToken } = await generateAccessRefreshToken(user._id as string);
-        console.log("accessToken",accessToken)
-        console.log("refreshToken",refreshToken)
+        //console.log("accessToken",accessToken)
+        //console.log("refreshToken",refreshToken)
         const loggedInUser = await User.findById(user._id).select("-providers -password -refreshToken");
 
         return res
@@ -310,9 +310,9 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
 export const getUser = async(req:Request,res:Response)=>{
     try {
         const reqType = req as IGetUserAuthInfoRequest;
-        console.log("reqType.user",reqType.user)
+        //console.log("reqType.user",reqType.user)
         const user = await User.findById(reqType.user._id).select("-providers -password -refreshToken");
-        console.log("user",user)
+        //console.log("user",user)
         if(!user){
             res.status(400).json({
                 success:false,
@@ -536,7 +536,7 @@ export const deleteUserData = async(req:Request,res:Response)=>{
 export const ocidRegisterUser = async (req: Request, res: Response) => {
     try {
         const {name, id} = req.body;
-        console.log({name,id});
+        //console.log({name,id});
         const isUser = await User.findOne({uuid:id})
         if(isUser)
         {

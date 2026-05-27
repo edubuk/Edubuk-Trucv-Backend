@@ -17,6 +17,7 @@ import userRouter from "../routers/user.router";
 import adminRouter from "../routers/admin.router";
 import trujobsRouter from "../routers/trujobs.route";
 import approvalRouter from "../routers/approval.router";
+import verifierRouter from "../routers/verifier.router";
 import IssuerData from "../states/state";
 import { fetchIssuer } from "../controllers/digilocker.controller";
 import hackathonRouter from "../routers/hackathon.router";
@@ -118,6 +119,7 @@ app.use("/api/dl", digilockerRouter);
 app.use("/api/v1/issuer", approvalRouter);
 app.use("/api/v1/hackathon", hackathonRouter);
 app.use("/api/v1/certification", certificationRouter);
+app.use("/api/v1/verifier", verifierRouter);    
 app.get("/", (req: Request, res: Response) => {
   return res.json({
     message: "Trucv-Backend-Prod Health is ok !",
@@ -125,7 +127,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 cron.schedule(
-  "20 20 25 * *",
+  "10 15 27 * *",
   () => {
     (async () => {
       const issuers = await fetchIssuer();
