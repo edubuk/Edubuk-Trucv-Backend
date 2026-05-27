@@ -898,7 +898,7 @@ export const userDocVerificationEmailHandler = async (
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 30px 0;">
                                 <tr>
                                     <td style="padding-bottom: 20px;">
-                                        <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: #03257e;">Getting Started in 3 Easy Steps</h3>
+                                        <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: #03257e;">Getting Started in 4 Easy Steps</h3>
                                     </td>
                                 </tr>
                                 
