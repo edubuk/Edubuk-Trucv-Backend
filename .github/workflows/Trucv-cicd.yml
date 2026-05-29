@@ -1,4 +1,4 @@
-name: TruJobs-backend Main CI/CD Pipeline
+name: Trucv Main CI/CD Pipeline
 
 on:
   push:
