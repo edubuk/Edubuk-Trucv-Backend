@@ -2,7 +2,9 @@ import { Request, Response } from "express";
 import { EducationDoc } from "../models/education.model";
 import { ExperienceDoc } from "../models/experience.model";
 import { AwardDocs } from "../models/award.model";
-import mongoose from "mongoose";
+import mongoose, { Error } from "mongoose";
+import { User } from "../models/user.model";
+
 // GET /api/users/:userId/verification-status
 
 interface VerificationStatusResponse {
@@ -57,7 +59,7 @@ export const getVerificationStatus = async (req: Request, res: Response) => {
       lastUpdated: new Date().toISOString(),
     };
 
-    res.json({success:true,data:response});
+    res.json({ success: true, data: response });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch verification status" });
   }
@@ -111,9 +113,33 @@ const getVerificationStats = async (userId: string, collection: any): Promise<Ca
 const calculateOverallStats = (categories: CategoryStats[]) => {
   const totalVerified = categories.reduce((sum, cat) => sum + cat.verified, 0);
   const totalDocuments = categories.reduce((sum, cat) => sum + cat.total, 0);
-  const percentage = totalDocuments > 0 
-    ? Math.round((totalVerified / totalDocuments) * 100) 
+  const percentage = totalDocuments > 0
+    ? Math.round((totalVerified / totalDocuments) * 100)
     : 0;
 
   return { totalVerified, totalDocuments, percentage };
 };
+
+
+
+export const getListOfUserProfile = async (req: Request, res: Response) => {
+  try {
+    const { userName } = req.query;
+    console.log(userName);
+    const users = await User.find({
+      name: { $regex: "^"+userName, $options: "i" }
+    }).select("_id name userImageUrl profileSummary").limit(7);
+
+    return res.status(200).json({
+      success: true,
+      users
+    })
+  } catch (error: any) {
+    res.status(500).json({
+      sucess: false,
+      error: error.message || error
+    });
+  }
+}
+
+

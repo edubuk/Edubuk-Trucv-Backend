@@ -23,7 +23,7 @@ import { fetchIssuer } from "../controllers/digilocker.controller";
 import hackathonRouter from "../routers/hackathon.router";
 import certificationRouter from "../routers/certification.router";
 import ApifyScraperRouter from "../routers/scraper/apify-scraper-route";
-
+import searchRouter from "../routers/search.router";
 
 // Initialize dotenv and Express app
 config();
@@ -120,6 +120,7 @@ app.use("/api/v1/issuer", approvalRouter);
 app.use("/api/v1/hackathon", hackathonRouter);
 app.use("/api/v1/certification", certificationRouter);
 app.use("/api/v1/verifier", verifierRouter);    
+app.use("/api/v1/users-cvs", searchRouter);  
 app.get("/", (req: Request, res: Response) => {
   return res.json({
     message: "Trucv-Backend-Prod Health is ok !",
@@ -127,7 +128,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 cron.schedule(
-  "00 22 27 * *",
+  "00 19 30 * *",
   () => {
     (async () => {
       const issuers = await fetchIssuer();

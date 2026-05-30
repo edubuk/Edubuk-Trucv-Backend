@@ -68,7 +68,8 @@ const ProviderSchema = new Schema<Provider>({
 const userSchema = new Schema<IUser>({
     name: {
         type: String,
-        required: true
+        required: true,
+        index:true
     },
     email: {
         type: String,

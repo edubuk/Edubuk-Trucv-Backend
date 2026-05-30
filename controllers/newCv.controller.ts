@@ -73,9 +73,9 @@ export const cvParse = async(req:Request,res:Response)=>{
     const response = await axios.request({
       method: "post",
       maxBodyLength: Infinity,
-      url: "https://cv-to-trucv-api-test-cfc9hvczahamdycd.centralindia-01.azurewebsites.net/api/cv-to-trucv-test",
+      url: "https://trucv-ai-apim.azure-api.net/CvParser/cv-to-trucv",
       headers: {
-        "x-functions-key": "9lSqsxuy9z9tdqmkd3D2KECMhB-KHA2nQiiDt1lFD6gYAzFuVpLBsw==",
+        "Ocp-Apim-Subscription-Key": "3e08ad33f2894d6da82e9f25e575794d",
         ...data.getHeaders(),
       },
       data: data,
