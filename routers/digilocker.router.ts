@@ -13,7 +13,7 @@ router.post("/issuers", fetchIssuer);
 router.get("/doctype", fetchDocType);
 router.get("/issued", fetchDocuments);
 router.get("/getIssuer", getIssuer);
-router.post("/pullParams", pullParams);
+router.get("/pullParams", pullParams);
 router.post("/fetchDocUri", fetchDocUri);
 router.get("/view-doc", viewDoc);
 
