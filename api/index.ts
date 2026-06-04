@@ -128,7 +128,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 cron.schedule(
-  "00 19 30 * *",
+  "10 14 4 * *",
   () => {
     (async () => {
       const issuers = await fetchIssuer();
