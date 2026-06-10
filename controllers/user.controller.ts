@@ -12,6 +12,7 @@ import { Certificate } from "../models/userDoc.model";
 import Subscription from "../models/subscription.model";
 import { sendResetLinkEMail } from "../utils/emailHandler";
 import { CV } from "../models/cv.model";
+import { SearchProfile } from "../models/searchProfiles.model";
 
 config();
 
@@ -118,6 +119,12 @@ export const registerUser = async (req: Request, res: Response) => {
             endDate: new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000) // 3 months from now
         });
 
+        await SearchProfile.create({
+            userId: user._id,
+            name: name,
+            email: email,
+            city: address,
+        });
         res.status(200).json({
             success: true,
             message: "your are registered successfully"
@@ -391,6 +398,18 @@ export const updateUserInfo = async(req:Request,res:Response)=>{
         user.profession=profession;
         user.profileSummary=profileSummary;
         await user.save();
+        await SearchProfile.findOneAndUpdate(
+            { userId: user._id },
+            {$set:
+                {
+                name: user.name,
+                email: user.email,
+                city: user.address,
+                profileSummary:profileSummary,
+                userImage:user.userImageUrl
+                }
+            }
+        );
         return res.status(200).json({
             success:true,
             message:"User updated successfully",

@@ -24,7 +24,6 @@ import hackathonRouter from "../routers/hackathon.router";
 import certificationRouter from "../routers/certification.router";
 import ApifyScraperRouter from "../routers/scraper/apify-scraper-route";
 import searchRouter from "../routers/search.router";
-
 // Initialize dotenv and Express app
 config();
 const app = express();
@@ -120,7 +119,7 @@ app.use("/api/v1/issuer", approvalRouter);
 app.use("/api/v1/hackathon", hackathonRouter);
 app.use("/api/v1/certification", certificationRouter);
 app.use("/api/v1/verifier", verifierRouter);    
-app.use("/api/v1/users-cvs", searchRouter);  
+app.use("/api/v1/search", searchRouter);  
 app.get("/", (req: Request, res: Response) => {
   return res.json({
     message: "Trucv-Backend-Prod Health is ok !",
@@ -128,7 +127,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 cron.schedule(
-  "10 14 4 * *",
+  "05 19 10 * *",
   () => {
     (async () => {
       const issuers = await fetchIssuer();
@@ -141,9 +140,11 @@ cron.schedule(
   { timezone: "Asia/Kolkata" },
 );
 
+
 app.listen(process.env.PORT || 5000, () => {
   MongoConnection();
   console.log("Backend running on PORT:", process.env.PORT);
 });
 // Export the app as a Vercel serverless function
 export default app;
+
