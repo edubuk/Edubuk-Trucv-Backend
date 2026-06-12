@@ -24,6 +24,7 @@ import hackathonRouter from "../routers/hackathon.router";
 import certificationRouter from "../routers/certification.router";
 import ApifyScraperRouter from "../routers/scraper/apify-scraper-route";
 import searchRouter from "../routers/search.router";
+
 // Initialize dotenv and Express app
 config();
 const app = express();
@@ -139,6 +140,8 @@ cron.schedule(
   },
   { timezone: "Asia/Kolkata" },
 );
+
+
 
 
 app.listen(process.env.PORT || 5000, () => {

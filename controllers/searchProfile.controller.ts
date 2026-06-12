@@ -44,106 +44,93 @@ export async function syncSearchProfile(userId: string) {
 }
 
 
-export const searchProfiles = async (req:Request,res:Response)=>{
-    try {
-        const searchTerm = (req.query.serachQuery as string)?.trim() || '';
-        const limit = 20;
-        const page = Number(req.query.page)||1;
-        const skip = (page-1)*limit;
-        let data;
-        if(searchTerm)
-        {
-            [data] = await SearchProfile.aggregate([
-                {
-                    $search:{
-                        index:'searchProfiles',
-                        text:{
-                            query:searchTerm,
-                            path:{
-                                wildcard:'*'
-                            },
-                            fuzzy:{
-                                maxEdits:2
-                            }
-                        }
-                    }
-                },
-                {
-                    $project:{
-                            userId:1,
-                            name:1,
-                            profileSummary:1,
-                            userImage:1,
-                            score:{$meta:'searchScore'}
-                    }
-                },
-                {
-                    $sort:{
-                        score:-1
-                    }
-                },
-                {
-                    $limit:10
-                },
-                {
-                    $group: {
-                        _id: null,
-                        profiles: {
-                            $push: "$$ROOT",
-                        },
-                    }
-                },
-                {
-                    $project: {
-                    _id: 0,
-                    profiles: 1,
-                    },
-                }
-            ])
-        }else{
-            [data] = await SearchProfile.aggregate([
-                {
-                    $facet:{
-                        profiles:[
-                        {
-                            $project:{
-                                userId:1,
-                                name:1,
-                                profileSummary:1,
-                                userImage:1
-                            }
-                        },
-                        {
-                            $sort:{
-                                createdAt:-1
-                            }
-                        },
-                        {
-                            $skip:skip
-                        },
-                        {
-                            $limit:limit
-                        },
-                ],
-                totalProfiles:[
-                    {
-                        $count:'count'
-                    }
-                ]
-            }
-            }])
+export const searchProfiles = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const searchTerm =
+      (req.query.serachQuery as string)?.trim() || "";
 
+    const limit = 20;
+    const page = Number(req.query.page) || 1;
+    const skip = (page - 1) * limit;
+
+    let data;
+
+    if (searchTerm) {
+      const profiles = await SearchProfile.find(
+        {
+          $text: {
+            $search: searchTerm,
+          },
+        },
+        {
+          score: {
+            $meta: "textScore",
+          },
+          userId: 1,
+          name: 1,
+          profileSummary: 1,
+          userImage: 1,
         }
-        
-        return res.status(200).json({
-            success:true,
-            data
+      )
+        .sort({
+          score: {
+            $meta: "textScore",
+          },
         })
-        
-    } catch (error) {
-        return res.status(500).json({
-            success:false,
-            message:'Internal server error'
-        })
+        .limit(10)
+        .lean();
+
+      data = {
+        profiles,
+      };
+    } else {
+      [data] = await SearchProfile.aggregate([
+        {
+          $facet: {
+            profiles: [
+              {
+                $project: {
+                  userId: 1,
+                  name: 1,
+                  profileSummary: 1,
+                  userImage: 1,
+                },
+              },
+              {
+                $sort: {
+                  createdAt: -1,
+                },
+              },
+              {
+                $skip: skip,
+              },
+              {
+                $limit: limit,
+              },
+            ],
+            totalProfiles: [
+              {
+                $count: "count",
+              },
+            ],
+          },
+        },
+      ]);
     }
-}
+
+    return res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};

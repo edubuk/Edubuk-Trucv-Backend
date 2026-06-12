@@ -3,7 +3,9 @@ import { syncSearchProfile } from "./searchProfile.controller";
 import { User } from "../models/user.model";
 import { ObjectId } from "mongoose";
 
-export async function backfillSearchProfiles() {
+
+// ---------Do not run it and dont touch it-------------------------
+export default async function backfillSearchProfiles() {
   const users = await User.find({}, "_id");
 
   console.log(`Found ${users.length} users`);
