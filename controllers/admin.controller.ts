@@ -4,6 +4,7 @@ import Subscription from "../models/subscription.model";
 import { UserCV } from "../models/newCv.model";
 import { DocVerificationRequest } from "../models/docVerificationRequest.model";
 import { userDocVerificationEmailHandler} from "../utils/emailHandler";
+import { SearchProfile } from "../models/searchProfiles.model";
 
 
 export const getUsers = async(req:Request,res:Response)=>{
@@ -159,6 +160,12 @@ export const registerUser = async (req: Request, res: Response) => {
             orderId: "NA",
             endDate: new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000) // 3 months from now
         });
+         await SearchProfile.create({
+                    userId: user._id,
+                    name: data.name,
+                    email: data.email,
+                    city: data.address,
+                });
 
         res.status(200).json({
             success: true,

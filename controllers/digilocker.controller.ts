@@ -67,7 +67,6 @@ export const digilockerCallback = async (req: Request, res: Response) => {
         httpOnly: true,
         secure: true,
         sameSite: "lax",
-        maxAge: 1000 * 60 * 60 * 24 * 7,
       }).redirect(`${process.env.CLIENT_URL}/dl-connect`);
     } else {
       res.status(400).json(data);
@@ -100,7 +99,6 @@ export const saveVerifier = (req: Request, res: Response) => {
     httpOnly: true,
     secure:true,
     sameSite: "lax",
-    maxAge: 1000 * 60 * 60 * 24 * 7,
   })
   .json({ ok: true });
   
