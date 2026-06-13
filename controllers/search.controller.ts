@@ -1,6 +1,6 @@
 import {Request,Response} from 'express';
 import { UserCV } from "../models/newCv.model";
-
+import dummyProfiles from "../utils/dummyProfiles.json";
 
 export const searchCVsByFilter = async (
   req: Request,
