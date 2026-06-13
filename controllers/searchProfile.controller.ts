@@ -1,10 +1,10 @@
-import {User}from '../models/user.model'
-import {EducationDoc} from '../models/education.model'
-import {ExperienceDoc} from '../models/experience.model'
-import {SkillDoc} from '../models/skill.model'
-import {SearchProfile} from '../models/searchProfiles.model'
-import {Request, Response} from 'express'
-
+import { User } from '../models/user.model'
+import { EducationDoc } from '../models/education.model'
+import { ExperienceDoc } from '../models/experience.model'
+import { SkillDoc } from '../models/skill.model'
+import { SearchProfile } from '../models/searchProfiles.model'
+import { Request, Response } from 'express'
+import dummyProfiles from '../utils/dummyProfiles.json';
 export async function syncSearchProfile(userId: string) {
 
   const [user, skills, experiences, educations] =
@@ -103,13 +103,7 @@ export const searchProfiles = async (
                 $sort: {
                   createdAt: -1,
                 },
-              },
-              {
-                $skip: skip,
-              },
-              {
-                $limit: limit,
-              },
+              }
             ],
             totalProfiles: [
               {
@@ -119,6 +113,26 @@ export const searchProfiles = async (
           },
         },
       ]);
+
+      const dbProfiles = data.profiles || [];
+
+      const mergedProfiles = [
+        ...dummyProfiles.map((p) => ({
+          ...p,
+          isDummy: true,
+        })),
+        ...dbProfiles,
+      ];
+
+      const paginatedProfiles = mergedProfiles.slice(skip, skip + limit);
+      data = {
+        profiles: paginatedProfiles,
+        totalProfiles: [
+          {
+            count: dummyProfiles.length + (data.totalProfiles[0]?.count || 0),
+          },
+        ],
+      };
     }
 
     return res.status(200).json({
