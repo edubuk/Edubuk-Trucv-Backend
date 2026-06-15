@@ -1242,3 +1242,196 @@ export const userDocVerificationEmailHandler = async (
     console.log("error", error);
   }
 };
+
+
+export const pipelineWelcomeEmailHandler = async (
+  emailId: string,
+  name: string,
+  password: string,
+  role?: string
+) => {
+  try {
+    const loginUrl = process.env.CLIENT_URL || "https://edubuktrucv.com";
+    const safeRole = role && role.trim() ? role.trim() : "your role";
+    const subject = `Your application for ${safeRole} at Edubuk — received & under process`;
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-apple-disable-message-reformatting" />
+</head>
+<body style="margin:0;padding:0;background:#f0f3f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f3f8;padding:24px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(3,37,126,0.10);">
+
+          <!-- top gradient bar -->
+          <tr>
+            <td style="height:5px;background:linear-gradient(90deg,#03257e 0%,#006666 50%,#f14419 100%);"></td>
+          </tr>
+
+          <!-- logos: Edubuk + TruCV -->
+          <tr>
+            <td style="padding:30px 35px 0;text-align:center;">
+              <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                <tr>
+                  <td style="padding:0 14px;" valign="middle">
+                    <img src="https://raw.githubusercontent.com/ganeshagrahari/Coding-Solutions/main/MASTER%20LOGOS_WITH%20NAME.png" alt="Edubuk" height="60" style="display:block;border:0;height:60px;width:auto;" />
+                  </td>
+                  <td style="padding:0 4px;color:#cbd5e1;font-size:22px;" valign="middle">|</td>
+                  <td style="padding:0 14px;" valign="middle">
+                    <img src="https://edubuktrucv.com/assets/truCV2-CgxWe8kD.png" alt="TruCV" height="44" style="display:block;border:0;height:44px;width:auto;" />
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- title -->
+          <tr>
+            <td style="padding:22px 35px 26px;text-align:center;">
+              <h1 style="margin:0;color:#03257e;font-size:25px;font-weight:800;letter-spacing:-0.5px;">Application Received ✅</h1>
+              <p style="margin:10px 0 0;color:#006666;font-size:15px;font-weight:500;">
+                Your application for <span style="color:#f14419;font-weight:700;">${safeRole}</span> is under process
+              </p>
+            </td>
+          </tr>
+
+          <tr><td style="padding:0 35px;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="height:1px;background:#e2e8f0;"></td></tr></table></td></tr>
+
+          <!-- greeting + body -->
+          <tr>
+            <td style="padding:28px 35px 0;">
+              <p style="margin:0 0 6px;font-size:17px;color:#03257e;font-weight:600;">Hello ${name}!</p>
+              <p style="margin:0 0 20px;font-size:15px;color:#4a5568;line-height:1.7;">
+                Thank you for applying for <strong style="color:#006666;">${safeRole}</strong> at
+                <strong style="color:#03257e;">Edubuk</strong>. Your application has been received and is currently
+                <strong>under process</strong> — our team will review it and get back to you.
+              </p>
+              <p style="margin:0 0 24px;font-size:15px;color:#4a5568;line-height:1.7;">
+                In the meantime, we've created your <strong style="color:#03257e;">TruCV</strong> account so you can explore the
+                platform and build your blockchain-verified CV. Here are your login details:
+              </p>
+            </td>
+          </tr>
+
+          <!-- credentials box -->
+          <tr>
+            <td style="padding:0 35px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-radius:8px;overflow:hidden;border:1px solid #e2e8f0;">
+                <tr>
+                  <td style="padding:12px 16px;background:#03257e;color:#ffffff;font-size:13px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">🔐 Your Login Credentials</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;background:#ffffff;border-left:3px solid #006666;">
+                    <p style="margin:0 0 4px;font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Email</p>
+                    <p style="margin:0 0 14px;font-size:15px;color:#03257e;font-weight:600;">${emailId}</p>
+                    <p style="margin:0 0 4px;font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Temporary Password</p>
+                    <p style="margin:0;font-size:18px;color:#f14419;font-weight:700;letter-spacing:0.5px;">${password}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- security notice -->
+          <tr>
+            <td style="padding:20px 35px 0;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:14px 16px;background:#fff5f1;border-radius:8px;border-left:3px solid #f14419;">
+                    <p style="margin:0;font-size:13px;color:#9a3412;line-height:1.6;">
+                      ⚠️ <strong>Security tip:</strong> this is a temporary password. Please change it right after your first
+                      login and keep your credentials private.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CTA -->
+          <tr>
+            <td style="padding:28px 35px 0;" align="center">
+              <table cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:#f14419;border-radius:8px;">
+                    <a href="${loginUrl}" style="color:#ffffff;padding:14px 40px;text-decoration:none;display:inline-block;font-weight:700;font-size:15px;letter-spacing:0.3px;">Login to TruCV &rarr;</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- reassurance -->
+          <tr>
+            <td style="padding:24px 35px 0;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:14px 16px;background:#f0f9f7;border-radius:8px;border-left:3px solid #006666;">
+                    <p style="margin:0;font-size:12px;color:#006666;line-height:1.5;">
+                      You're receiving this email because you applied for a role at Edubuk. Your application is being
+                      reviewed — no further action is required for the hiring process.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr><td style="height:32px;"></td></tr>
+
+          <!-- footer -->
+          <tr>
+            <td style="background:#03257e;padding:28px 35px;text-align:center;">
+              <p style="margin:0 0 4px;color:#ffffff;font-size:14px;font-weight:600;">Edubuk TruCV</p>
+              <p style="margin:0 0 12px;color:rgba(255,255,255,0.6);font-size:12px;">Blockchain-Powered, AI-Verified Credentials</p>
+              <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                <tr>
+                  <td style="padding:0 8px;"><a href="https://edubuktrucv.com" style="color:#f14419;font-size:12px;text-decoration:none;font-weight:600;">Website</a></td>
+                  <td style="color:rgba(255,255,255,0.3);font-size:12px;">|</td>
+                  <td style="padding:0 8px;"><a href="${loginUrl}" style="color:#f14419;font-size:12px;text-decoration:none;font-weight:600;">Login</a></td>
+                  <td style="color:rgba(255,255,255,0.3);font-size:12px;">|</td>
+                  <td style="padding:0 8px;"><a href="mailto:support@edubukeseal.org" style="color:#f14419;font-size:12px;text-decoration:none;font-weight:600;">Support</a></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        <p style="margin:16px 0 0;font-size:11px;color:#94a3b8;text-align:center;">&copy; 2026 Edubuk. All rights reserved.</p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+    const message = {
+      senderAddress: "noreply@edubukeseal.org",
+      content: {
+        subject,
+        plainText:
+          `Hello ${name},\n\n` +
+          `Thank you for applying for ${safeRole} at Edubuk. Your application has been received and is under process.\n\n` +
+          `Meanwhile, we've created your TruCV account:\n` +
+          `Email: ${emailId}\n` +
+          `Temporary password: ${password}\n` +
+          `(Please change it after your first login.)\n\n` +
+          `Login: ${loginUrl}\n\n` +
+          `— Team Edubuk`,
+        html,
+      },
+      recipients: {
+        to: [{ address: emailId, displayName: name || "Candidate" }],
+      },
+    };
+
+    const poller = await client.beginSend(message);
+    const result = await poller.pollUntilDone();
+    return result.status;
+  } catch (error) {
+    console.log("pipelineWelcomeEmailHandler error", error);
+  }
+};
