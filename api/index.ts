@@ -51,6 +51,7 @@ app.use(
       "https://trucv.org",
       "https://educhain.edubuktrucv.com",
       "https://www.educhain.edubuktrucv.com",
+      "https://dev-frontend.edubuktrucv.com",
     ],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
