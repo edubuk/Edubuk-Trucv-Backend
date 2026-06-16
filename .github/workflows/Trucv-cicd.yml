@@ -1,4 +1,4 @@
-name: Trucv Main CI/CD Pipeline
+name: Trucv-Backend Main CI/CD Pipeline
 
 on:
   push:
@@ -48,4 +48,4 @@ jobs:
           EOF
 
       - name: Run deployment script on server
-        run: ssh azure-vm "cd /home/azureuser/Trucvv2Backend && ./deploy.sh"
+        run: ssh azure-vm "cd /home/azureuser/TRUCV_BACKEND && ./deploy.sh"

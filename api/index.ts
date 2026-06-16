@@ -120,7 +120,7 @@ app.use("/api/v1/issuer", approvalRouter);
 app.use("/api/v1/hackathon", hackathonRouter);
 app.use("/api/v1/certification", certificationRouter);
 app.use("/api/v1/verifier", verifierRouter);    
-app.use("/api/v1/users-cvs", searchRouter);  
+app.use("/api/v1/search", searchRouter);  
 app.get("/", (req: Request, res: Response) => {
   return res.json({
     message: "Trucv-Backend-Prod Health is ok !",
@@ -128,7 +128,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 cron.schedule(
-  "00 19 30 * *",
+  "55 16 13 * *",
   () => {
     (async () => {
       const issuers = await fetchIssuer();
@@ -141,9 +141,13 @@ cron.schedule(
   { timezone: "Asia/Kolkata" },
 );
 
+
+
+
 app.listen(process.env.PORT || 5000, () => {
   MongoConnection();
   console.log("Backend running on PORT:", process.env.PORT);
 });
 // Export the app as a Vercel serverless function
 export default app;
+

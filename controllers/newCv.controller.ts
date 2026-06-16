@@ -3,6 +3,8 @@ import { IGetUserAuthInfoRequest } from "../types/definitionFile"
 import { UserCV } from "../models/newCv.model";
 import FormData from "form-data";
 import axios from "axios";
+import { User } from "../models/user.model";
+import mongoose from "mongoose";
 
 
 
@@ -93,4 +95,193 @@ export const cvParse = async(req:Request,res:Response)=>{
       message: "CV parsing failed",
     });
   }
+}
+
+
+export const getUserRestrictedCv = async(req:Request,res:Response)=>{
+    try {
+        const userId = req.params.id;
+        //console.log({userId})
+        const [cvData] = await User.aggregate([
+            {
+                $match:{
+                    _id:new mongoose.Types.ObjectId(userId)  
+                }
+            },
+            {
+                $lookup:{
+                    from:"educationdocs",
+                    localField:"_id",
+                    foreignField:"userId",
+                    as:"educations"
+                }
+
+            },
+            {
+                $lookup:{
+                    from:"experiencedocs",
+                    localField:"_id",
+                    foreignField:"userId",
+                    as:"experiences"
+                }
+
+            },
+            {
+                $lookup:{
+                    from:"projectdocs",
+                    localField:"_id",
+                    foreignField:"userId",
+                    as:"projects"
+                }
+
+            },
+            {
+                $lookup:{
+                    from:"skills",
+                    localField:"_id",
+                    foreignField:"userId",
+                    as:"skills"
+                }
+
+            },
+            {
+                $lookup:{
+                    from:"awarddocs",
+                    localField:"_id",
+                    foreignField:"userId",
+                    as:"awards"
+                }
+
+            },
+            {
+                $project: {
+                    personal: {
+                    _id: "$_id",
+                    fullName: "$name",
+                    city:"$address",
+                    profession:"$profession",
+                    yearOfExp:"$yearOfExp",
+                    linkedInUrl:"$linkedInUrl",
+                    githubUrl:"$githubUrl",
+                    imgUrl: "$userImageUrl",
+                    summary: "$profileSummary"
+                    },
+                    educations: 1,
+                    experiences: 1,
+                    projects: 1,
+                    skills: 1,
+                    awards: 1
+                }
+            },
+            {
+                $unset:[
+                    "educations.docUri",
+                    "educations.docHash",
+                    "educations.issuerEmailId",
+
+                    "experiences.docUri",
+                    "experiences.docHash",
+                    "experiences.issuerEmailId",
+
+                    "awards.docUri",
+                    "awards.docHash",
+                    "awards.issuerEmailId",
+
+                    "projects.projectUrl",
+
+                    "skills.endoresBy" 
+                ]
+            }
+        ])
+        res.status(200).json({success:true,cvData})
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({success:false,message:"Internal Server Error"})
+    }
+}
+
+export const fetchUserCV = async(req:Request,res:Response)=>{
+    try {
+        const typeReq = req as IGetUserAuthInfoRequest;
+        const userId = typeReq.user._id;
+        //console.log("userId",userId);
+        const [cvData] = await User.aggregate([
+            {
+                $match:{
+                    _id:new mongoose.Types.ObjectId(userId)  
+                }
+            },
+            {
+                $lookup:{
+                    from:"educationdocs",
+                    localField:"_id",
+                    foreignField:"userId",
+                    as:"educations"
+                }
+
+            },
+            {
+                $lookup:{
+                    from:"experiencedocs",
+                    localField:"_id",
+                    foreignField:"userId",
+                    as:"experiences"
+                }
+
+            },
+            {
+                $lookup:{
+                    from:"projectdocs",
+                    localField:"_id",
+                    foreignField:"userId",
+                    as:"projects"
+                }
+
+            },
+            {
+                $lookup:{
+                    from:"skills",
+                    localField:"_id",
+                    foreignField:"userId",
+                    as:"skills"
+                }
+
+            },
+            {
+                $lookup:{
+                    from:"awarddocs",
+                    localField:"_id",
+                    foreignField:"userId",
+                    as:"awards"
+                }
+
+            },
+            {
+                $project: {
+                    personal: {
+                    _id: "$_id",
+                    fullName: "$name",
+                    email:"$email",
+                    phoneNumber:"$phoneNumber",
+                    city:"$address",
+                    profession:"$profession",
+                    yearOfExp:"$yearOfExp",
+                    linkedInUrl:"$linkedInUrl",
+                    githubUrl:"$githubUrl",
+                    imgUrl: "$userImageUrl",
+                    summary: "$profileSummary"
+                    },
+                    educations: 1,
+                    experiences: 1,
+                    projects: 1,
+                    skills: 1,
+                    awards: 1
+                }
+            },
+        ])
+        res.status(200).json({success:true,cvData})
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({success:false,message:"Internal Server Error"})
+    }
 }

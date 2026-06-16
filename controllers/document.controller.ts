@@ -10,6 +10,8 @@ import { SkillDoc } from "../models/skill.model";
 import { generateVerificationToken } from "../utils/createToken";
 import { SkillVerificationReq } from "../models/skillVerificationRequest.model";
 import { DocVerificationRequest } from "../models/docVerificationRequest.model";
+import { SearchProfile } from "../models/searchProfiles.model";
+import { syncSearchProfile } from "./searchProfile.controller";
 
 
 const isEmpty = (value: any) => {
@@ -24,19 +26,25 @@ export const saveDocuments = async (req: Request, res: Response) => {
         const typeReq = req as IGetUserAuthInfoRequest;
         const user = typeReq.user;
         const { data } = req.body;
-        const token = generateVerificationToken();
+       
 
         const doc: any = await EducationDoc.create({ userId: user._id, ...data });
-        if (doc.verifiedThrough === "DigiLocker") {
-            await DocVerificationRequest.create({
-                userId: user._id,
-                documentId: doc._id,
-                documentType: "education",
-                docName: doc.level,
-                docHash: doc.docHash,
-                token,
-            });
-        }
+        // if (doc.verifiedThrough === "DigiLocker") {
+        //     await DocVerificationRequest.create({
+        //         userId: user._id,
+        //         documentId: doc._id,
+        //         documentType: "education",
+        //         docName: doc.level,
+        //         docHash: doc.docHash,
+        //         token,
+        //     });
+        // }
+        await SearchProfile.findOneAndUpdate(
+            { userId: user._id },
+            { $push: { colleges: doc.institutionName } },
+            { new: true }
+        )
+        
         res.status(200).json({
             success: true,
             message: "Document saved successfully."
@@ -45,9 +53,8 @@ export const saveDocuments = async (req: Request, res: Response) => {
         //background task
         process.nextTick(async () => {
             try {
-
                 if (!doc.issuerEmailId || !doc.docUri) return;
-
+                const token = generateVerificationToken();
                 const status = await docVerificationEmailHandler({
                     emailId: doc.issuerEmailId,
                     level: doc.level,
@@ -128,7 +135,7 @@ export const updateDoc = async (req: Request, res: Response) => {
         //const userId = typeReq.user._id;
         const { id } = req.params;
         const { data } = req.body;
-        console.log("data", data);
+        //console.log("data", data);
         if (!isValidObjectId(id)) {
             return res.status(400).json({ success: false, message: "Invalid document id" })
         }
@@ -165,7 +172,7 @@ export const updateDoc = async (req: Request, res: Response) => {
         document.updateCount = document.updateCount.valueOf() + 1;
 
         await document.save();
-
+        await syncSearchProfile(document.userId.toString());
         res.status(200).json({ success: true, message: "Document updated successfully" })
     } catch (error: any) {
         return res.status(500).json({
@@ -178,12 +185,15 @@ export const updateDoc = async (req: Request, res: Response) => {
 
 export const deleteEduDoc = async (req: Request, res: Response) => {
     try {
+        const typeReq = req as IGetUserAuthInfoRequest;
         const { id } = req.params;
         const document = await EducationDoc.findByIdAndDelete(id);
         if (!document) {
             return res.status(404).json({ success: false, message: "Document not found" })
         }
+        await syncSearchProfile(typeReq.user?._id.toString());
         return res.status(200).json({ success: true, message: "Document deleted successfully" })
+
     } catch (error: any) {
         return res.status(500).json({
             success: false,
@@ -201,9 +211,8 @@ export const saveExpDocs = async (req: Request, res: Response) => {
         const typeReq = req as IGetUserAuthInfoRequest;
         const user = typeReq.user;
         const { data } = req.body;
-        const token = generateVerificationToken();
-
         const doc: any = await ExperienceDoc.create({ userId: user._id, ...data });
+        await SearchProfile.findOneAndUpdate({ userId: user._id }, { $push: { companies: doc.companyName } });
         res.status(200).json({
             success: true,
             message: "Document Saved Successfully"
@@ -215,7 +224,7 @@ export const saveExpDocs = async (req: Request, res: Response) => {
                 if (!doc.issuerEmailId || !doc.docUri || !doc.docHash) {
                     return;
                 }
-
+                const token = generateVerificationToken();
                 const status = await docVerificationEmailHandler({
                     emailId: doc.issuerEmailId,
                     documentViewUrl: doc.docUri,
@@ -292,8 +301,8 @@ export const getExpDocs = async (req: Request, res: Response) => {
 
 export const updateExpDoc = async (req: Request, res: Response) => {
     try {
-        //const typeReq = req as IGetUserAuthInfoRequest;
-        //const userId = typeReq.user._id;
+        const typeReq = req as IGetUserAuthInfoRequest;
+        const userId = typeReq.user._id;
         const { id } = req.params;
         const { data } = req.body;
         //console.log("data", data);
@@ -304,7 +313,7 @@ export const updateExpDoc = async (req: Request, res: Response) => {
         if (!document) {
             return res.status(404).json({ success: false, message: "Document not found" })
         }
-
+        
         const fieldsToUpdate: (keyof typeof data)[] = [
             "companyName",
             "jobRole",
@@ -331,6 +340,7 @@ export const updateExpDoc = async (req: Request, res: Response) => {
         document.updateCount = document.updateCount.valueOf() + 1;
 
         await document.save();
+        await syncSearchProfile(userId.toString());
         res.status(200).json({ success: true, message: "Document updated successfully" })
     } catch (error: any) {
         return res.status(500).json({
@@ -344,11 +354,14 @@ export const updateExpDoc = async (req: Request, res: Response) => {
 
 export const deleteExpDoc = async (req: Request, res: Response) => {
     try {
+        const typeReq = req as IGetUserAuthInfoRequest;
+        const userId = typeReq.user._id;
         const { id } = req.params;
         const document = await ExperienceDoc.findByIdAndDelete(id);
         if (!document) {
             return res.status(404).json({ success: false, message: "Document not found" })
         }
+         await syncSearchProfile(userId.toString());
         return res.status(200).json({ success: true, message: "Document deleted successfully" })
     } catch (error: any) {
         return res.status(500).json({
@@ -363,7 +376,7 @@ export const getAllDocs = async (req: Request, res: Response) => {
     try {
         const typeReq = req as IGetUserAuthInfoRequest;
         const id = req.query.userId;
-        console.log("id", id);
+        //console.log("id", id);
         const userId = id ?? typeReq.user._id;
         const [educations, experiences, awards] = await Promise.all([
             EducationDoc.find({ userId: userId }).sort({ createdAt: -1 }),
@@ -456,7 +469,7 @@ export const updateProjectDoc = async (req: Request, res: Response) => {
         const userId = typeReq.user._id;
         const { id } = req.params;
         const { data } = req.body;
-        console.log("data", data);
+        //console.log("data", data);
         if (!isValidObjectId(id)) {
             return res.status(400).json({ success: false, message: "Invalid document id" })
         }
@@ -599,7 +612,7 @@ export const updateAwardDoc = async (req: Request, res: Response) => {
         //const userId = typeReq.user._id;
         const { id } = req.params;
         const { data } = req.body;
-        console.log("data", data);
+        //console.log("data", data);
         if (!isValidObjectId(id)) {
             return res.status(400).json({ success: false, message: "Invalid document id" })
         }
@@ -672,7 +685,7 @@ export const saveSkills = async (req: Request, res: Response) => {
         const userId = typeReq.user._id;
         const { data } = req.body;
 
-        console.log("data", data);
+        //console.log("data", data);
 
         const incomingSkills = data?.skills;
 
@@ -701,12 +714,16 @@ export const saveSkills = async (req: Request, res: Response) => {
                 message: "These skills already exists"
             })
         }
-        console.log("documents", documents);
+        //console.log("documents", documents);
         const session = await mongoose.startSession();
         await session.withTransaction(async () => {
             await SkillDoc.insertMany(documents, { session })
         })
         session.endSession();
+        await SearchProfile.findOneAndUpdate(
+            { userId: userId },
+            { $set: { skills: incomingSkills.map(doc => doc.skillName) } }
+        );
         return res.status(201).json({ success: true, message: "Skills saved successfully" })
     } catch (error: any) {
         if (error.code === 11000) {
@@ -742,6 +759,7 @@ export const updateSkills = async (req: Request, res: Response) => {
         doc.endoresThrough = data.endoresThrough;
         doc.endoresedOn = new Date();
         await doc.save();
+        
         return res.status(200).json({ success: true, message: "Skills updated successfully" })
     } catch (error: any) {
         return res.status(500).json({
