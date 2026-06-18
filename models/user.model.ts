@@ -99,6 +99,11 @@ const userSchema = new Schema<IUser>({
     selfAttested:{
         type:Boolean
     },
+    subscriptionPlan:{       //denormalized
+        type:String,
+        enum:["free","basic","pro"],
+        default: "free",
+    },
     resetPasswordToken: String,      // hashed token
     resetPasswordExpires: Date,      // expiry time
     passwordChangedAt: Date,
