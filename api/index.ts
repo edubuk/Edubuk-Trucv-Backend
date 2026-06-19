@@ -51,6 +51,7 @@ app.use(
       "https://trucv.org",
       "https://educhain.edubuktrucv.com",
       "https://www.educhain.edubuktrucv.com",
+      "https://dev-frontend.edubuktrucv.com",
     ],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -88,7 +89,7 @@ app.use(helmet({
 //     max: 500, // limit each IP to 500 requests per 5 minutes
 //   })
 // );
-
+//add
 app.get('/api/dl/callback', (req, res, next) => {
   // Remove ALL helmet headers
   res.removeHeader('Content-Security-Policy');
