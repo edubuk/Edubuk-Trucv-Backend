@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IUser extends Document {
   userId:Types.ObjectId;
-  subscriptionPlan: "free" | "basic" | "pro";
+  subscriptionPlan: "free" | "half_yearly" | "yearly";
   status: "active" | "expired" | "cancelled";
   pointsGranted:number;
   paymentId: string;
@@ -24,7 +24,7 @@ const UserSchema: Schema = new Schema<IUser>({
   },
   subscriptionPlan: {
     type: String,
-    enum: ["free","basic","pro"],
+    enum: ["free","half_yearly","yearly"],
     default: "free",
   },
   status: {

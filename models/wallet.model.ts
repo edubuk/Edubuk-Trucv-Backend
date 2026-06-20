@@ -1,7 +1,28 @@
 import mongoose, { Schema } from "mongoose";
 
+interface IWalletTransaction {
+  type: "credit" | "debit";
+  amount: number;
+  reason: "subscription_renewal" | "doc_verified" | "refund" | "admin_adjust";
+  docId?: Schema.Types.ObjectId;
+  docModel?: "Education" | "Experience" | "Certificate";
+  subscriptionId?: Schema.Types.ObjectId;
+  note?: string;
+  createdAt: Date;
+}
 
-const walletSchema = new Schema({
+interface IWallet {
+  userId: Schema.Types.ObjectId;
+  balance: number;
+  lifetimeEarned: number;
+  transactions: IWalletTransaction[];
+  expiresAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+
+const walletSchema = new Schema<IWallet>({
   userId: {
     type: Schema.Types.ObjectId,
     ref: "TruCvUser",

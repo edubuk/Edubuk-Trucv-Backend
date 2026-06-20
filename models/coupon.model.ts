@@ -1,8 +1,8 @@
 import mongoose, { Schema } from "mongoose";
 
-interface ICoupon {
+export interface ICoupon {
   code: string;
-  discountType: "percent" | "flat";
+  discountType: "percent" | "flat" | "free";
   discountValue: number;
   applicablePlans: string[];
   maxUses: number | null;
@@ -14,11 +14,11 @@ interface ICoupon {
 
 const couponSchema = new Schema<ICoupon>({
   code: {type: String, unique: true},                        // unique index on this
-  discountType: {type: String, enum: ["percent", "flat"]},
+  discountType: {type: String, enum: ["percent", "flat","free"]},
   discountValue: {type: Number, default: 0},                     // 50% off OR ₹50 off
   applicablePlans: {type: [String], required: true},     // which plans it works on
-  maxUses: {type: Number, default: null},                          // null = unlimited
-  usedCount: {type: Number, default: 0, max: 10},
+  maxUses: {type: Number, required: true, default: null},                          // null = unlimited
+  usedCount: {type: Number, default: 0},
   expiresAt: {type: Date, default: null},
   isActive: {type: Boolean, default: true},
   createdAt: {type: Date, default: Date.now}
