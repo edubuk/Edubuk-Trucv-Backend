@@ -7,7 +7,7 @@ import cors from "cors";
 import { swaggerSpec, swaggerUiSetup } from "../swagger";
 import cookieParser from "cookie-parser";
 import cron from "node-cron";
-import { rateLimit } from "express-rate-limit";
+//import { rateLimit } from "express-rate-limit";
 import helmet from "helmet";
 import docRouter from "../routers/documents.router";
 import cvRouter from "../routers/cv.router";
@@ -24,6 +24,7 @@ import hackathonRouter from "../routers/hackathon.router";
 import certificationRouter from "../routers/certification.router";
 import ApifyScraperRouter from "../routers/scraper/apify-scraper-route";
 import searchRouter from "../routers/search.router";
+import couponRouter from "../routers/coupon.router";
 
 // Initialize dotenv and Express app
 config();
@@ -122,6 +123,8 @@ app.use("/api/v1/hackathon", hackathonRouter);
 app.use("/api/v1/certification", certificationRouter);
 app.use("/api/v1/verifier", verifierRouter);    
 app.use("/api/v1/search", searchRouter);  
+app.use("/api/v1/coupon", couponRouter);    
+
 app.get("/", (req: Request, res: Response) => {
   return res.json({
     message: "Trucv-Backend-Prod Health is ok !",

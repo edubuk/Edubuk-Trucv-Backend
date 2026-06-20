@@ -2,11 +2,16 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IUser extends Document {
   userId:Types.ObjectId;
-  subscriptionPlan: "free" | "basic" | "pro";
+  subscriptionPlan: "free" | "half_yearly" | "yearly";
+  status: "active" | "expired" | "cancelled";
+  pointsGranted:number;
   paymentId: string;
   couponCode: string;
   orderId:string;
+  startDate:Date;
   endDate:Date;
+  renewsAt:Date;
+  cancelledAt:Date;
   createdAt:Date;
   updatedAt:Date;
 }
@@ -19,8 +24,17 @@ const UserSchema: Schema = new Schema<IUser>({
   },
   subscriptionPlan: {
     type: String,
-    enum: ["free","basic","pro"],
+    enum: ["free","half_yearly","yearly"],
     default: "free",
+  },
+  status: {
+    type: String,
+    enum: ["active","expired","cancelled"],
+    default: "expired",
+  },
+  pointsGranted:{
+    type:Number,
+    default:0,
   },
   orderId:{
     type:String,
@@ -29,20 +43,27 @@ const UserSchema: Schema = new Schema<IUser>({
   paymentId: {
     type: String,
   },
-  endDate:{
-    type:Date,
-  },
   couponCode: {
     type: String,
     default: "N/A",
   },
-  updatedAt:{
-    type:Date,
-    default:Date.now
+  startDate: {
+    type: Date,
   },
-  createdAt:{
-    type:Date,
-    default:Date.now
+  endDate: {
+    type: Date,         
+  },
+  renewsAt: {
+    type: Date,            
+  },
+  cancelledAt: {
+    type: Date,
+  },
+  createdAt: {
+    type: Date,
+  },
+  updatedAt: {
+    type: Date
   }
 });
 
