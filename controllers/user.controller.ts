@@ -184,13 +184,11 @@ export const loginUser = async (req: Request, res: Response) => {
                 httpOnly: true,
                 secure: isProd,
                 sameSite: "lax",     
-                maxAge: 1000 * 60 * 60 * 15,
             })
             .cookie("refreshToken", refreshToken, {
                 httpOnly: true,
                 secure: isProd,
                 sameSite: "lax",     
-                maxAge: 1000 * 60 * 60 * 24 * 7,
             })
             .json({
                 success: true,
@@ -225,12 +223,10 @@ export const logoutUser = async(req:Request,res:Response)=>{
             httpOnly:true,
             secure:isProd,
             sameSite: "lax",     
-            maxAge: 1000 * 60 * 60 * 15,
         }).clearCookie("refreshToken",{
             httpOnly:true,
             secure:isProd,
             sameSite: "lax",     
-            maxAge: 1000 * 60 * 60 * 24 * 7,
         }).json({
             success:true,
             message:"Logged out successfully"
@@ -291,13 +287,11 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
         httpOnly: true,
       secure: isProd,
       sameSite:"lax",
-       maxAge: 1000 * 60 * 15,
       })
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
       secure: isProd,
       sameSite:"lax",
-       maxAge: 1000 * 60 * 60 * 24 * 7,
       })
       .status(200)
       .json({
