@@ -154,23 +154,22 @@ export const registerUser = async (req: Request, res: Response) => {
           message: "User already exists",
         });
       }
-   // TODO: Enable this OTP;
       // ── 2. Validate OTP ───────────────────────────────────────────────────────
-    //   const otpData = await Otp.findOne({ email });
-    //   if (!otpData) {
-    //     return res.status(400).json({ success: false, message: "Invalid otp" });
-    //   }
+      const otpData = await Otp.findOne({ email });
+      if (!otpData) {
+        return res.status(400).json({ success: false, message: "Invalid otp" });
+      }
    
-    //   const isMatch = await bcrypt.compare(otp, otpData.otpHash);
-    //   if (!isMatch) {
-    //     return res.status(400).json({ success: false, message: "Invalid otp" });
-    //   }
+      const isMatch = await bcrypt.compare(otp, otpData.otpHash);
+      if (!isMatch) {
+        return res.status(400).json({ success: false, message: "Invalid otp" });
+      }
    
-    //   if (otpData.used) {
-    //     return res
-    //       .status(400)
-    //       .json({ success: false, message: "Otp already used" });
-    //   }
+      if (otpData.used) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Otp already used" });
+      }
    
       //  3. Verify referral token (if present) 
       let referredFrom: string | null = null;
