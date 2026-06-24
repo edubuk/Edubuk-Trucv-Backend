@@ -5,7 +5,10 @@ import { UserCV } from "../models/newCv.model";
 import { DocVerificationRequest } from "../models/docVerificationRequest.model";
 import { userDocVerificationEmailHandler } from "../utils/emailHandler";
 import { SearchProfile } from "../models/searchProfiles.model";
-
+import { TrackingLink } from "../models/admins/TrackingLink.model";
+import jwt from "jsonwebtoken";
+import { config } from "dotenv";
+config();
 export const getUsers = async (req: Request, res: Response) => {
   try {
     //query-> page,limit
@@ -220,3 +223,126 @@ export const sendRequestToLoginAndUploadDocs = async (
     });
   }
 };
+export const createPartnerTrackingLink = async (req: Request, res: Response) => {
+  try {
+    const { partnerName, campaignTag } = req.body
+    const adminId = (req as any).user?._id
+    if (!adminId) {
+      return res.status(400).json({ success: false, message: "No admin Id provided" })
+    }
+    if (!partnerName) {
+      return res.status(400).json({ success: false, message: "partnerName is required" })
+    }
+    if (!/^[A-Z0-9_\-]+$/i.test(partnerName)) {
+      return res.status(400).json({
+        success: false,
+        message: "partnerName may only contain letters, numbers, underscores, or hyphens",
+      })
+    }
+
+    // ── Check if partnerName already exists ───────────────────────────────────
+    const existing = await TrackingLink.findOne({
+      partnerName: partnerName.toUpperCase(),
+    })
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: `Partner "${partnerName.toUpperCase()}" already has a tracking link. Try a different name.`,
+      })
+    }
+
+    const payload: Record<string, unknown> = {
+      partner: partnerName.toUpperCase(),
+      ...(campaignTag && { campaign: campaignTag }),
+    }
+
+    const token = jwt.sign(payload, process.env.PARTNER_REFERRAL_SECRET!)
+    const url = `${process.env.FRONTEND_BASE_URL}/register?ref=${token}`
+
+    const link = await TrackingLink.create({
+      partnerName: partnerName.toUpperCase(),
+      campaignTag: campaignTag || null,
+      token,
+      url,
+      createdBy: adminId,
+    })
+
+    return res.status(201).json({ success: true, data: link })
+  } catch (err: any) {
+    if (err.code === 11000) {
+      return res.status(409).json({ success: false, message: "Duplicate token — try again" })
+    }
+    return res.status(500).json({ success: false, message: "Failed to create link", error: err.message || err })
+  }
+}
+
+// export const getAllPartnerTrackingLinks =async (req: Request, res: Response) => {
+//   try {
+//     const links = await TrackingLink.find().sort({ createdAt: -1 })
+//     return res.json({ success: true, data: links })
+//   } catch (err) {
+//     return res.status(500).json({ success: false, message: 'Failed to fetch links' })
+//   }
+// }
+export const getAllPartnerTrackingLinks = async (req: Request, res: Response) => {
+  try {
+
+    const links = await TrackingLink.aggregate([
+      { $sort: { createdAt: -1 } },
+      {
+        $lookup: {
+          from: User.collection.name,  // dynamically picks the correct collection name
+          let: { partnerName: "$partnerName" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: [
+                    { $toUpper: "$referred_from" },
+                    "$$partnerName"
+                  ]
+                }
+              }
+            }
+          ],
+          as: "referredUsers",
+        },
+      },
+      {
+        $addFields: {
+          total_users: { $size: "$referredUsers" },
+        },
+      },
+      {
+        $project: { referredUsers: 0 },
+      },
+    ])
+
+    return res.json({ success: true, data: links })
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch links",
+      error: err.message || err,
+    })
+  }
+}
+
+export const deletePartnerTrackingLink = async(req: Request, res: Response) => {
+  try {
+    if(!req.params.id){
+      return res.status(400).json({
+        success: false,
+        message: "No link ID provided",
+      })
+    }
+
+    const deleted = await TrackingLink.findByIdAndDelete(req.params.id)
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Link not found' })
+    }
+    res.json({ success: true, message: 'Link deleted' })
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to delete link' })
+  }
+}
