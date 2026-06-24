@@ -257,7 +257,7 @@ export const createPartnerTrackingLink = async (req: Request, res: Response) => 
     }
 
     const token = jwt.sign(payload, process.env.PARTNER_REFERRAL_SECRET!)
-    const url = `${process.env.FRONTEND_BASE_URL}/register?ref=${token}`
+    const url = `${process.env.FRONTEND_BASE_URL}/register/${partnerName}?ref=${token}`
 
     const link = await TrackingLink.create({
       partnerName: partnerName.toUpperCase(),
