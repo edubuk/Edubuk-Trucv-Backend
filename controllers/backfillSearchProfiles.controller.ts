@@ -30,3 +30,35 @@ export default async function backfillSearchProfiles() {
   console.log("Done");
 }
 
+
+
+// ---------Do not run it and dont touch it-------------------------
+
+// export async function updateUserImageBaseUrl(){
+//   try {
+//     await User.updateMany(
+//   {
+//     userImageUrl: {
+//       $regex: "^https://trucvstorage\\.blob\\.core\\.windows\\.net",
+//     },
+//   },
+//   [
+//     {
+//       $set: {
+//         userImageUrl: {
+//           $replaceOne: {
+//             input: "$userImageUrl",
+//             find: "https://trucvstorage.blob.core.windows.net",
+//             replacement: "https://trucvstorageaccount.blob.core.windows.net",
+//           },
+//         },
+//       },
+//     },
+//   ]
+// );
+//     console.log("Done updating user image base url");
+//   } catch (error) {
+//     console.error("Error updating user image base url", error);
+//   }
+// }
+
