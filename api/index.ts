@@ -132,7 +132,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 cron.schedule(
-  "55 16 13 * *",
+  "15 19 18 * *",
   () => {
     (async () => {
       const issuers = await fetchIssuer();
@@ -144,6 +144,8 @@ cron.schedule(
   },
   { timezone: "Asia/Kolkata" },
 );
+
+
 
 
 

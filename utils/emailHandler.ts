@@ -36,7 +36,7 @@ export const otpEmailHandler = async (emailId: string, otp: string) => {
     <!-- Header -->
     <div style="text-align:center;padding:25px 20px 10px;">
       <img 
-        src="https://miitserverlessafba.blob.core.windows.net/edubuklogo/Edubuk_Logo-removebg-preview.png" 
+        src="https://edubuktrucv.com/assets/newLogo-CnUwWp-W.png" 
         alt="Edubuk Logo" 
         style="width:120px;margin-bottom:10px;"
       />
@@ -123,7 +123,7 @@ https://edubukeseal.org`,
     <!-- Header -->
     <div style="background:#f7fbff;padding:28px 22px 18px;text-align:center;">
       <img
-        src="https://miitserverlessafba.blob.core.windows.net/edubuklogo/Edubuk_Logo-removebg-preview.png"
+        src="https://edubuktrucv.com/assets/newLogo-CnUwWp-W.png"
         alt="Edubuk Logo"
         style="width:120px;display:block;margin:0 auto 8px;"
       />

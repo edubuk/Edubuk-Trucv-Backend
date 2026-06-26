@@ -16,6 +16,7 @@ export interface IUser extends Document {
     name: string,
     email: string,
     userImageUrl?: string,
+    referred_from?:string,
     phoneNumber: string,
     address: string,
     roles: string,
@@ -77,6 +78,9 @@ const userSchema = new Schema<IUser>({
         trim: true,
     },
     phoneNumber: {
+        type: String,
+    },
+    referred_from:{
         type: String,
     },
     address: {

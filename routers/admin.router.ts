@@ -83,4 +83,26 @@ router.post(
   isAdmin,
   adminController.sendRequestToLoginAndUploadDocs,
 );
+
+
+//  PARTNER TRACKING;
+
+router.post(
+  "/create-partner-tracking-link",
+  jwtTokenVerification,
+  isAdmin,
+  adminController.createPartnerTrackingLink,
+);
+router.get(
+  "/get-all-partner-tracking-links",
+  jwtTokenVerification,
+  isAdmin,
+  adminController.getAllPartnerTrackingLinks,
+);
+router.delete(
+  "/delete-partner-tracking-link/:id",
+  jwtTokenVerification,
+  isAdmin,
+  adminController.deletePartnerTrackingLink,
+);
 export default router;

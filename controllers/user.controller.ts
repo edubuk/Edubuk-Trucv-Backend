@@ -13,6 +13,8 @@ import Subscription from "../models/subscription.model";
 import { sendResetLinkEMail } from "../utils/emailHandler";
 import { CV } from "../models/cv.model";
 import { SearchProfile } from "../models/searchProfiles.model";
+import { TrackingLink } from "../models/admins/TrackingLink.model";
+import { v4 as uuidV4 } from 'uuid';
 
 config();
 
@@ -73,72 +75,167 @@ export const generateOtp = async (req: Request, res: Response) => {
 }
 
 
+// export const registerUser = async (req: Request, res: Response) => {
+//     try {
+//         const { email, otp, name, password, phoneNumber,address } = req.body;
+//         const {ref} = req.query;
+//         const { v4: uuidv4 } = await import("uuid");
+//         const isUser = await User.findOne({email})
+//         if(isUser)
+//         {
+//             return res.status(400).json({
+//                 success:false,
+//                 message:"User already exists"
+//             })
+//         }
+//         const otpData = await Otp.findOne({ email });
+//         if (!otpData) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Invalid otp"
+//             })
+//         }
+//         const isMatch = await bcrypt.compare(otp, otpData.otpHash);
+//         if (!isMatch) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Invalid otp"
+//             })
+//         }
+//         if (otpData.used) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Otp already used"
+//             })
+//         }
+//         const user = new User({ email, name, password, phoneNumber,address, uuid: uuidv4() });
+//         await user.save();
+//         otpData.used = true;
+//         await otpData.save();
+
+//         await Subscription.create({
+//             userId: user._id,
+//             subscriptionPlan: "pro",
+//             paymentId: "NA",
+//             couponCode: "",
+//             orderId: "NA",
+//             endDate: new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000) // 3 months from now
+//         });
+
+//         await SearchProfile.create({
+//             userId: user._id,
+//             name: name,
+//             email: email,
+//             city: address,
+//         });
+//         res.status(200).json({
+//             success: true,
+//             message: "your are registered successfully"
+//         })
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: "Something went wrong",
+//             error
+//         })
+//     }
+// }
+
 export const registerUser = async (req: Request, res: Response) => {
     try {
-        const { email, otp, name, password, phoneNumber,address } = req.body;
-        const { v4: uuidv4 } = await import("uuid");
-        const isUser = await User.findOne({email})
-        if(isUser)
-        {
-            return res.status(400).json({
-                success:false,
-                message:"User already exists"
-            })
-        }
-        const otpData = await Otp.findOne({ email });
-        if (!otpData) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid otp"
-            })
-        }
-        const isMatch = await bcrypt.compare(otp, otpData.otpHash);
-        if (!isMatch) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid otp"
-            })
-        }
-        if (otpData.used) {
-            return res.status(400).json({
-                success: false,
-                message: "Otp already used"
-            })
-        }
-        const user = new User({ email, name, password, phoneNumber,address, uuid: uuidv4() });
-        await user.save();
-        otpData.used = true;
-        await otpData.save();
-
-        await Subscription.create({
-            userId: user._id,
-            subscriptionPlan: "pro",
-            paymentId: "NA",
-            couponCode: "",
-            orderId: "NA",
-            endDate: new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000) // 3 months from now
+      const { email, otp, name, password, phoneNumber, address } = req.body;
+      const { ref } = req.query;
+      console.log("ref recieved",ref);
+      // ── 1. Check duplicate user ───────────────────────────────────────────────
+      const isUser = await User.findOne({ email });
+      if (isUser) {
+        return res.status(400).json({
+          success: false,
+          message: "User already exists",
         });
-
-        await SearchProfile.create({
-            userId: user._id,
-            name: name,
-            email: email,
-            city: address,
-        });
-        res.status(200).json({
-            success: true,
-            message: "your are registered successfully"
-        })
+      }
+      // ── 2. Validate OTP ───────────────────────────────────────────────────────
+      const otpData = await Otp.findOne({ email });
+      if (!otpData) {
+        return res.status(400).json({ success: false, message: "Invalid otp" });
+      }
+   
+      const isMatch = await bcrypt.compare(otp, otpData.otpHash);
+      if (!isMatch) {
+        return res.status(400).json({ success: false, message: "Invalid otp" });
+      }
+   
+      if (otpData.used) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Otp already used" });
+      }
+   
+      //  3. Verify referral token (if present) 
+      let referredFrom: string | null = null;
+   
+      if (ref && typeof ref === "string") {
+        try {
+          const payload = jwt.verify(
+            ref,
+            process.env.PARTNER_REFERRAL_SECRET!
+          ) as { partner: string; campaign?: string };
+      
+          const linkExists = await TrackingLink.findOne({ token: ref });
+        
+          if (linkExists) {
+            referredFrom = payload.partner;
+          }
+        } catch (err) {
+          console.log("jwt error:", err); 
+          referredFrom = null;
+        }
+      }
+   
+      // ── 4. Create user ────────────────────────────────────────────────────────
+      const user = new User({
+        email,
+        name,
+        password,
+        phoneNumber,
+        address,
+        uuid: uuidV4(),
+        referred_from: referredFrom, // null if no valid referral
+      });
+      await user.save();
+   
+    //   otpData.used = true;
+    //   await otpData.save();
+   
+      // ── 5. Post-registration setup ────────────────────────────────────────────
+      await Subscription.create({
+        userId: user._id,
+        subscriptionPlan: "pro",
+        paymentId: "NA",
+        couponCode: "",
+        orderId: "NA",
+        endDate: new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000),
+      });
+   
+      await SearchProfile.create({
+        userId: user._id,
+        name,
+        email,
+        city: address,
+      });
+   
+      res.status(200).json({
+        success: true,
+        message: "You are registered successfully",
+      });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Something went wrong",
-            error
-        })
+      res.status(500).json({
+        success: false,
+        message: "Something went wrong",
+        error,
+      });
     }
-}
-
-
+  };
 
 export const loginUser = async (req: Request, res: Response) => {
     //req body->data
