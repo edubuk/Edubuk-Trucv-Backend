@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
-import { config } from "dotenv";
+import { configDotenv } from "dotenv";
+configDotenv();
 import { MongoConnection } from "../database/mongo.connection";
 import bodyParser from "body-parser";
 import digilockerRouter from "../routers/digilocker.router";
@@ -26,8 +27,7 @@ import ApifyScraperRouter from "../routers/scraper/apify-scraper-route";
 import searchRouter from "../routers/search.router";
 import couponRouter from "../routers/coupon.router";
 
-// Initialize dotenv and Express app
-config();
+
 const app = express();
 MongoConnection();
 // allow specific origin

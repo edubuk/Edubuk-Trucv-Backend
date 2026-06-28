@@ -1,11 +1,9 @@
 import { Request, Response } from "express"
 import { Wallet, ethers } from "ethers"
 import { EdubukConAdd, EdubukConABI } from "../utils/constant"
-import mongoose from "mongoose"
-import { configDotenv } from "dotenv";
 import { IGetUserAuthInfoRequest } from "../types/definitionFile";
 import { Certification } from "../models/certification.model";
-configDotenv;
+
 
 const TYGN_Wallet_Add = process.env.TYGN_Wallet_Add;
 const SKALE_MAINNET_RPC = process.env.SKALE_MAINNET_RPC;

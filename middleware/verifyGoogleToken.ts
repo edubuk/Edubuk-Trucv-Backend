@@ -1,7 +1,6 @@
 import { OAuth2Client } from 'google-auth-library';
 import { Request, Response } from 'express';
-import dotenv from 'dotenv';
-dotenv.config();
+
 // Extend Express Request interface to include user property
 declare global {
   namespace Express {

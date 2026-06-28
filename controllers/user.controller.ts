@@ -6,7 +6,6 @@ import bcrypt from "bcrypt";
 import { otpEmailHandler} from "../utils/emailHandler";
 //import { v4 as uuidv4 } from "uuid";
 import { IGetUserAuthInfoRequest } from "../types/definitionFile";
-import { config } from "dotenv";
 import jwt from "jsonwebtoken";
 import { Certificate } from "../models/userDoc.model";
 import Subscription from "../models/subscription.model";
@@ -16,8 +15,6 @@ import { SearchProfile } from "../models/searchProfiles.model";
 import { TrackingLink } from "../models/admins/TrackingLink.model";
 import { v4 as uuidV4 } from 'uuid';
 
-config();
-
 const isProd = process.env.NODE_ENV === "production";
 
 const generateAccessRefreshToken = async (userId: string) => {
@@ -26,12 +23,13 @@ const generateAccessRefreshToken = async (userId: string) => {
         if (!user) {
             throw new Error("User not found");
         }
-        const accessToken = user.generateAccessToken();
+        const accessToken:any = await user.generateAccessToken();
+        console.log("accessToken generated", accessToken);
         const refreshToken = user.generateRefreshToken();
 
         user.refreshToken = refreshToken;
         await user.save({ validateBeforeSave: false });
-        return { accessToken, refreshToken };
+        return { accessToken: accessToken?.access_token, refreshToken };
     } catch (error) {
         throw error;
     }
@@ -420,7 +418,9 @@ export const getUser = async(req:Request,res:Response)=>{
         res.status(200).json({
             success:true,
             message:"User fetched successfully",
-            user:user
+            user:user,
+            iat:reqType.user.iat,
+            exp:reqType.user.exp
         })
     } catch (error:any) {
         res.status(500).json({
