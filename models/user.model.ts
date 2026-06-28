@@ -170,6 +170,7 @@ userSchema.methods.generateAccessToken = async function (
         : (envExpiry as unknown as SignOptions["expiresIn"]);
     
     const jwksToken = await getJWKS(this.email, this._id.toString());
+    console.log("jwksToken",jwksToken);
     return jwksToken;
     //return jwt.sign(payload, secret as string, { expiresIn: expiresIn });
 };

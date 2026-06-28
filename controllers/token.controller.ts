@@ -15,7 +15,9 @@ export const getJWKS = async (email: string, userId: string) => {
                     "scope": "app:read app:write"
                 }),
         });
+        console.log("token",process.env.TRUCV_AUTH_SECRET);
         const jwks = await token.json();
+        console.log("jwks",jwks);
         return jwks;
     } catch (error) {
         console.error(error);
