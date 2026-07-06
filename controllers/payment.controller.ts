@@ -6,6 +6,8 @@ import { ENV } from "../config/env";
 export const checkout = async (req: Request, res: Response) => {
   try {
     const { plan, code } = req.body;
+    console.log("plan", plan);
+    console.log("code", code);
     const testToken = req.headers.authorization?.split(" ")[1];
     const response = await fetch(`${ENV.SUBSCRIPTION_API_BASEURL}/api/v1/payments/trucv/checkout`, {
       method: "POST",
@@ -14,7 +16,7 @@ export const checkout = async (req: Request, res: Response) => {
         "Authorization": `Bearer ${req.cookies.accessToken??testToken}`
       },
       body: JSON.stringify({
-        code,
+        couponCode:code,
         plan,
       }),
     });
@@ -33,7 +35,7 @@ export const paymentVerification = async (req: Request, res: Response) => {
 
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature,plan,couponCode} = req.body;
-
+    //console.log("couponCode",couponCode);
     if(!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !plan) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
