@@ -26,7 +26,7 @@ import certificationRouter from "../routers/certification.router";
 import ApifyScraperRouter from "../routers/scraper/apify-scraper-route";
 import searchRouter from "../routers/search.router";
 import couponRouter from "../routers/coupon.router";
-
+//import backfillSearchProfiles from "../controllers/backfillSearchProfiles.controller";
 
 const app = express();
 MongoConnection();
@@ -123,7 +123,7 @@ app.use("/api/v1/hackathon", hackathonRouter);
 app.use("/api/v1/certification", certificationRouter);
 app.use("/api/v1/verifier", verifierRouter);    
 app.use("/api/v1/search", searchRouter);  
-app.use("/api/v1/coupon", couponRouter);    
+app.use("/api/v1/coupons", couponRouter);    
 
 app.get("/", (req: Request, res: Response) => {
   return res.json({

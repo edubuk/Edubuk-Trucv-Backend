@@ -1,7 +1,8 @@
+import { ENV } from "../config/env";
 
 export const getJWKS = async (email: string, userId: string) => {
     try {
-        const token  = await fetch("https://central-auth.edubuktrucv.com/oauth/token", {
+        const token  = await fetch(`${ENV.AUTH_API_BASEURL}/oauth/token`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -10,12 +11,12 @@ export const getJWKS = async (email: string, userId: string) => {
                     "client_id": "trucv",
                     "user_email": email,
                     "user_id": userId,
-                    "client_secret":process.env.TRUCV_AUTH_SECRET,
+                    "client_secret":ENV.TRUCV_AUTH_SECRET,
                     "audience": "trucv",
                     "scope": "app:read app:write"
                 }),
         });
-        console.log("token",process.env.TRUCV_AUTH_SECRET);
+        console.log("token",ENV.TRUCV_AUTH_SECRET);
         const jwks = await token.json();
         console.log("jwks",jwks);
         return jwks;

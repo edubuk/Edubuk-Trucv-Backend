@@ -1,8 +1,9 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { User } from "../models/user.model";
+import { ENV } from "../config/env";
 
 const JWKS = createRemoteJWKSet(
-    new URL("https://central-auth.edubuktrucv.com/.well-known/jwks.json")
+    new URL(`${ENV.AUTH_API_BASEURL}/.well-known/jwks.json`)
 );
 
 export async function authMiddleware(
@@ -10,12 +11,12 @@ export async function authMiddleware(
 ) {
     try {
         const result = await jwtVerify(token, JWKS, {
-            issuer:process.env.CLIENT_URL,
+            issuer:ENV.CLIENT_URL,
             audience: "trucv",
             algorithms: ["RS256"]
         });
 
-        //console.log("payload", result.payload);
+        console.log("payload", result.payload);
         const scopes =
             typeof result.payload.scope === "string"
                 ? result.payload.scope.split(" ")

@@ -188,7 +188,8 @@ userSchema.methods.generateRefreshToken = function () {
 
     return jwt.sign(
         {
-            _id: this._id
+            _id: this._id,
+            email: this.email,
         },
         secret as string,
         { expiresIn: expiresIn });

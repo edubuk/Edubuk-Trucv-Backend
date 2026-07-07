@@ -41,8 +41,7 @@ export const saveDocuments = async (req: Request, res: Response) => {
         // }
         await SearchProfile.findOneAndUpdate(
             { userId: user._id },
-            { $push: { colleges: doc.institutionName } },
-            { new: true }
+            { $set: { isCvDataPresent: true }, $push: { colleges: doc.institutionName } }
         )
         
         res.status(200).json({
@@ -212,7 +211,7 @@ export const saveExpDocs = async (req: Request, res: Response) => {
         const user = typeReq.user;
         const { data } = req.body;
         const doc: any = await ExperienceDoc.create({ userId: user._id, ...data });
-        await SearchProfile.findOneAndUpdate({ userId: user._id }, { $push: { companies: doc.companyName } });
+        await SearchProfile.findOneAndUpdate({ userId: user._id }, { $set: { isCvDataPresent: true }, $push: { companies: doc.companyName } });
         res.status(200).json({
             success: true,
             message: "Document Saved Successfully"
