@@ -26,7 +26,7 @@ import certificationRouter from "../routers/certification.router";
 import ApifyScraperRouter from "../routers/scraper/apify-scraper-route";
 import searchRouter from "../routers/search.router";
 import couponRouter from "../routers/coupon.router";
-import backfillSearchProfiles from "../controllers/backfillSearchProfiles.controller";
+//import backfillSearchProfiles from "../controllers/backfillSearchProfiles.controller";
 
 const app = express();
 MongoConnection();
@@ -145,9 +145,7 @@ cron.schedule(
   { timezone: "Asia/Kolkata" },
 );
 
-// setTimeout(()=>{
-//   backfillSearchProfiles();
-// },5000)
+
 
 
 
