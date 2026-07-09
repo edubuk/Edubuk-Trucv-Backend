@@ -17,6 +17,12 @@ import { v4 as uuidV4 } from 'uuid';
 
 const isProd = process.env.NODE_ENV === "production";
 
+interface IDecodeToken {
+    email:string;
+    iat:number;
+    exp:number;
+}
+
 const generateAccessRefreshToken = async (userId: string) => {
     try {
         const user = await User.findById(userId);
@@ -72,72 +78,6 @@ export const generateOtp = async (req: Request, res: Response) => {
     }
 }
 
-
-// export const registerUser = async (req: Request, res: Response) => {
-//     try {
-//         const { email, otp, name, password, phoneNumber,address } = req.body;
-//         const {ref} = req.query;
-//         const { v4: uuidv4 } = await import("uuid");
-//         const isUser = await User.findOne({email})
-//         if(isUser)
-//         {
-//             return res.status(400).json({
-//                 success:false,
-//                 message:"User already exists"
-//             })
-//         }
-//         const otpData = await Otp.findOne({ email });
-//         if (!otpData) {
-//             return res.status(400).json({
-//                 success: false,
-//                 message: "Invalid otp"
-//             })
-//         }
-//         const isMatch = await bcrypt.compare(otp, otpData.otpHash);
-//         if (!isMatch) {
-//             return res.status(400).json({
-//                 success: false,
-//                 message: "Invalid otp"
-//             })
-//         }
-//         if (otpData.used) {
-//             return res.status(400).json({
-//                 success: false,
-//                 message: "Otp already used"
-//             })
-//         }
-//         const user = new User({ email, name, password, phoneNumber,address, uuid: uuidv4() });
-//         await user.save();
-//         otpData.used = true;
-//         await otpData.save();
-
-//         await Subscription.create({
-//             userId: user._id,
-//             subscriptionPlan: "pro",
-//             paymentId: "NA",
-//             couponCode: "",
-//             orderId: "NA",
-//             endDate: new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000) // 3 months from now
-//         });
-
-//         await SearchProfile.create({
-//             userId: user._id,
-//             name: name,
-//             email: email,
-//             city: address,
-//         });
-//         res.status(200).json({
-//             success: true,
-//             message: "your are registered successfully"
-//         })
-//     } catch (error) {
-//         res.status(500).json({
-//             success: false,
-//             message: "Something went wrong",
-//             error
-//         })
-//     }
-// }
 
 export const registerUser = async (req: Request, res: Response) => {
     try {
@@ -408,7 +348,9 @@ export const getUser = async(req:Request,res:Response)=>{
         const reqType = req as IGetUserAuthInfoRequest;
         //console.log("reqType.user",reqType.user)
         const user = await User.findById(reqType.user._id).select("-providers -password -refreshToken");
-        //console.log("user",user)
+        //console.log("user refresh token",req.cookies.refreshToken)
+        const decodedToken = jwt.decode(req.cookies.refreshToken) as IDecodeToken;
+        //console.log("decoded token", decodedToken);
         if(!user){
             res.status(400).json({
                 success:false,
@@ -419,8 +361,8 @@ export const getUser = async(req:Request,res:Response)=>{
             success:true,
             message:"User fetched successfully",
             user:user,
-            iat:reqType.user.iat,
-            exp:reqType.user.exp
+            iat:decodedToken?.iat,
+            exp:decodedToken?.exp
         })
     } catch (error:any) {
         res.status(500).json({
@@ -643,40 +585,4 @@ export const deleteUserData = async(req:Request,res:Response)=>{
 } 
 
 
-export const ocidRegisterUser = async (req: Request, res: Response) => {
-    try {
-        const {name, id} = req.body;
-        //console.log({name,id});
-        const isUser = await User.findOne({uuid:id})
-        if(isUser)
-        {
-            return res.status(200).json({
-                success:true,
-            })
-        }
-
-        const user = new User({ email:"", name, password:"", phoneNumber:"",address:"", uuid:id });
-        await user.save();
-
-        await Subscription.create({
-            userId: user._id,
-            subscriptionPlan: "pro",
-            paymentId: "NA",
-            couponCode: "",
-            orderId: "NA",
-            endDate: new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000) // 3 months from now
-        });
-
-        res.status(200).json({
-            success: true,
-            message: "your are registered successfully"
-        })
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Something went wrong",
-            error
-        })
-    }
-}
 

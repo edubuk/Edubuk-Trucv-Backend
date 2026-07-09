@@ -1,9 +1,8 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import { IGetUserAuthInfoRequest } from "../types/definitionFile";
 import { Types } from "mongoose";
-import { verifyOCIDToken } from "./ocidAuth.middleware";
-import { verifyJwtToken } from "./jwtAuth.middleware";
 import { authMiddleware } from "./jwksAuth";
+import { decodeJwt } from "jose";
 
 export const jwtTokenVerification: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
 
@@ -11,7 +10,9 @@ export const jwtTokenVerification: RequestHandler = async (req: Request, res: Re
         // Check for OCID token in Authorization header
         const typeReq = req as IGetUserAuthInfoRequest;
         const sessionToken = req.cookies.accessToken;
-        console.log("sessionToken", sessionToken);
+        //const token = decodeJwt(req.cookies.refreshAccessToken);
+        //console.log("sessionToken", sessionToken);
+        //console.log("decoded token", token);
         if (sessionToken) {
             //const sessionUser = await verifyJwtToken(sessionToken);
             const {user,iat,exp} = await authMiddleware(sessionToken);    

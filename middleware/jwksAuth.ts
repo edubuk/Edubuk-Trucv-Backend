@@ -16,7 +16,7 @@ export async function authMiddleware(
             algorithms: ["RS256"]
         });
 
-        console.log("payload", result.payload);
+        //console.log("payload", result.payload);
         const scopes =
             typeof result.payload.scope === "string"
                 ? result.payload.scope.split(" ")

@@ -6,38 +6,6 @@ import { SkillVerificationReq } from "../models/skillVerificationRequest.model";
 import { SkillDoc } from "../models/skill.model";
 import { DocVerificationRequest } from "../models/docVerificationRequest.model";
 
-// function renderSuccess() {
-//   return `
-//     <html>
-//       <body style="font-family: Arial; text-align:center; margin-top:50px;">
-//         <h1 style="color: green;">✔ Document Verified Successfully</h1>
-//         <p style="font-size:16px;">Thank you! The document is now verified.</p>
-//       </body>
-//     </html>
-//   `;
-// }
-
-// function renderReject() {
-//   return `
-//     <html>
-//       <body style="font-family: Arial; text-align:center; margin-top:50px">
-//         <h1 style="color: red;"> ❌ Document Rejected Successfully</h1>
-//         <p style="font-size:16px;">Thank you! The document is now rejected.</p>
-//       </body>
-//     </html>
-//   `;
-// }
-
-// function renderError(message: string) {
-//   return `
-//     <html>
-//       <body style="font-family: Arial; text-align:center; margin-top:50px;">
-//         <h1 style="color: red;">❌ Verification Failed</h1>
-//         <p style="font-size:16px;">${message}</p>
-//       </body>
-//     </html>
-//   `;
-// }
 
 
 export const getRequestedData = async(req: Request, res: Response)=>{

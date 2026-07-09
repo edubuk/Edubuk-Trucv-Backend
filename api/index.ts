@@ -26,6 +26,7 @@ import certificationRouter from "../routers/certification.router";
 import ApifyScraperRouter from "../routers/scraper/apify-scraper-route";
 import searchRouter from "../routers/search.router";
 import couponRouter from "../routers/coupon.router";
+import subscriptionRouter from "../routers/subscription.router";
 //import backfillSearchProfiles from "../controllers/backfillSearchProfiles.controller";
 
 const app = express();
@@ -125,6 +126,7 @@ app.use("/api/v1/certification", certificationRouter);
 app.use("/api/v1/verifier", verifierRouter);    
 app.use("/api/v1/search", searchRouter);  
 app.use("/api/v1/coupons", couponRouter);    
+app.use("/api/v1/subscription", subscriptionRouter); 
 
 app.get("/", (req: Request, res: Response) => {
   return res.json({
@@ -145,9 +147,6 @@ cron.schedule(
   },
   { timezone: "Asia/Kolkata" },
 );
-
-
-
 
 
 

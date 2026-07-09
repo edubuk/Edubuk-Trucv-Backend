@@ -12,6 +12,7 @@ import { SkillVerificationReq } from "../models/skillVerificationRequest.model";
 import { DocVerificationRequest } from "../models/docVerificationRequest.model";
 import { SearchProfile } from "../models/searchProfiles.model";
 import { syncSearchProfile } from "./searchProfile.controller";
+import { updatePoints } from "./subscription.controller";
 
 
 const isEmpty = (value: any) => {
@@ -886,6 +887,13 @@ export const resendEmailHandler = async (req: Request, res: Response) => {
         if (docType === "education") {
             console.log("education doc",doc)
             try {
+                const resp = await updatePoints(req as Request,res as Response) as any;
+                 if(!resp.success){
+                    return res.status(400).json({
+                        success: false,
+                        message: resp.message
+                    });
+                }
                 const status = await docVerificationEmailHandler({
                     emailId: data.issuerEmailId,
                     level: doc.level,
@@ -906,7 +914,6 @@ export const resendEmailHandler = async (req: Request, res: Response) => {
                     await doc.save();
 
                     await Promise.all([
-
                         docVerificationNotifyEmailHandler({
                             emailId: data.issuerEmailId,
                             level: doc.level,
@@ -944,6 +951,14 @@ export const resendEmailHandler = async (req: Request, res: Response) => {
         }
         if (docType === "experience") {
             try {
+                const resp = await updatePoints(req as Request,res as Response) as any;
+                //console.log("update points response",resp)
+                if(!resp.success){
+                    return res.status(400).json({
+                        success: false,
+                        message: resp.message
+                    });
+                }
                 const status = await docVerificationEmailHandler({
                     emailId: data.issuerEmailId,
                     documentViewUrl: data.docUri,
@@ -1002,7 +1017,7 @@ export const resendEmailHandler = async (req: Request, res: Response) => {
 
             } catch (error: any) {
                 console.error('Error in emailing background process:', error);
-                res.status(500).json({
+                return res.status(500).json({
                     success: false,
                     message: "Failed to submit document on blockchain"
                 })
@@ -1011,6 +1026,14 @@ export const resendEmailHandler = async (req: Request, res: Response) => {
 
         if (docType === "award") {
             try {
+                const resp = await updatePoints(req as Request,res as Response) as any;
+                //console.log("update points response",resp)
+                 if(!resp.success){
+                    return res.status(400).json({
+                        success: false,
+                        message: resp.message
+                    });
+                }
                 const status: any = await docVerificationEmailHandler({
                     emailId: data.issuerEmailId,
                     documentViewUrl: data.docUri,
