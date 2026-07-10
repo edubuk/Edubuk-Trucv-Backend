@@ -14,7 +14,7 @@ export interface ISearchProfile extends Document {
   colleges: string[];
 
   userImage?: string;
-
+  isCvDataPresent?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -71,6 +71,10 @@ const searchProfileSchema = new Schema<ISearchProfile>(
     userImage: {
       type: String,
       default: "",
+    },
+    isCvDataPresent: {
+      type: Boolean,
+      default: false,
     },
   },
   {

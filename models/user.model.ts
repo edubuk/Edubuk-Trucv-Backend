@@ -1,9 +1,8 @@
 import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt, { type SignOptions } from "jsonwebtoken";
-import { configDotenv } from "dotenv";
 import crypto from 'crypto'
-configDotenv();
+import { getJWKS } from "../controllers/token.controller";
 type Provider = {
     provider: string,
     providerId: string,
@@ -38,7 +37,7 @@ export interface IUser extends Document {
     resetPasswordExpires:Date|undefined,
     passwordChangedAt:Date,
     isPasswordCorrect: (password: string) => Promise<boolean>,
-    generateAccessToken: () => string,
+    generateAccessToken: () => Promise<string>,
     generateRefreshToken: () => string,
     generateResetPasswordToken:()=>string
 }
@@ -103,6 +102,11 @@ const userSchema = new Schema<IUser>({
     selfAttested:{
         type:Boolean
     },
+    subscriptionPlan:{       //denormalized
+        type:String,
+        enum:["free","basic","pro"],
+        default: "free",
+    },
     resetPasswordToken: String,      // hashed token
     resetPasswordExpires: Date,      // expiry time
     passwordChangedAt: Date,
@@ -145,7 +149,7 @@ userSchema.methods.isPasswordCorrect = async function (password: string) {
     return await bcrypt.compare(password, this.password)
 }
 
-userSchema.methods.generateAccessToken = function (
+userSchema.methods.generateAccessToken = async function (
 ) {
     const payload = {
         _id: this._id,
@@ -160,11 +164,15 @@ userSchema.methods.generateAccessToken = function (
     if (!secret) throw new Error("ACCESS_TOKEN_SECRET is not defined");
 
     const envExpiry = process.env.ACCESS_TOKEN_EXPIRY ?? "3m";
+     
     const expiresIn: SignOptions["expiresIn"] = /^(\d+)$/.test(envExpiry)
         ? Number(envExpiry)
         : (envExpiry as unknown as SignOptions["expiresIn"]);
-
-    return jwt.sign(payload, secret as string, { expiresIn: expiresIn });
+    
+    const jwksToken = await getJWKS(this.email, this._id.toString());
+    console.log("jwksToken",jwksToken);
+    return jwksToken;
+    //return jwt.sign(payload, secret as string, { expiresIn: expiresIn });
 };
 
 
@@ -180,7 +188,8 @@ userSchema.methods.generateRefreshToken = function () {
 
     return jwt.sign(
         {
-            _id: this._id
+            _id: this._id,
+            email: this.email,
         },
         secret as string,
         { expiresIn: expiresIn });

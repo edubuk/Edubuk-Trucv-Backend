@@ -1,8 +1,5 @@
 import { EmailClient } from "@azure/communication-email";
-import { configDotenv } from "dotenv";
 import mongoose from "mongoose";
-
-configDotenv();
 
 const connectionString = process.env.ACS_CONNECTION_STRING as string; // from Azure portal
 const client = new EmailClient(connectionString);

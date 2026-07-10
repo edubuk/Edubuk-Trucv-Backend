@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
-import { config } from "dotenv";
+import { configDotenv } from "dotenv";
+configDotenv();
 import { MongoConnection } from "../database/mongo.connection";
 import bodyParser from "body-parser";
 import digilockerRouter from "../routers/digilocker.router";
@@ -7,7 +8,7 @@ import cors from "cors";
 import { swaggerSpec, swaggerUiSetup } from "../swagger";
 import cookieParser from "cookie-parser";
 import cron from "node-cron";
-import { rateLimit } from "express-rate-limit";
+//import { rateLimit } from "express-rate-limit";
 import helmet from "helmet";
 import docRouter from "../routers/documents.router";
 import cvRouter from "../routers/cv.router";
@@ -24,9 +25,10 @@ import hackathonRouter from "../routers/hackathon.router";
 import certificationRouter from "../routers/certification.router";
 import ApifyScraperRouter from "../routers/scraper/apify-scraper-route";
 import searchRouter from "../routers/search.router";
+import couponRouter from "../routers/coupon.router";
+import subscriptionRouter from "../routers/subscription.router";
+//import backfillSearchProfiles from "../controllers/backfillSearchProfiles.controller";
 
-// Initialize dotenv and Express app
-config();
 const app = express();
 MongoConnection();
 // allow specific origin
@@ -41,6 +43,8 @@ app.use(
       "http://localhost:5174",
       "https://edubuktrucv.com",
       "https://www.edubuktrucv.com",
+      "https://dev-frontend.edubuktrucv.com",
+      "https://www.dev-frontend.edubuktrucv.com",
       "https://static-web-app.edubuktrujobs.com",
       "https://www.static-web-app.edubuktrujobs.com",
       "https://eni.edubuktrucv.com",
@@ -51,7 +55,6 @@ app.use(
       "https://trucv.org",
       "https://educhain.edubuktrucv.com",
       "https://www.educhain.edubuktrucv.com",
-      "https://dev-frontend.edubuktrucv.com",
     ],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -122,6 +125,9 @@ app.use("/api/v1/hackathon", hackathonRouter);
 app.use("/api/v1/certification", certificationRouter);
 app.use("/api/v1/verifier", verifierRouter);    
 app.use("/api/v1/search", searchRouter);  
+app.use("/api/v1/coupons", couponRouter);    
+app.use("/api/v1/subscription", subscriptionRouter); 
+
 app.get("/", (req: Request, res: Response) => {
   return res.json({
     message: "Trucv-Backend-Prod Health is ok !",
@@ -129,7 +135,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 cron.schedule(
-  "15 19 18 * *",
+  "45 12 10 * *",
   () => {
     (async () => {
       const issuers = await fetchIssuer();
@@ -141,9 +147,6 @@ cron.schedule(
   },
   { timezone: "Asia/Kolkata" },
 );
-
-
-
 
 
 

@@ -5,6 +5,7 @@ import { SkillDoc } from '../models/skill.model'
 import { SearchProfile } from '../models/searchProfiles.model'
 import { Request, Response } from 'express'
 import dummyProfiles from '../utils/dummyProfiles.json';
+import { ProjectDoc } from '../models/projects.model'
 
 export async function syncSearchProfile(userId: string) {
 
@@ -30,11 +31,10 @@ export async function syncSearchProfile(userId: string) {
       companies: experiences.map(
         e => e.companyName
       ),
-
       colleges: educations.map(
         e => e.institutionName
       ),
-
+      isCvDataPresent: experiences.length > 0 || educations.length > 0,
       profileSummary: user?.profileSummary,
       userImage: user?.userImageUrl
     },
@@ -63,6 +63,7 @@ export const searchProfiles = async (
     if (searchTerm) {
       profiles = await SearchProfile.find(
         {
+          isCvDataPresent:true,
           $text: {
             $search: searchTerm,
           },
@@ -100,8 +101,15 @@ export const searchProfiles = async (
         {
           [data] = await SearchProfile.aggregate([
             {
+              $match:{
+                isCvDataPresent: true
+              }
+
+            },
+            {
               $facet:{
                 profiles:[
+                 
                   {
                     $sort:{
                       createdAt:-1
@@ -135,6 +143,11 @@ export const searchProfiles = async (
       else{
           const dbSkip = skip - dummyCount;
           [data] = await SearchProfile.aggregate([
+            {
+              $match:{
+                isCvDataPresent: true
+              }
+            },
             {
               $facet:{
                 profiles:[

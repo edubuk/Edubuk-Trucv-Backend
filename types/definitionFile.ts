@@ -9,6 +9,8 @@ export interface IGetUserAuthInfoRequest extends Request{
         phoneNumber?:string,
         uuid?:string,
         roles?:string,
-        authType:string
+        authType:string,
+        iat?:number,
+        exp?:number
     }
 }

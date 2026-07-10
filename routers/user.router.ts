@@ -221,7 +221,7 @@ router.delete("/delete-userData",jwtTokenVerification,userController.deleteUserD
 
 router.put("/update-userInfo",jwtTokenVerification,userController.updateUserInfo)
 
-router.post("/ocid-register",jwtTokenVerification,userController.ocidRegisterUser)
+//router.post("/ocid-register",jwtTokenVerification,userController.ocidRegisterUser)
 
 router.get("/:userId/verification-status",jwtTokenVerification,getVerificationStatus); 
 
