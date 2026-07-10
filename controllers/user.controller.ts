@@ -44,6 +44,7 @@ const generateAccessRefreshToken = async (userId: string) => {
 export const generateOtp = async (req: Request, res: Response) => {
     try {
         const { email } = req.body;
+        console.log("email",email)
         const user = await User.findOne({email:email});
         if(user)
         {
@@ -142,18 +143,9 @@ export const registerUser = async (req: Request, res: Response) => {
       });
       await user.save();
    
-    //   otpData.used = true;
-    //   await otpData.save();
-   
-      // ── 5. Post-registration setup ────────────────────────────────────────────
-      await Subscription.create({
-        userId: user._id,
-        subscriptionPlan: "pro",
-        paymentId: "NA",
-        couponCode: "",
-        orderId: "NA",
-        endDate: new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000),
-      });
+      otpData.used = true;
+      await otpData.save();
+
    
       await SearchProfile.create({
         userId: user._id,

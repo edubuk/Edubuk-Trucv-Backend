@@ -171,14 +171,6 @@ export const registerUser = async (req: Request, res: Response) => {
       uuid: uuidv4(),
     });
     await user.save();
-    await Subscription.create({
-      userId: user._id,
-      subscriptionPlan: "pro",
-      paymentId: "NA",
-      couponCode: "",
-      orderId: "NA",
-      endDate: new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000), // 3 months from now
-    });
     await SearchProfile.create({
       userId: user._id,
       name: data.name,
