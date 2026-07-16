@@ -589,12 +589,12 @@ export const skillVerificationEmailHandler = async (emailId: string, userName: s
         <td style="padding: 25px 30px;">
           <p style="font-size: 16px; margin-bottom: 15px;">Dear <strong>Issuer</strong>,</p>
           <p style="font-size: 15px; line-height: 1.6;">
-            ${userName} has been requested for verification. Please review the details below and take an appropriate action.
+            ${userName} has requested for skill endoresment. Please review the details below and take an appropriate action.
           </p>
 
           <!-- Document Metadata -->
 
-          <p style="margin-bottom: 20px;">
+          <p style="margin-bottom: 20px; font-size: 15px;">
             You can review the skill using the link below:
           </p>
 
