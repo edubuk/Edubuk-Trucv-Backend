@@ -8,12 +8,12 @@ export const checkout = async (req: Request, res: Response) => {
     const { plan, code } = req.body;
     console.log("plan", plan);
     console.log("code", code);
-    const testToken = req.headers.authorization?.split(" ")[1];
+    //const testToken = req.headers.authorization?.split(" ")[1];
     const response = await fetch(`${ENV.SUBSCRIPTION_API_BASEURL}/api/v1/payments/trucv/checkout`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${req.cookies.accessToken??testToken}`
+        "Authorization": `Bearer ${req.cookies.accessToken}`
       },
       body: JSON.stringify({
         couponCode:code,
@@ -71,13 +71,11 @@ export const paymentVerification = async (req: Request, res: Response) => {
 
 export const getPaymentRecord = async (req: Request, res: Response) => {
   try {
-    const testToken = req.headers.authorization?.split(" ")[1];
-    console.log("testToken", testToken);
     const response = await fetch(`${ENV.SUBSCRIPTION_API_BASEURL}/api/v1/payments/trucv/history`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${req.cookies.accessToken??testToken}`
+        "Authorization": `Bearer ${req.cookies.accessToken}`
       },
     });
 

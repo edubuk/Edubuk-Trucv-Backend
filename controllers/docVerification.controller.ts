@@ -154,7 +154,7 @@ export const approveSkills = async (req: Request, res: Response) => {
     const { token } = req.params;
     const { userId } = req.query;
     const { data } = req.body;
-    console.log("data",data);
+    //console.log("data",data);
     if (!userId) {
       return res.status(400).json({ sucess: false, message: "unauthorised request" })
     }
@@ -183,6 +183,7 @@ export const approveSkills = async (req: Request, res: Response) => {
           $set: {
             level: skill.level,
             endoresBy: replica.endoresBy,
+            endorserProfile: data.endorserprofile,
             endoresThrough: "Email",
             endoresedOn: new Date(),
           },
