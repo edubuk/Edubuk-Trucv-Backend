@@ -27,6 +27,7 @@ import ApifyScraperRouter from "../routers/scraper/apify-scraper-route";
 import searchRouter from "../routers/search.router";
 import couponRouter from "../routers/coupon.router";
 import subscriptionRouter from "../routers/subscription.router";
+import mongoSanitize from "express-mongo-sanitize";
 //import backfillSearchProfiles from "../controllers/backfillSearchProfiles.controller";
 
 const app = express();
@@ -60,7 +61,7 @@ app.use(
     credentials: true,
   }),
 );
-
+app.use(mongoSanitize());
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -135,7 +136,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 cron.schedule(
-  "50 17 20 * *",
+  "03 15 1 * *",
   () => {
     (async () => {
       const issuers = await fetchIssuer();
