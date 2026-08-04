@@ -193,6 +193,125 @@ export const trujobsSignInAuthenticatorNew = async (
     });
   }
 };
+
+export const trujobsSignInAuthenticatorForAutomation = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email are required",
+      });
+    }
+
+    const findUser = await User.findOne({ email: email }).select(
+      "_id name email phoneNumber yearOfExp profession userImageUrl profileSummary password",
+    ); // password because bcrypt requires password for comparison
+    if (!findUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const [cvData] = await User.aggregate([
+      {
+        $match: {
+          _id: findUser._id,
+        },
+      },
+      {
+        $lookup: {
+          from: "educationdocs",
+          localField: "_id",
+          foreignField: "userId",
+          as: "educations",
+        },
+      },
+      {
+        $lookup: {
+          from: "experiencedocs",
+          localField: "_id",
+          foreignField: "userId",
+          as: "experiences",
+        },
+      },
+      {
+        $lookup: {
+          from: "projectdocs",
+          localField: "_id",
+          foreignField: "userId",
+          as: "projects",
+        },
+      },
+      {
+        $lookup: {
+          from: "skills",
+          localField: "_id",
+          foreignField: "userId",
+          as: "skills",
+        },
+      },
+      {
+        $lookup: {
+          from: "awarddocs",
+          localField: "_id",
+          foreignField: "userId",
+          as: "awards",
+        },
+      },
+      {
+        $project: {
+          personal: {
+            _id: "$_id",
+            fullName: "$name",
+            email: "$email",
+            phoneNumber: "$phoneNumber",
+            city: "$address",
+            profession: "$profession",
+            yearOfExp: "$yearOfExp",
+            linkedInUrl: "$linkedInUrl",
+            githubUrl: "$githubUrl",
+            imgUrl: "$userImageUrl",
+            summary: "$profileSummary",
+          },
+          educations: 1,
+          experiences: 1,
+          projects: 1,
+          skills: 1,
+          awards: 1,
+        },
+      },
+    ]);
+
+    if (cvData.educations.length === 0 || !cvData.educations) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "No education details found. Please create your complete TruCV.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "USER AUTHENTICATED",
+      cvData,
+      // cvIds,
+      // trucv_user: userWithoutPassword,
+      // user_trucvs,
+    });
+  } catch (error) {
+    console.log("ERROR IN trujobsSignInAuthenticator", error);
+    return res.status(500).json({
+      success: false,
+      message: "ERROR IN trujobsSignInAuthenticator",
+      error,
+    });
+  }
+};
 //--------------------------------------- --------------------
 
 export const getCandidateTruCVByTrucvId = async (
@@ -231,7 +350,7 @@ export const getCandidateTruCVByTrucvId = async (
   }
 };
 
-// 
+//
 export const getCandidateTruCVByUserId = async (
   req: Request,
   res: Response,
@@ -322,8 +441,8 @@ export const getCandidateTruCVByUserId = async (
         },
       },
     ]);
-  
-   return res
+
+    return res
       .status(200)
       .json({ success: true, message: "USER TRUCV FETCHED", trucv: cvData });
   } catch (error) {
@@ -335,10 +454,6 @@ export const getCandidateTruCVByUserId = async (
     });
   }
 };
-
-
-
-
 
 export const fetchUserCV = async (req: Request, res: Response) => {
   try {

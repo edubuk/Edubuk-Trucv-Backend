@@ -1,18 +1,19 @@
 import express from "express";
 import {
-  getCandidateTruCVByTrucvId,
   getCandidateTruCVByUserId,
-  trujobsSignInAuthenticator,
+  trujobsSignInAuthenticatorForAutomation,
   trujobsSignInAuthenticatorNew,
 } from "../controllers/trujobs.controller";
 
 const router = express.Router();
 
-router.post("/authenticate-new", trujobsSignInAuthenticatorNew);//completed
+router.post("/authenticate-new", trujobsSignInAuthenticatorNew); //completed
 
-router.get(
-  "/get-candidate-trucv-by-userId/:userId",
-  getCandidateTruCVByUserId,
-);
+router.post(
+  "/authenticate-automation",
+  trujobsSignInAuthenticatorForAutomation,
+); //completed
+
+router.get("/get-candidate-trucv-by-userId/:userId", getCandidateTruCVByUserId);
 
 export default router;
