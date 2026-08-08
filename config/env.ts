@@ -17,4 +17,9 @@ export const ENV = {
     AUTH_API_BASEURL: getEnv("AUTH_API_BASEURL"),
     CLIENT_URL: getEnv("CLIENT_URL"),
     TRUCV_AUTH_SECRET: getEnv("TRUCV_AUTH_SECRET"),
+    REDIS_HOST: getEnv("REDIS_HOST"),
+    REDIS_PORT: Number(getEnv("REDIS_PORT", "6379")),
+    CV_PROCESSING_DELAY_MS: Number(getEnv("CV_PROCESSING_DELAY_MS", "5000")),
+    REINDEX_BASEURL:String(getEnv("REINDEX_BASEURL")),
+    REINDEX_API_KEY:String(getEnv("REINDEX_API_KEY")),
 };

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "nodemon",
     "build": "npm install && npx tsc",
+    "worker:dev": "tsx watch workers/cv.worker.ts",
     "start": "node ./dist/api/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -36,6 +37,7 @@
     "axios": "^1.7.7",
     "bcrypt": "^6.0.0",
     "body-parser": "^1.20.3",
+    "bullmq": "^6.0.8",
     "cheerio": "^1.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -47,8 +49,8 @@
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^8.2.1",
     "express-session": "^1.18.2",
-    "google-auth-library": "^10.2.1",
     "helmet": "^8.1.0",
+    "ioredis": "^6.0.0",
     "jose": "^4.15.5",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^4.0.1",
@@ -61,7 +63,6 @@
     "razorpay": "^2.9.5",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "sweetalert2": "^11.14.5",
     "tsx": "^4.19.2",
     "uuid": "^11.1.0",
     "view": "^1.1.1"

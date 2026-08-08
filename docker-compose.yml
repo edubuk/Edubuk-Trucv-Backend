@@ -1,0 +1,26 @@
+#only for local check 
+
+# services:
+#   redis:
+#     image: redis:8
+#     container_name: cv-redis
+
+#     ports:
+#       - "6379:6379"
+
+#     volumes:
+#       - redis-data:/data
+
+#     command:
+#       [
+#         "redis-server",
+#         "--appendonly",
+#         "yes",
+#         "--appendfsync",
+#         "everysec",
+#         "--maxmemory-policy",
+#         "noeviction"
+#       ]
+
+# volumes:
+#   redis-data:
