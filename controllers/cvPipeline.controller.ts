@@ -185,12 +185,11 @@ async function createBuilderDocs(userId: any, cleanCv: any,session:ClientSession
 
 }
 
-const session = await mongoose.startSession();
 
 export const ingestPipelineCandidate = async (req: Request, res: Response) => {
+  const session = await mongoose.startSession();
   try {
     const { name, email, role, parsedCv } = req.body ?? {};
-
     // ---- validate input ----
     if (!email || typeof email !== "string") {
       return res.status(400).json({ success: false, message: "email is required" });
