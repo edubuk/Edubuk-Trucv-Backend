@@ -13,7 +13,7 @@ import { DocVerificationRequest } from "../models/docVerificationRequest.model";
 import { SearchProfile } from "../models/searchProfiles.model";
 import { syncSearchProfile } from "./searchProfile.controller";
 import { updatePoints } from "./subscription.controller";
-
+import { scheduleCvProcessing } from "../services/cv-processing.service";
 
 const isEmpty = (value: any) => {
     if (value === undefined || value === null) return true;
@@ -173,6 +173,7 @@ export const updateDoc = async (req: Request, res: Response) => {
 
         await document.save();
         await syncSearchProfile(document.userId.toString());
+        await scheduleCvProcessing(document.userId.toString(), 1); 
         res.status(200).json({ success: true, message: "Document updated successfully" })
     } catch (error: any) {
         return res.status(500).json({
@@ -192,6 +193,7 @@ export const deleteEduDoc = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: "Document not found" })
         }
         await syncSearchProfile(typeReq.user?._id.toString());
+        await scheduleCvProcessing(document.userId.toString(), 1); 
         return res.status(200).json({ success: true, message: "Document deleted successfully" })
 
     } catch (error: any) {
@@ -341,6 +343,7 @@ export const updateExpDoc = async (req: Request, res: Response) => {
 
         await document.save();
         await syncSearchProfile(userId.toString());
+        await scheduleCvProcessing(document.userId.toString(), 1); 
         res.status(200).json({ success: true, message: "Document updated successfully" })
     } catch (error: any) {
         return res.status(500).json({
@@ -362,6 +365,7 @@ export const deleteExpDoc = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: "Document not found" })
         }
          await syncSearchProfile(userId.toString());
+         await scheduleCvProcessing(document.userId.toString(), 1); 
         return res.status(200).json({ success: true, message: "Document deleted successfully" })
     } catch (error: any) {
         return res.status(500).json({
@@ -485,6 +489,7 @@ export const updateProjectDoc = async (req: Request, res: Response) => {
         document.selfAttested = data.selfAttested;
         document.updatedAt = new Date();
         await document.save();
+        await scheduleCvProcessing(userId.toString(), 1); 
         return res.status(200).json({ success: true, message: "Document updated successfully" })
     } catch (error: any) {
         return res.status(500).json({
@@ -503,6 +508,7 @@ export const deleteProjectDoc = async (req: Request, res: Response) => {
         if (!document) {
             return res.status(404).json({ success: false, message: "Document not found" })
         }
+        await scheduleCvProcessing(document.userId.toString(), 1); 
         return res.status(200).json({ success: true, message: "Document deleted successfully" })
     } catch (error: any) {
         return res.status(500).json({
@@ -646,6 +652,7 @@ export const updateAwardDoc = async (req: Request, res: Response) => {
         document.updateCount = document.updateCount.valueOf() + 1;
 
         await document.save();
+        await scheduleCvProcessing(document.userId.toString(), 1); 
         return res.status(200).json({ success: true, message: "Document updated successfully" })
     } catch (error: any) {
         return res.status(500).json({
@@ -759,7 +766,9 @@ export const updateSkills = async (req: Request, res: Response) => {
         doc.endoresThrough = data.endoresThrough;
         doc.endoresedOn = new Date();
         await doc.save();
-        
+        if(doc.userId){
+            await scheduleCvProcessing(doc.userId.toString(), 1); 
+        }
         return res.status(200).json({ success: true, message: "Skills updated successfully" })
     } catch (error: any) {
         return res.status(500).json({
@@ -777,6 +786,9 @@ export const deleteSkillDoc = async (req: Request, res: Response) => {
         const document = await SkillDoc.findByIdAndDelete(id);
         if (!document) {
             return res.status(404).json({ success: false, message: "Skill not found" })
+        }
+         if(document.userId){
+            await scheduleCvProcessing(document.userId.toString(), 1); 
         }
         return res.status(200).json({ success: true, message: "Skill deleted successfully" })
     } catch (error: any) {
