@@ -3,6 +3,7 @@ import { User } from "../models/user.model";
 import { CV } from "../models/cv.model";
 import { UserCV } from "../models/newCv.model";
 import mongoose from "mongoose";
+import { IGetUserAuthInfoRequest } from "../types/definitionFile";
 
 export const trujobsSignInAuthenticator = async (
   req: Request,
@@ -553,5 +554,360 @@ export const fetchUserCV = async (req: Request, res: Response) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+export const checkUserHasCreatedTrucvAndOnboardedOnTrujobs = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const typeReq = req as IGetUserAuthInfoRequest;
+    const findUser = await User.findById(typeReq.user?._id).select(
+      "_id name email phoneNumber yearOfExp profession userImageUrl profileSummary",
+    );
+    if (!findUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const [cvData] = await User.aggregate([
+      {
+        $match: {
+          _id: findUser._id,
+        },
+      },
+      {
+        $lookup: {
+          from: "educationdocs",
+          localField: "_id",
+          foreignField: "userId",
+          as: "educations",
+        },
+      },
+      {
+        $lookup: {
+          from: "experiencedocs",
+          localField: "_id",
+          foreignField: "userId",
+          as: "experiences",
+        },
+      },
+      {
+        $lookup: {
+          from: "projectdocs",
+          localField: "_id",
+          foreignField: "userId",
+          as: "projects",
+        },
+      },
+      {
+        $lookup: {
+          from: "skills",
+          localField: "_id",
+          foreignField: "userId",
+          as: "skills",
+        },
+      },
+      {
+        $lookup: {
+          from: "awarddocs",
+          localField: "_id",
+          foreignField: "userId",
+          as: "awards",
+        },
+      },
+      {
+        $project: {
+          personal: {
+            _id: "$_id",
+            fullName: "$name",
+            email: "$email",
+            phoneNumber: "$phoneNumber",
+            city: "$address",
+            profession: "$profession",
+            yearOfExp: "$yearOfExp",
+            linkedInUrl: "$linkedInUrl",
+            githubUrl: "$githubUrl",
+            imgUrl: "$userImageUrl",
+            summary: "$profileSummary",
+          },
+          educations: 1,
+          experiences: 1,
+          projects: 1,
+          skills: 1,
+          awards: 1,
+        },
+      },
+    ]);
+
+    if (cvData.educations.length === 0 || !cvData.educations) {
+      return res.status(404).json({
+        success: false,
+        trujobs_onboarded_status: false,
+        has_complete_trucv: false,
+        message:
+          "No education details found. Please create your complete TruCV.",
+      });
+    }
+
+    // call trujobs server to check whether the user is onboarded or not
+    let accountExist = false;
+    try {
+      const trujobsReq = await fetch(
+        `http://localhost:8002/api/v1/trucv/check-in-trujobs/is-candidate-onboarded?email=${encodeURIComponent(
+          typeReq.user?.email ?? "",
+        )}&trucv_user_id=${typeReq.user?._id}`,
+      );
+
+      if (trujobsReq.ok) {
+        const trujobsRes = (await trujobsReq.json()) as {
+          accountExist?: boolean;
+        };
+        accountExist = Boolean(trujobsRes?.accountExist);
+      } else {
+        console.log(
+          "TRUJOBS ONBOARDING CHECK FAILED WITH STATUS",
+          trujobsReq.status,
+        );
+      }
+    } catch (trujobsError) {
+      console.log("ERROR CALLING TRUJOBS ONBOARDING CHECK", trujobsError);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Checked Successfull",
+      trujobs_onboarded_status: accountExist,
+      has_complete_trucv: true,
+      accountExist,
+      cvData,
+    });
+  } catch (error) {
+    console.log(
+      "ERROR IN checkUserHasCreatedTrucvAndOnboardedOnTrujobs",
+      error,
+    );
+    return res.status(500).json({
+      success: false,
+      message: "ERROR IN checkUserHasCreatedTrucvAndOnboardedOnTrujobs",
+      error,
+    });
+  }
+};
+export const onBoardCandidateOnTruJobsInOneClick = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    if (!process.env.TRUJOBS_API_BASE_URL) {
+      return res.status(400).json({
+        success: false,
+        message: "TRUJOBS_API_BASE_URL is not defined in the environment",
+      });
+    }
+    const typeReq = req as IGetUserAuthInfoRequest;
+
+    const findUser = await User.findById(typeReq.user?._id).select(
+      "_id email referred_from",
+    );
+    if (!findUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const [cvData] = await User.aggregate([
+      {
+        $match: {
+          _id: findUser._id,
+        },
+      },
+      {
+        $lookup: {
+          from: "educationdocs",
+          localField: "_id",
+          foreignField: "userId",
+          as: "educations",
+        },
+      },
+      {
+        $lookup: {
+          from: "experiencedocs",
+          localField: "_id",
+          foreignField: "userId",
+          as: "experiences",
+        },
+      },
+      {
+        $lookup: {
+          from: "projectdocs",
+          localField: "_id",
+          foreignField: "userId",
+          as: "projects",
+        },
+      },
+      {
+        $lookup: {
+          from: "skills",
+          localField: "_id",
+          foreignField: "userId",
+          as: "skills",
+        },
+      },
+      {
+        $lookup: {
+          from: "awarddocs",
+          localField: "_id",
+          foreignField: "userId",
+          as: "awards",
+        },
+      },
+      {
+        $project: {
+          personal: {
+            _id: "$_id",
+            fullName: "$name",
+            email: "$email",
+            phoneNumber: "$phoneNumber",
+            city: "$address",
+            profession: "$profession",
+            yearOfExp: "$yearOfExp",
+            linkedInUrl: "$linkedInUrl",
+            githubUrl: "$githubUrl",
+            imgUrl: "$userImageUrl",
+            summary: "$profileSummary",
+          },
+          educations: 1,
+          experiences: 1,
+          projects: 1,
+          skills: 1,
+          awards: 1,
+        },
+      },
+    ]);
+    if (cvData.educations.length === 0 || !cvData.educations) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "No education details found. Please create your complete TruCV.",
+      });
+    }
+
+    // call trujobs server to onboard the candidate using their TruCV data
+    const trujobsReq = await fetch(
+      `${process.env.TRUJOBS_API_BASE_URL}/api/v1/trucv/candidate-onboard-via-trucv`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: findUser.email,
+          cvData,
+        }),
+      },
+    );
+
+    const trujobsRes = (await trujobsReq.json().catch(() => null)) as {
+      success?: boolean;
+      message?: string;
+      ai_server_resume_id?: string;
+      trujobs_candidate_id?: string;
+    } | null;
+
+    if (!trujobsReq.ok) {
+      console.log(
+        "TRUJOBS ONBOARDING FAILED WITH STATUS",
+        trujobsReq.status,
+        trujobsRes,
+      );
+      return res.status(502).json({
+        success: false,
+        message:
+          trujobsRes?.message || "Failed to onboard candidate on TruJobs.",
+      });
+    }
+
+    //  update candidate status for trujobs onboarding ;
+    await User.findByIdAndUpdate(findUser._id, {
+      is_onboarded_on_trujobs: true,
+    });
+
+    // For JOBS_MELA users, the ai_server_resume_id is required to fetch job matches.
+    if (findUser.referred_from === "JOBS_MELA") {
+      if (!trujobsRes?.ai_server_resume_id) {
+        return res.status(400).json({
+          success: false,
+          message: "AI SERVER RESUME ID NOT RECIEVED FROM TRUJOBS",
+        });
+      }
+
+      const job_matches_req = await fetch(
+        `${process.env.TRUJOBS_API_BASE_URL}/api/candidate/get-job-matches/jobs-mela/${trujobsRes.ai_server_resume_id}?page=1&page_size=40`,
+      );
+      const job_matches = (await job_matches_req.json().catch(() => null)) as {
+        matches?: Array<{
+          job_id?: string;
+          similarity_score?: number;
+        }>;
+      } | null;
+
+      // jobs-mela auto-apply to the single job with the highest similarity_score
+      const matches = job_matches?.matches ?? [];
+      const best_job = matches.reduce<(typeof matches)[number] | null>(
+        (best, current) =>
+          (current?.similarity_score ?? -Infinity) >
+          (best?.similarity_score ?? -Infinity)
+            ? current
+            : best,
+        null,
+      );
+
+      let trujobs_auto_apply_res = null;
+      if (best_job?.job_id) {
+        const trujobs_auto_apply = await fetch(
+          `${process.env.TRUJOBS_API_BASE_URL}/api/candidate/apply-job/jobs-mela/${best_job.job_id}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              trujobs_candidateID: trujobsRes?.trujobs_candidate_id,
+              trucv_user_id: findUser._id,
+            }),
+          },
+        );
+        trujobs_auto_apply_res = await trujobs_auto_apply
+          .json()
+          .catch(() => null);
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Candidate onboarded on TruJobs successfully.",
+        trujobs: trujobsRes,
+        job_matches,
+        applied_job: best_job,
+        trujobs_auto_apply_res,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Candidate onboarded on TruJobs successfully.",
+      trujobs: trujobsRes,
+    });
+  } catch (error) {
+    console.log("ERROR IN onBoardCandidateOnTruJobsInOneClick", error);
+    return res.status(500).json({
+      success: false,
+      message: "ERROR IN onBoardCandidateOnTruJobsInOneClick",
+      error,
+    });
   }
 };
