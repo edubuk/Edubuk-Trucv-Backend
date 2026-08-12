@@ -702,10 +702,14 @@ export const onBoardCandidateOnTruJobsInOneClick = async (
   res: Response,
 ) => {
   try {
-    if (!process.env.TRUJOBS_API_BASE_URL) {
+    if (
+      !process.env.TRUJOBS_API_BASE_URL ||
+      !process.env.JOBS_MELA_API_BASE_URL
+    ) {
       return res.status(400).json({
         success: false,
-        message: "TRUJOBS_API_BASE_URL is not defined in the environment",
+        message:
+          "TRUJOBS_API_BASE_URL or JOBS_MELA_API_BASE_URL is not defined in the environment",
       });
     }
     const typeReq = req as IGetUserAuthInfoRequest;
@@ -807,6 +811,7 @@ export const onBoardCandidateOnTruJobsInOneClick = async (
         },
         body: JSON.stringify({
           email: findUser.email,
+          referred_from: findUser.referred_from,
           cvData,
         }),
       },
@@ -858,6 +863,16 @@ export const onBoardCandidateOnTruJobsInOneClick = async (
 
       // jobs-mela auto-apply to the single job with the highest similarity_score
       const matches = job_matches?.matches ?? [];
+
+      // top 5 matches ranked by similarity_score (highest first)
+      const top_matches = [...matches]
+        .sort(
+          (a, b) =>
+            (b?.similarity_score ?? -Infinity) -
+            (a?.similarity_score ?? -Infinity),
+        )
+        .slice(0, 5);
+
       const best_job = matches.reduce<(typeof matches)[number] | null>(
         (best, current) =>
           (current?.similarity_score ?? -Infinity) >
@@ -867,33 +882,129 @@ export const onBoardCandidateOnTruJobsInOneClick = async (
         null,
       );
 
-      let trujobs_auto_apply_res = null;
-      if (best_job?.job_id) {
-        const trujobs_auto_apply = await fetch(
-          `${process.env.TRUJOBS_API_BASE_URL}/api/candidate/apply-job/jobs-mela/${best_job.job_id}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              trujobs_candidateID: trujobsRes?.trujobs_candidate_id,
-              trucv_user_id: findUser._id,
-            }),
-          },
+      // notify JOBS_MELA of the recommended jobs and auto-apply result
+      if (!process.env.JOBS_MELA_API_BASE_URL) {
+        console.log("JOBS_MELA_API_BASE_URL is not defined in the environment");
+        return res.status(400).json({
+          success: false,
+          message: "JOBS_MELA_API_BASE_URL is not defined in the environment",
+        });
+      }
+
+      // fetch the candidate's job preference from JOBS_MELA and store it
+      const jobPreferenceUrl = `${process.env.JOBS_MELA_API_BASE_URL}/api/v1/trucv-trujobs/job-preference/${findUser.email}`;
+      console.log("CALLING JOBS_MELA JOB-PREFERENCE URL ->", jobPreferenceUrl);
+
+      const jobPreferenceReq = await fetch(jobPreferenceUrl);
+      const jobPreferenceRes = (await jobPreferenceReq
+        .json()
+        .catch(() => null)) as { job_preference?: unknown } | null;
+      console.log(
+        "RAW JOBS_MELA JOB-PREFERENCE RESPONSE ->",
+        JSON.stringify(jobPreferenceRes),
+      );
+
+      // 404 => candidate has no preference set yet; skip preference sync and continue
+      if (jobPreferenceReq.status === 404) {
+        console.log(
+          "NO JOB PREFERENCE FOUND ON JOBS_MELA, SKIPPING PREFERENCE SYNC",
         );
-        trujobs_auto_apply_res = await trujobs_auto_apply
+      } else if (!jobPreferenceReq.ok) {
+        console.log(
+          "JOBS_MELA JOB-PREFERENCE CALL FAILED WITH STATUS",
+          jobPreferenceReq.status,
+          jobPreferenceRes,
+        );
+        return res.status(502).json({
+          success: false,
+          message: "Failed to fetch job preference from JOBS_MELA.",
+          jobPreferenceStatus: jobPreferenceReq.status,
+          jobPreferenceRes,
+        });
+      } else {
+        // JOBS_MELA may return { job_preference: {...} } or the preference object directly
+        const job_preference =
+          jobPreferenceRes?.job_preference ?? jobPreferenceRes ?? null;
+        console.log("JOB PREFERENCE FETCHED FROM JOBS_MELA", job_preference);
+
+        // update the candidate's job preference on TruJobs
+        const trujobsPreferenceUrl = `${process.env.TRUJOBS_API_BASE_URL}/api/candidate/update-candidate-preference/jobs-mela`;
+        console.log(
+          "CALLING TRUJOBS UPDATE-CANDIDATE-PREFERENCE URL ->",
+          trujobsPreferenceUrl,
+        );
+
+        const trujobsPreferenceReq = await fetch(trujobsPreferenceUrl, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            trujobs_candidateID: trujobsRes?.trujobs_candidate_id,
+            job_preference,
+          }),
+        });
+
+        const trujobsPreferenceRes = await trujobsPreferenceReq
           .json()
           .catch(() => null);
+
+        if (!trujobsPreferenceReq.ok) {
+          console.log(
+            "TRUJOBS UPDATE-CANDIDATE-PREFERENCE CALL FAILED WITH STATUS",
+            trujobsPreferenceReq.status,
+            trujobsPreferenceRes,
+          );
+          return res.status(502).json({
+            success: false,
+            message: "Failed to update candidate preference on TruJobs.",
+            trujobsPreferenceStatus: trujobsPreferenceReq.status,
+            trujobsPreferenceRes,
+          });
+        }
+
+        console.log(
+          "TRUJOBS UPDATE-CANDIDATE-PREFERENCE CALL SUCCEEDED",
+          trujobsPreferenceRes,
+        );
       }
+
+      const jobsMelaUrl = `${process.env.JOBS_MELA_API_BASE_URL}/api/v1/trucv-trujobs/recommended-jobs/${findUser.email}`;
+      console.log("CALLING JOBS_MELA RECOMMENDED-JOBS URL ->", jobsMelaUrl);
+
+      const jobsMelaReq = await fetch(jobsMelaUrl, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          matches: top_matches,
+        }),
+      });
+
+      const jobsMelaRes = await jobsMelaReq.json().catch(() => null);
+
+      if (!jobsMelaReq.ok) {
+        console.log(
+          "JOBS_MELA RECOMMENDED-JOBS CALL FAILED WITH STATUS",
+          jobsMelaReq.status,
+          jobsMelaRes,
+        );
+        return res.status(502).json({
+          success: false,
+          message: "Failed to notify JOBS_MELA of recommended jobs.",
+          jobsMelaStatus: jobsMelaReq.status,
+          jobsMelaRes,
+        });
+      }
+
+      console.log("JOBS_MELA RECOMMENDED-JOBS CALL SUCCEEDED", jobsMelaRes);
 
       return res.status(200).json({
         success: true,
         message: "Candidate onboarded on TruJobs successfully.",
         trujobs: trujobsRes,
         job_matches,
-        applied_job: best_job,
-        trujobs_auto_apply_res,
       });
     }
 
