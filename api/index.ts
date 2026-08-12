@@ -62,30 +62,33 @@ app.use(
   }),
 );
 app.use(mongoSanitize());
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"], // React needs this
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: [
-        "'self'",
-        "https://digilocker.meripehchaan.gov.in/public/oauth2",
-        "https://ochub.com",
-      ],
-      fontSrc: ["'self'", "data:"],
-      frameSrc: ["'self'"],
-      frameAncestors: [ // THIS IS THE KEY ONE
-        "'self'",
-        "https://hub.sandbox.opencampus.xyz",
-        "http://localhost:3000"
-      ]
-    }
-  },
-  crossOriginEmbedderPolicy: false, // Allow embedding
-  crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"], // React needs this
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: [
+          "'self'",
+          "https://digilocker.meripehchaan.gov.in/public/oauth2",
+          "https://ochub.com",
+        ],
+        fontSrc: ["'self'", "data:"],
+        frameSrc: ["'self'"],
+        frameAncestors: [
+          // THIS IS THE KEY ONE
+          "'self'",
+          "https://hub.sandbox.opencampus.xyz",
+          "http://localhost:3000",
+        ],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Allow embedding
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }),
+);
 
 // app.use(
 //   rateLimit({
@@ -94,24 +97,28 @@ app.use(helmet({
 //   })
 // );
 //add
-app.get('/api/dl/callback', (req, res, next) => {
+app.get("/api/dl/callback", (req, res, next) => {
   // Remove ALL helmet headers
-  res.removeHeader('Content-Security-Policy');
-  res.removeHeader('X-Frame-Options');
-  res.removeHeader('Cross-Origin-Embedder-Policy');
-  res.removeHeader('Cross-Origin-Resource-Policy');
-  res.removeHeader('Cross-Origin-Opener-Policy');
-  
+  res.removeHeader("Content-Security-Policy");
+  res.removeHeader("X-Frame-Options");
+  res.removeHeader("Cross-Origin-Embedder-Policy");
+  res.removeHeader("Cross-Origin-Resource-Policy");
+  res.removeHeader("Cross-Origin-Opener-Policy");
+
   // Set permissive headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  
+  res.setHeader("Access-Control-Allow-Origin", "*");
+
   next();
 });
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
-app.use("/api/v1/api-docs", swaggerUiSetup.serve, swaggerUiSetup.setup(swaggerSpec));
+app.use(
+  "/api/v1/api-docs",
+  swaggerUiSetup.serve,
+  swaggerUiSetup.setup(swaggerSpec),
+);
 app.use("/api/v1/scraper", ApifyScraperRouter);
 app.use("/api/v1/doc", docRouter);
 app.use("/api/v1/cv", cvRouter);
@@ -124,10 +131,10 @@ app.use("/api/dl", digilockerRouter);
 app.use("/api/v1/issuer", approvalRouter);
 app.use("/api/v1/hackathon", hackathonRouter);
 app.use("/api/v1/certification", certificationRouter);
-app.use("/api/v1/verifier", verifierRouter);    
-app.use("/api/v1/search", searchRouter);  
-app.use("/api/v1/coupons", couponRouter);    
-app.use("/api/v1/subscription", subscriptionRouter); 
+app.use("/api/v1/verifier", verifierRouter);
+app.use("/api/v1/search", searchRouter);
+app.use("/api/v1/coupons", couponRouter);
+app.use("/api/v1/subscription", subscriptionRouter);
 
 app.get("/", (req: Request, res: Response) => {
   return res.json({
@@ -136,7 +143,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 cron.schedule(
-  "32 16 8 * *",
+  "25 01 12 * *",
   () => {
     (async () => {
       const issuers = await fetchIssuer();
@@ -149,12 +156,9 @@ cron.schedule(
   { timezone: "Asia/Kolkata" },
 );
 
-
-
 app.listen(process.env.PORT || 5000, () => {
   MongoConnection();
   console.log("Backend running on PORT:", process.env.PORT);
 });
 // Export the app as a Vercel serverless function
 export default app;
-
