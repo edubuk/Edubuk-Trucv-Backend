@@ -851,37 +851,6 @@ export const onBoardCandidateOnTruJobsInOneClick = async (
         });
       }
 
-      const job_matches_req = await fetch(
-        `${process.env.TRUJOBS_API_BASE_URL}/api/candidate/get-job-matches/jobs-mela/${trujobsRes.ai_server_resume_id}?page=1&page_size=40`,
-      );
-      const job_matches = (await job_matches_req.json().catch(() => null)) as {
-        matches?: Array<{
-          job_id?: string;
-          similarity_score?: number;
-        }>;
-      } | null;
-
-      // jobs-mela auto-apply to the single job with the highest similarity_score
-      const matches = job_matches?.matches ?? [];
-
-      // top 5 matches ranked by similarity_score (highest first)
-      const top_matches = [...matches]
-        .sort(
-          (a, b) =>
-            (b?.similarity_score ?? -Infinity) -
-            (a?.similarity_score ?? -Infinity),
-        )
-        .slice(0, 5);
-
-      const best_job = matches.reduce<(typeof matches)[number] | null>(
-        (best, current) =>
-          (current?.similarity_score ?? -Infinity) >
-          (best?.similarity_score ?? -Infinity)
-            ? current
-            : best,
-        null,
-      );
-
       // notify JOBS_MELA of the recommended jobs and auto-apply result
       if (!process.env.JOBS_MELA_API_BASE_URL) {
         console.log("JOBS_MELA_API_BASE_URL is not defined in the environment");
@@ -891,6 +860,17 @@ export const onBoardCandidateOnTruJobsInOneClick = async (
         });
       }
 
+      // the candidate's job preference drives the job-match filters below
+      type JobPreference = {
+        location?: string[];
+        work_type?: string[];
+        employment_type?: string[];
+        min_score?: number;
+      };
+      let job_preference: JobPreference | null = null;
+      // subscription plan drives how many matches we return (free -> 5, starter -> 10)
+      let plan: string | null = null;
+
       // fetch the candidate's job preference from JOBS_MELA and store it
       const jobPreferenceUrl = `${process.env.JOBS_MELA_API_BASE_URL}/api/v1/trucv-trujobs/job-preference/${findUser.email}`;
       console.log("CALLING JOBS_MELA JOB-PREFERENCE URL ->", jobPreferenceUrl);
@@ -898,7 +878,10 @@ export const onBoardCandidateOnTruJobsInOneClick = async (
       const jobPreferenceReq = await fetch(jobPreferenceUrl);
       const jobPreferenceRes = (await jobPreferenceReq
         .json()
-        .catch(() => null)) as { job_preference?: unknown } | null;
+        .catch(() => null)) as {
+        job_preference?: unknown;
+        plan?: string;
+      } | null;
       console.log(
         "RAW JOBS_MELA JOB-PREFERENCE RESPONSE ->",
         JSON.stringify(jobPreferenceRes),
@@ -923,9 +906,12 @@ export const onBoardCandidateOnTruJobsInOneClick = async (
         });
       } else {
         // JOBS_MELA may return { job_preference: {...} } or the preference object directly
-        const job_preference =
-          jobPreferenceRes?.job_preference ?? jobPreferenceRes ?? null;
+        job_preference = (jobPreferenceRes?.job_preference ??
+          jobPreferenceRes ??
+          null) as JobPreference | null;
+        plan = jobPreferenceRes?.plan ?? null;
         console.log("JOB PREFERENCE FETCHED FROM JOBS_MELA", job_preference);
+        console.log("PLAN FROM JOBS_MELA", plan);
 
         // update the candidate's job preference on TruJobs
         const trujobsPreferenceUrl = `${process.env.TRUJOBS_API_BASE_URL}/api/candidate/update-candidate-preference/jobs-mela`;
@@ -933,6 +919,8 @@ export const onBoardCandidateOnTruJobsInOneClick = async (
           "CALLING TRUJOBS UPDATE-CANDIDATE-PREFERENCE URL ->",
           trujobsPreferenceUrl,
         );
+
+        console.log("preference from jobs mela", job_preference);
 
         const trujobsPreferenceReq = await fetch(trujobsPreferenceUrl, {
           method: "PATCH",
@@ -968,6 +956,46 @@ export const onBoardCandidateOnTruJobsInOneClick = async (
           trujobsPreferenceRes,
         );
       }
+
+      // build the job-match filters from the candidate's preference
+      const filters = {
+        location: job_preference?.location ?? [],
+        work_type: job_preference?.work_type ?? [],
+        // employment_type: job_preference?.employment_type ?? [],
+        // min_score: 55,
+      };
+      console.log("JOB-MATCHES FILTERS ->", JSON.stringify(filters));
+
+      const job_matches_req = await fetch(
+        `${process.env.TRUJOBS_API_BASE_URL}/api/candidate/get-job-matches/jobs-mela/${trujobsRes.ai_server_resume_id}?page=1&page_size=40`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ filters }),
+        },
+      );
+      const job_matches = (await job_matches_req.json().catch(() => null)) as {
+        matches?: Array<{
+          job_id?: string;
+          similarity_score?: number;
+        }>;
+      } | null;
+
+      const matches = job_matches?.matches ?? [];
+
+      // number of matches to return depends on plan: starter -> 10, free (default) -> 5
+      const match_limit = plan === "starter" ? 10 : 5;
+
+      // top matches ranked by similarity_score (highest first)
+      const top_matches = [...matches]
+        .sort(
+          (a, b) =>
+            (b?.similarity_score ?? -Infinity) -
+            (a?.similarity_score ?? -Infinity),
+        )
+        .slice(0, match_limit);
 
       const jobsMelaUrl = `${process.env.JOBS_MELA_API_BASE_URL}/api/v1/trucv-trujobs/recommended-jobs/${findUser.email}`;
       console.log("CALLING JOBS_MELA RECOMMENDED-JOBS URL ->", jobsMelaUrl);
