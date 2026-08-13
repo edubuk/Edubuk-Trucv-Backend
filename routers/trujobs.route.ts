@@ -31,4 +31,11 @@ router.post(
   jwtTokenVerification,
   onBoardCandidateOnTruJobsInOneClick,
 );
+
+router.get("/health", (_req, _res) => {
+  return _res.json({
+    message: "TruJobs Router is healthy in TRUCV",
+  });
+});
+
 export default router;
