@@ -456,6 +456,43 @@ export const getCandidateTruCVByUserId = async (
   }
 };
 
+export const getCandidateDetails = async (req: Request, res: Response) => {
+  try {
+    console.log("get candidate full details called");
+    const { email } = req.params;
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "email is required!",
+      });
+    }
+
+    const candidate = await User.findOne({ email }).select(
+      "name email phoneNumber referred_from address profession yearOfExp linkedInUrl githubUrl profileSummary userImageUrl subscriptionPlan is_onboarded_on_trujobs createdAt updatedAt",
+    );
+
+    if (!candidate) {
+      return res.status(404).json({
+        success: false,
+        message: "Candidate not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "CANDIDATE DETAILS FETCHED",
+      candidate,
+    });
+  } catch (error) {
+    console.log("ERROR IN getCandidateDetails", error);
+    return res.status(500).json({
+      success: false,
+      message: "ERROR IN getCandidateDetails",
+      error,
+    });
+  }
+};
+
 export const fetchUserCV = async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;

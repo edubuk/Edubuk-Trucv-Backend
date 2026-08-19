@@ -1,6 +1,7 @@
 import express from "express";
 import {
   checkUserHasCreatedTrucvAndOnboardedOnTrujobs,
+  getCandidateDetails,
   getCandidateTruCVByUserId,
   onBoardCandidateOnTruJobsInOneClick,
   trujobsSignInAuthenticatorForAutomation,
@@ -18,6 +19,8 @@ router.post(
 ); //completed
 
 router.get("/get-candidate-trucv-by-userId/:userId", getCandidateTruCVByUserId);
+
+router.get("/get-candidate-details/:email", getCandidateDetails);
 
 //  trujobs auto onboarding;
 router.get(
