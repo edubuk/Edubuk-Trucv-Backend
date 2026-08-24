@@ -4,6 +4,7 @@ import {
   getCandidateDetails,
   getCandidateTruCVByUserId,
   onBoardCandidateOnTruJobsInOneClick,
+  onBoardCandidateOnTruJobsInOneClickForJobsMela,
   trujobsSignInAuthenticatorForAutomation,
   trujobsSignInAuthenticatorNew,
 } from "../controllers/trujobs.controller";
@@ -33,6 +34,12 @@ router.post(
   "/onboard-candidate-on-trujobs",
   jwtTokenVerification,
   onBoardCandidateOnTruJobsInOneClick,
+);
+
+router.post(
+  "/onboard-candidate-on-trujobs-via-jobsmela",
+  // jwtTokenVerification,
+  onBoardCandidateOnTruJobsInOneClickForJobsMela,
 );
 
 router.get("/health", (_req, _res) => {
