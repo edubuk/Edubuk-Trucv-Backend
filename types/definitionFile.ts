@@ -1,5 +1,6 @@
 import { Request } from "express";
 import { Types } from "mongoose";
+import { IDeveloper } from "../models/developer.model";
 
 export interface IGetUserAuthInfoRequest extends Request{
     user:{
@@ -13,4 +14,9 @@ export interface IGetUserAuthInfoRequest extends Request{
         iat?:number,
         exp?:number
     }
+}
+
+export interface IGetDeveloperAuthInfoRequest extends Request{
+    developerId: string;
+    developer: IDeveloper;
 }
