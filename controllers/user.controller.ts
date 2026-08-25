@@ -23,7 +23,7 @@ interface IDecodeToken {
   exp: number;
 }
 
-const generateAccessRefreshToken = async (userId: string) => {
+export const generateAccessRefreshToken = async (userId: string) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
