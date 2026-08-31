@@ -161,7 +161,6 @@ export const getUserRestrictedCv = async(req:Request,res:Response)=>{
                     city:"$address",
                     profession:"$profession",
                     yearOfExp:"$yearOfExp",
-                    linkedInUrl:"$linkedInUrl",
                     githubUrl:"$githubUrl",
                     imgUrl: "$userImageUrl",
                     summary: "$profileSummary"
