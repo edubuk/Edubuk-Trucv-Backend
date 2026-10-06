@@ -76,7 +76,7 @@ export const cvParse = async(req:Request,res:Response)=>{
     const response = await axios.request({
       method: "post",
       maxBodyLength: Infinity,
-      url: "https://trucv-ai-apim.azure-api.net/CvParser/cv-to-trucv",
+      url:ENV.CV_PARSER_URL,
       headers: {
         "Ocp-Apim-Subscription-Key":ENV.Ocp_Apim_Subscription_Key,
         ...data.getHeaders(),
