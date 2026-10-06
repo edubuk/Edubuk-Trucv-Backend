@@ -24,4 +24,5 @@ export const ENV = {
     REINDEX_API_KEY:String(getEnv("REINDEX_API_KEY")),
     Ocp_Apim_Subscription_Key:String(getEnv("Ocp_Apim_Subscription_Key")),
     CV_PARSER_URL:String(getEnv("CV_PARSER_URL")),
+    APIFY_API_TOKEN:String(getEnv("APIFY_API_TOKEN")),
 };

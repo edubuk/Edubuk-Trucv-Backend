@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import OpenAI from "openai";
 import Scraper from "../../models/scrapers/scraper.model";
 import mongoose from "mongoose";
+import { ENV } from "../../config/env";
 const client = new ApifyClient({
   token: process.env.APIFY_CLIENT,
 });
@@ -295,7 +296,7 @@ export const linkdeinProfileScraper = async (req: Request, res: Response) => {
       queries: [profileUrl],
     };
 
-    const run = await client.actor("LpVuK3Zozwuipa5bp").call(input);
+    const run = await client.actor(ENV.APIFY_API_TOKEN).call(input);
     const { items } = await client.dataset(run.defaultDatasetId).listItems();
     const profileData: any = items[0];
 
