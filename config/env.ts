@@ -22,4 +22,5 @@ export const ENV = {
     CV_PROCESSING_DELAY_MS: Number(getEnv("CV_PROCESSING_DELAY_MS", "5000")),
     REINDEX_BASEURL:String(getEnv("REINDEX_BASEURL")),
     REINDEX_API_KEY:String(getEnv("REINDEX_API_KEY")),
+    Ocp_Apim_Subscription_Key:String(getEnv("Ocp_Apim_Subscription_Key")),
 };

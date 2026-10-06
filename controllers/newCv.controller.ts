@@ -5,6 +5,7 @@ import FormData from "form-data";
 import axios from "axios";
 import { User } from "../models/user.model";
 import mongoose from "mongoose";
+import { ENV } from "../config/env";
 
 
 
@@ -77,7 +78,7 @@ export const cvParse = async(req:Request,res:Response)=>{
       maxBodyLength: Infinity,
       url: "https://trucv-ai-apim.azure-api.net/CvParser/cv-to-trucv",
       headers: {
-        "Ocp-Apim-Subscription-Key": "3e08ad33f2894d6da82e9f25e575794d",
+        "Ocp-Apim-Subscription-Key":ENV.Ocp_Apim_Subscription_Key,
         ...data.getHeaders(),
       },
       data: data,
