@@ -33,7 +33,7 @@ export const otpEmailHandler = async (emailId: string, otp: string) => {
     <!-- Header -->
     <div style="text-align:center;padding:25px 20px 10px;">
       <img 
-        src="https://edubuktrucv.com/latest_edubuk_logo.png" 
+        src="https://trucv-hackathon.edubuk.com/latest_edubuk_logo.png" 
         alt="Edubuk Logo" 
         style="width:120px;margin-bottom:10px;"
       />
@@ -94,7 +94,7 @@ export const otpEmailHandler = async (emailId: string, otp: string) => {
 export const sendResetLinkEMail = async (emailId: string, resetToken: string) => {
   try {
     // change this to your client URL (frontend route that accepts the raw token)
-    const CLIENT_URL = process.env.CLIENT_URL || "https://edubuktrucv.com/";
+    const CLIENT_URL = process.env.CLIENT_URL || "https://trucv-hackathon.edubuk.com/";
     const resetUrl = `${CLIENT_URL.replace(/\/$/, "")}/password-reset?token=${encodeURIComponent(
       resetToken
     )}`;
@@ -120,7 +120,7 @@ https://edubukeseal.org`,
     <!-- Header -->
     <div style="background:#f7fbff;padding:28px 22px 18px;text-align:center;">
       <img
-        src="https://edubuktrucv.com/latest_edubuk_logo.png"
+        src="https://trucv-hackathon.edubuk.com/latest_edubuk_logo.png"
         alt="Edubuk Logo"
         style="width:120px;display:block;margin:0 auto 8px;"
       />
@@ -227,7 +227,7 @@ https://edubukeseal.org`,
   <div style="max-width:600px;margin:auto;font-family:Arial, Helvetica, sans-serif;background:#ffffff;border:1px solid #e5eaf0;border-radius:12px;overflow:hidden;">
     <div style="background:#f7fbff;padding:28px 22px 18px;text-align:center;">
       <img
-        src="https://edubuktrucv.com/latest_edubuk_logo.png"
+        src="https://trucv-hackathon.edubuk.com/latest_edubuk_logo.png"
         alt="Edubuk Logo"
         style="width:120px;display:block;margin:0 auto 8px;"
       />
@@ -423,7 +423,7 @@ export const docVerificationEmailHandler = async (
 
           <div style="text-align: center; margin-bottom: 20px;">
             <a
-              href="https://edubuktrucv.com/verify-document/${token}"
+              href="https://trucv-hackathon.edubuk.com/verify-document/${token}"
               target="_blank"
               
               style="display: inline-block; padding: 10px 20px; margin-right: 10px; background: #28a745; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;"
@@ -707,7 +707,7 @@ export const skillVerificationEmailHandler = async (emailId: string, userName: s
 
           <div style="text-align: center; margin-bottom: 20px;">
             <a
-              href="https://edubuktrucv.com/verify-skill/${token}"
+              href="https://trucv-hackathon.edubuk.com/verify-skill/${token}"
               target="_blank"
               
               style="display: inline-block; padding: 10px 20px; margin-right: 10px; background: #28a745; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;"
@@ -908,7 +908,7 @@ export const userDocVerificationEmailHandler = async (
                                             <tr>
                                                 <td>
                                                     <!-- Replace with your logo URL -->
-                                                    <img src="https://edubuktrucv.com/assets/truCV2-CgxWe8kD.png" alt="TruCV Logo" width="120" height="auto" style="display: block; border: 0;" />
+                                                    <img src="https://trucv-hackathon.edubuk.com/assets/truCV2-CgxWe8kD.png" alt="TruCV Logo" width="120" height="auto" style="display: block; border: 0;" />
                                                 </td>
                                             </tr>
                                         </table>
@@ -1130,7 +1130,7 @@ export const userDocVerificationEmailHandler = async (
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
                                                 <td style="border-radius: 8px; background-color: #006666;">
-                                                    <a href="https://edubuktrucv.com/dashboard?tab=docs" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 16px; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px;">
+                                                    <a href="https://trucv-hackathon.edubuk.com/dashboard?tab=docs" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 16px; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px;">
                                                         Access My Documents →
                                                     </a>
                                                 </td>
@@ -1150,7 +1150,7 @@ export const userDocVerificationEmailHandler = async (
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
                                                 <td style="border-radius: 8px; background-color: #03257e;">
-                                                    <a href="https://edubuktrucv.com/document-verification-guide" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 16px; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px;">
+                                                    <a href="https://trucv-hackathon.edubuk.com/document-verification-guide" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 16px; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px;">
                                                         Check Complete Documents Verification Guide →
                                                     </a>
                                                 </td>
@@ -1384,7 +1384,7 @@ export const pipelineWelcomeEmailHandler = async (
                   </td>
                   <td style="padding:0 4px;color:#cbd5e1;font-size:22px;" valign="middle">|</td>
                   <td style="padding:0 14px;" valign="middle">
-                    <img src="https://edubuktrucv.com/assets/truCV2-CgxWe8kD.png" alt="TruCV" height="44" style="display:block;border:0;height:44px;width:auto;" />
+                    <img src="https://trucv-hackathon.edubuk.com/assets/truCV2-CgxWe8kD.png" alt="TruCV" height="44" style="display:block;border:0;height:44px;width:auto;" />
                   </td>
                 </tr>
               </table>

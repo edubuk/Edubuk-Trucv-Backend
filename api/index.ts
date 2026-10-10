@@ -56,6 +56,8 @@ app.use(
       "https://www.trucv.org",
       "https://trucv.org",
       "https://educhain.edubuktrucv.com",
+      "https://trucv-hackathon.edubuk.com",
+      "https://www.trucv-hackathon.edubuk.com",
       "https://www.educhain.edubuktrucv.com",
     ],
     allowedHeaders: ["Content-Type", "Authorization"],
