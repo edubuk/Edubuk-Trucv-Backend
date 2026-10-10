@@ -86,14 +86,6 @@ export const generateOtp = async (req: Request, res: Response) => {
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const { email, otp, name, password, phoneNumber, address } = req.body;
-    const { ref } = req.query;
-    console.log("ref recieved", ref);
-    if (!process.env.PARTNER_REFERRAL_SECRET) {
-      return res.status(400).json({
-        success: false,
-        message: "PARTNER_REFERRAL_SECRET is required",
-      });
-    }
     // ── 1. Check duplicate user ───────────────────────────────────────────────
     const isUser = await User.findOne({ email });
     if (isUser) {
@@ -102,53 +94,23 @@ export const registerUser = async (req: Request, res: Response) => {
         message: "User already exists",
       });
     }
-    // ── 2. Validate OTP ───────────────────────────────────────────────────────
-    // const otpData = await Otp.findOne({ email });
-    // if (!otpData) {
-    //   return res.status(400).json({ success: false, message: "Invalid otp" });
-    // }
-
-    // const isMatch = await bcrypt.compare(otp, otpData.otpHash);
-    // if (!isMatch) {
-    //   return res.status(400).json({ success: false, message: "Invalid otp" });
-    // }
-
-    // if (otpData.used) {
-    //   return res
-    //     .status(400)
-    //     .json({ success: false, message: "Otp already used" });
-    // }
-
-    //  3. Verify referral token (if present)
-    let referredFrom: string | null = null;
-
-    if (ref && typeof ref === "string") {
-      // Some partner redirects append extra path/query onto our tracking
-      // link (e.g. "<token>/register/JOBS_MELA?ref=<token>&email=...")
-      // instead of forwarding it verbatim. The real token is always the
-      // leading segment, so strip anything from the first "/", "?", or "&"
-      // onward before verifying.
-      const cleanRef = ref.split(/[/?&]/)[0];
-      if (cleanRef !== ref) {
-        console.log("ref param had trailing garbage, trimmed to:", cleanRef);
-      }
-
-      try {
-        const payload = jwt.verify(
-          cleanRef,
-          process.env.PARTNER_REFERRAL_SECRET!,
-        ) as { partner: string; campaign?: string };
-
-        const linkExists = await TrackingLink.findOne({ token: cleanRef });
-
-        if (linkExists) {
-          referredFrom = payload.partner;
-        }
-      } catch (err) {
-        console.log("jwt error:", err);
-        referredFrom = null;
-      }
+   // ── 2. Validate OTP ───────────────────────────────────────────────────────
+    const otpData = await Otp.findOne({ email });
+    if (!otpData) {
+      return res.status(400).json({ success: false, message: "Invalid otp" });
     }
+
+    const isMatch = await bcrypt.compare(otp, otpData.otpHash);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: "Invalid otp" });
+    }
+
+    if (otpData.used) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Otp already used" });
+    }
+
 
     // ── 4. Create user ────────────────────────────────────────────────────────
     const user = new User({
@@ -158,7 +120,7 @@ export const registerUser = async (req: Request, res: Response) => {
       phoneNumber,
       address,
       uuid: uuidV4(),
-      referred_from: referredFrom, // null if no valid referral
+      referred_from: null, // null if no valid referral
     });
     await user.save();
 
@@ -175,7 +137,6 @@ export const registerUser = async (req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       message: "You are registered successfully",
-      referred_from: referredFrom,
     });
   } catch (error) {
     res.status(500).json({
